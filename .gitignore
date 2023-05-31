@@ -168,5 +168,6 @@ gradle-app.setting
 target
 ehcache
 rebel.xml
+application.yml
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,jetbrains+iml,java,gradle
