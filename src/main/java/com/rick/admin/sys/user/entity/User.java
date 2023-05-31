@@ -1,18 +1,12 @@
 package com.rick.admin.sys.user.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rick.admin.sys.role.entity.Role;
 import com.rick.db.dto.BaseCodeEntity;
-import com.rick.db.dto.BaseEntity;
 import com.rick.db.plugin.dao.annotation.Column;
 import com.rick.db.plugin.dao.annotation.ManyToMany;
 import com.rick.db.plugin.dao.annotation.Table;
 import com.rick.db.plugin.dao.annotation.Transient;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.AccessLevel;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 

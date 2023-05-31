@@ -3,15 +3,9 @@ package com.rick.admin.sys.role.entity;
 import com.rick.admin.sys.permission.entity.Permission;
 import com.rick.admin.sys.user.entity.User;
 import com.rick.db.dto.BaseCodeEntity;
-import com.rick.db.dto.BaseEntity;
 import com.rick.db.plugin.dao.annotation.ManyToMany;
-import com.rick.db.plugin.dao.annotation.ManyToOne;
 import com.rick.db.plugin.dao.annotation.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.AccessLevel;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 

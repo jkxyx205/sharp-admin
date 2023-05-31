@@ -3,15 +3,13 @@ package com.rick.admin.sys.user.dao;
 import com.google.common.collect.Lists;
 import com.rick.admin.auth.common.AuthConstants;
 import com.rick.admin.sys.role.entity.Role;
+import com.rick.admin.sys.user.entity.User;
 import com.rick.common.util.JsonUtils;
 import com.rick.db.plugin.dao.core.EntityCodeDAOImpl;
-import com.rick.db.plugin.dao.core.EntityDAOImpl;
-import com.rick.admin.sys.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 

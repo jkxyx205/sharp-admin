@@ -1,16 +1,14 @@
 package com.rick.admin.sys.user.service;
 
 import com.rick.admin.common.ExceptionCodeEnum;
-import com.rick.admin.sys.permission.dao.PermissionDAO;
 import com.rick.admin.sys.permission.entity.Permission;
-import com.rick.admin.sys.role.dao.RoleDAO;
 import com.rick.admin.sys.role.entity.Role;
 import com.rick.admin.sys.user.dao.UserDAO;
 import com.rick.admin.sys.user.entity.User;
 import com.rick.common.http.exception.BizException;
 import com.rick.db.service.support.Params;
-import lombok.RequiredArgsConstructor;
 import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,7 +17,6 @@ import org.springframework.validation.annotation.Validated;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * @author Rick.Xu

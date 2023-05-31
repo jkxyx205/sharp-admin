@@ -1,8 +1,7 @@
 package com.rick.admin.sys.permission.dao;
 
-import com.rick.db.plugin.dao.core.EntityCodeDAOImpl;
-import com.rick.db.plugin.dao.core.EntityDAOImpl;
 import com.rick.admin.sys.permission.entity.Permission;
+import com.rick.db.plugin.dao.core.EntityCodeDAOImpl;
 import org.springframework.stereotype.Repository;
 
 /**

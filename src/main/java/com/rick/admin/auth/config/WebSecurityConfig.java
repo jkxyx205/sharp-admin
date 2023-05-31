@@ -2,7 +2,6 @@ package com.rick.admin.auth.config;
 
 import com.rick.admin.auth.authentication.AdminExpiredSessionStrategy;
 import com.rick.admin.auth.validate.image.ValidateFilter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
