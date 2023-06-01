@@ -38,7 +38,7 @@
                 key = item.attr(settings.keyAttr) || item.attr('name') || item.attr('id');
             var val = item.val();
             if (item.attr('type') != 'password') {
-                val = item.val().trim();
+                val = !item.val() ? val : item.val().trim();
             }
 
             if (!settings.allowEmptySingleVal && empty(val)) return true;

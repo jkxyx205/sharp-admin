@@ -51,15 +51,33 @@
     <div class="sidebar">
         <nav class="sidebar-nav">
             <ul class="nav">
+                <li class="nav-item nav-dropdown open" sec:authorize="hasAuthority('core_data')">
+                    <a class="nav-link nav-dropdown-toggle" href="#">
+                        <i class="nav-icon icon-speedometer"></i> 主数据</a>
+                    <ul class="nav-dropdown-items">
+                        <li class="nav-item" sec:authorize="hasAuthority('core_plant')">
+                            <a class="nav-link" href="javascript:addTab('plants', '库房', '/reports/695623902415556608')">
+                                <i class="nav-icon icon-home"></i> 库房
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasAuthority('core_material_category')">
+                            <a class="nav-link" href="javascript:addTab('core_material_category', '物料分类', '/reports/695661483089989632')">
+                                <i class="nav-icon icon-social-dropbox"></i> 物料分类
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasAuthority('core_partner')">
+                            <a class="nav-link" href="javascript:addTab('core_partner', '合作伙伴', '/reports/695710879554998272')">
+                                <i class="nav-icon icon-people"></i> 合作伙伴
+                            </a>
+                        </li>
+                    </ul>
+
+
+                </li>
                 <li class="nav-item nav-dropdown open" sec:authorize="hasAuthority('sys_management')">
                     <a class="nav-link nav-dropdown-toggle" href="#">
                         <i class="nav-icon icon-settings"></i> 系统管理</a>
                     <ul class="nav-dropdown-items">
-                        <li class="nav-item" sec:authorize="hasAuthority('dict_management')">
-                            <a class="nav-link" href="javascript:addTab('dict', '字典管理', '/reports/695316160014499840')">
-                                <i class="nav-icon icon-notebook"></i> 字典管理
-                            </a>
-                        </li>
                         <li class="nav-item" sec:authorize="hasAuthority('user_management')">
                             <a class="nav-link" href="javascript:addTab('users', '用户管理', '/reports/694714180413960192')">
                                 <i class="nav-icon icon-people"></i> 用户管理
@@ -68,6 +86,11 @@
                         <li class="nav-item" sec:authorize="hasAuthority('role_management')">
                             <a class="nav-link" href="javascript:addTab('roles', '角色管理', '/roles')">
                                 <i class="nav-icon icon-directions"></i> 角色管理
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasAuthority('dict_management')">
+                            <a class="nav-link" href="javascript:addTab('dict', '字典管理', '/reports/695316160014499840')">
+                                <i class="nav-icon icon-notebook"></i> 字典管理
                             </a>
                         </li>
                     </ul>
@@ -160,9 +183,9 @@
             // });
 
             nthTabs.addTab({
-                id: "roles",
-                title: '角色管理',
-                url: "/roles",
+                id: "core_partner",
+                title: '合作伙伴',
+                url: "/reports/695710879554998272",
                 allowClose: false
             });
         })

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sp=""
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+>
 <head th:replace="includes/base :: common_header(~{},~{::link},~{::style})">
     <link rel="stylesheet" th:href="@{/css/tab-common.css}">
     <link rel="stylesheet" th:href="@{/plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css}">
@@ -159,7 +159,7 @@
 </th:block>
 <th:block th:replace="includes/base :: common_js(~{::script})">
     <script type="text/javascript" th:src="@{/js/table/jquery.form.js}"></script>
-    <script type="text/javascript" th:src="@{/js/table/jquery.form2json.js}"></script>
+    <script type="text/javascript" th:src="@{/plugins/jquery.form2json.js}"></script>
     <script type="text/javascript" th:src="@{/js/table/jquery.table.js}"></script>
     <script type="text/javascript" th:src="@{/js/table/jquery.pageTable.js}"></script>
     <script type="text/javascript" th:src="@{/js/table/jquery.formautofill.min.js}"></script>

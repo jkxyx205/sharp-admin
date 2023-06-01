@@ -1,9 +1,12 @@
 package com.rick.admin.config;
 
 import com.rick.admin.auth.common.UrlHandlerInterceptor;
+import com.rick.common.http.exception.ApiExceptionHandler;
+import com.rick.common.http.util.MessageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -27,7 +30,7 @@ import java.util.Locale;
  * @Copyright: 2019 www.yodean.com. All rights reserved.
  */
 @Configuration
-//@ComponentScan(basePackageClasses = {ApiExceptionHandler.class, MessageUtils.class})
+@ComponentScan(basePackageClasses = {ApiExceptionHandler.class, MessageUtils.class})
 public class MvcConfig implements WebMvcConfigurer {
 
     @Autowired
