@@ -2,7 +2,6 @@ package com.rick.admin.auth.config;
 
 import com.rick.admin.auth.authentication.AdminExpiredSessionStrategy;
 import com.rick.admin.auth.validate.image.ValidateFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -19,25 +18,27 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
+import javax.annotation.Resource;
+
 /**
  * @author Rick.Xu
  * @date 2023/5/29 13:40
  */
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(securedEnabled = true, jsr250Enabled=true, prePostEnabled = true)// 控制权限注解 配合 @Secured({"ROLE_ADMIN","ROLE_USER2"})使用
+@EnableGlobalMethodSecurity(securedEnabled = true, jsr250Enabled=true, prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Autowired
+    @Resource
     private ValidateFilter validateFilter;
 
-    @Autowired
+    @Resource
     private AuthenticationSuccessHandler authenticationSuccessHandler;
 
-    @Autowired
+    @Resource
     private AuthenticationFailureHandler authenticationFailureHandler;
 
-    @Autowired
+    @Resource
     private LogoutSuccessHandler logoutSuccessHandler;
 
     @Override
@@ -71,7 +72,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Override
-    public void configure(WebSecurity web) throws Exception {
+    public void configure(WebSecurity web) {
         //解决静态资源被拦截的问题
         web.ignoring().antMatchers("/coreui/**", "/css/**", "/js/**", "/img/**", "/plugins/**", "/favicon.ico");
     }

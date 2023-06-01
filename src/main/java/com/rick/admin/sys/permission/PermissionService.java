@@ -35,12 +35,10 @@ public class PermissionService {
         Map<String, Object> params = Maps.newHashMapWithExpectedSize(1);
         params.put("roleIds", roleIds);
 
-        List<TreeNode> treeNodeList = sharpService.query("SELECT p.id as \"id\", p.name as \"name\", pid as \"pId\", 1 as open\n" +
+        return sharpService.query("SELECT p.id as \"id\", p.name as \"name\", pid as \"pId\", 1 as open\n" +
                 "   FROM sys_permission P\n" +
                 "   WHERE EXISTS(select 1 from sys_ROLE_permission rp, sys_role r WHERE R.id = rp.role_id AND p.id = rp.permission_id AND r.id IN (:roleIds)) and p.is_deleted = 0 order by p.permission_order asc" +
                 "   ", params, TreeNode.class);
-
-        return treeNodeList;
     }
 
 }

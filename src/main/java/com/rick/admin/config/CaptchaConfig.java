@@ -10,13 +10,8 @@ import org.springframework.stereotype.Component;
 import java.util.Properties;
 
 /**
- * All rights Reserved, Designed By www.xhope.top
- *
- * @version V1.0
- * @Description: 验证码配置
- * @author: Rick.Xu
- * @date: 12/19/19 10:43 AM
- * @Copyright: 2019 www.yodean.com. All rights reserved.
+ * @author Rick.Xu
+ * @date 2023/5/29 13:45
  */
 @Component
 @PropertySource(value = {"classpath:kaptcha.properties"})

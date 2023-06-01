@@ -1,10 +1,12 @@
 package com.rick.admin.sys.role.service;
 
+import com.rick.admin.common.ExceptionCodeEnum;
 import com.rick.admin.plugin.ztree.model.TreeNode;
 import com.rick.admin.sys.permission.PermissionService;
 import com.rick.admin.sys.role.dao.RoleDAO;
 import com.rick.admin.sys.role.entity.Role;
 import com.rick.admin.sys.role.model.RoleInfoDTO;
+import com.rick.common.http.exception.BizException;
 import com.rick.db.plugin.SQLUtils;
 import com.rick.db.service.support.Params;
 import lombok.AccessLevel;
@@ -13,12 +15,10 @@ import lombok.experimental.FieldDefaults;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -64,11 +64,15 @@ public class RoleService {
     }
 
     public RoleInfoDTO getSettingsInfoByRoleId(Long roleId) {
-        Role role = roleDAO.selectById(roleId).get();
-        List<TreeNode> treeNodeList = permissionService.findTreeNodeByRoleIds(Arrays.asList(roleId));
+        Assert.notNull(roleId, "roleId cannot be null");
+        Optional<Role> optional = roleDAO.selectById(roleId);
+        if (!optional.isPresent()) {
+            throw new BizException(ExceptionCodeEnum.ROLE_NULL_ERROR);
+        }
+        Role role = optional.get();
+        List<TreeNode> treeNodeList = permissionService.findTreeNodeByRoleIds(Collections.singletonList(roleId));
 
-        RoleInfoDTO roleInfo = new RoleInfoDTO(role.getUserList(), treeNodeList);
-        return roleInfo;
+        return new RoleInfoDTO(role.getUserList(), treeNodeList);
     }
 
     public void addPermission(Long roleId, Set<Long> permissionIds) {
@@ -77,8 +81,8 @@ public class RoleService {
 
     /**
      * 为角色添加用户
-     * @param roleId
-     * @param userIds
+     * @param roleId 角色id
+     * @param userIds 用户id
      */
     public void addUser(long roleId, Set<String> userIds) {
         SQLUtils.updateRefTable("sys_user_role", "role_id", "user_id", roleId, userIds);

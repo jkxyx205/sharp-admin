@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.rick.admin.common.ExceptionCodeEnum.USER_NOT_FOUND;
+
 /**
  * @author Rick.Xu
  * @date 2023/5/28 15:04
@@ -49,14 +51,15 @@ public class UserService {
                 }
             }
 
-            user.setAuthorityList(authorityList);;
+            user.setAuthorityList(authorityList);
         }
 
         return optional;
     }
 
     public boolean checkPassword(Long userId, String password) {
-        return passwordEncoder.matches(password, userDAO.selectSingleValueById(userId, "password", String.class).get());
+        Optional<String> optional = userDAO.selectSingleValueById(userId, "password", String.class);
+        return passwordEncoder.matches(password, optional.orElseThrow(() -> new BizException(USER_NOT_FOUND)));
     }
 
     public void updatePassword(Long userId, String password) {

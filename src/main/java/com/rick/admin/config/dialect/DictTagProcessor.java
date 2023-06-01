@@ -18,23 +18,22 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * All rights Reserved, Designed By www.xhope.top
- *
- * @version V1.0
- * @Description: (用一句话描述该文件做什么)
- * @author: Rick.Xu
- * @date: 9/27/19 11:44 AM
- * @Copyright: 2019 www.yodean.com. All rights reserved.
+ * @author Rick.Xu
+ * @date 2023/5/29 13:45
  */
 public class DictTagProcessor extends AbstractElementTagProcessor {
 
-    // 标签名
+    /**
+     * 标签名
+     */
     private static final String TAG_NAME = "dict";
 
-    // 优先级
+    /**
+     * 优先级
+     */
     private static final int PRECEDENCE = 10000;
 
-    private DictService dictService;
+    private final DictService dictService;
 
     public DictTagProcessor(String dialectPrefix, DictService dictService) {
         super(
@@ -83,10 +82,10 @@ public class DictTagProcessor extends AbstractElementTagProcessor {
         IModel model = modelFactory.createModel();
         StringBuilder openElementString = new StringBuilder();
         openElementString.append("select");
-        attrMap.entrySet().forEach(stringStringEntry -> {
-            openElementString.append(" ").append(stringStringEntry.getKey());
-            if (Objects.nonNull(stringStringEntry.getValue()))  {
-                openElementString.append("=\"").append(stringStringEntry.getValue()).append("\"");
+        attrMap.forEach((key1, value) -> {
+            openElementString.append(" ").append(key1);
+            if (Objects.nonNull(value)) {
+                openElementString.append("=\"").append(value).append("\"");
             }
         });
 

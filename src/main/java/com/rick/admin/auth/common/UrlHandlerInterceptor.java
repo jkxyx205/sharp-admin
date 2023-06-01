@@ -14,18 +14,11 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.Objects;
 
 /**
- * All rights Reserved, Designed By www.xhope.top
- *
- * @version V1.0
- * @Description: (用一句话描述该文件做什么)
- * @author: Rick.Xu
-        * @date: 9/10/19 8:06 PM
-        * @Copyright: 2019 www.yodean.com. All rights reserved.
-        */
+ * @author rick
+ */
 @Slf4j
 public class UrlHandlerInterceptor implements HandlerInterceptor {
 
@@ -37,12 +30,11 @@ public class UrlHandlerInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request,
-                             HttpServletResponse response, Object handler) throws IOException {
-        // SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                             HttpServletResponse response, Object handler) {
         Object principal = request.getUserPrincipal();
         String username = "anon";
         String name = "anno";
-        AdminUserDetails userDetails = null;
+        AdminUserDetails userDetails;
         if (Objects.nonNull(principal)) {
             userDetails = (AdminUserDetails) ((UsernamePasswordAuthenticationToken) principal).getPrincipal();
             User user = userDetails.getUser();
@@ -74,10 +66,6 @@ public class UrlHandlerInterceptor implements HandlerInterceptor {
             if (HttpServletRequestUtils.isAjaxRequest(request)) {
                 throw new BizException(ExceptionCodeEnum.INVALID_SESSION);
             }
-        }
-
-        if (AuthConstants.IGNORE_URL.contains(servletPath) && !"/forbidden".equals(servletPath)) {
-            return true;
         }
 
         return true;

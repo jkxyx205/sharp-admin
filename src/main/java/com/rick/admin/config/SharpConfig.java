@@ -15,7 +15,7 @@ import java.util.Map;
 
 /**
  * @author Rick
- * @createdAt 2021-03-23 23:58:00
+ * @date  2021-03-23 23:58:00
  */
 @Configuration
 @RequiredArgsConstructor
@@ -24,12 +24,11 @@ public class SharpConfig {
     private final Validator validator;
 
     @Bean
-    public ColumnAutoFill fill() {
-        return new ColumnAutoFill() {
+    public ColumnAutoFill<Object> fill() {
+        return new ColumnAutoFill<Object>() {
             @Override
             public Map<String, Object> insertFill(String idPropertyName, Object id) {
                 Map<String, Object> fill = new DefaultColumnAutoFill().insertFill(idPropertyName, id);
-
 
                 fill.put("create_by", getUserId());
                 fill.put("update_by", getUserId());

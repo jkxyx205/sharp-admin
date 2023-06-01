@@ -21,19 +21,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+
 /**
- * All rights Reserved, Designed By www.xhope.top
- *
- * @version V1.0
- * @Description: (用一句话描述该文件做什么)
- * @author: Rick.Xu
- * @date: 9/10/19 4:36 PM
- * @Copyright: 2019 www.yodean.com. All rights reserved.
+ * @author rick
  */
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class AdminUserDetailsService implements UserDetailsService {
+public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserService userService;
 
@@ -41,24 +36,23 @@ public class AdminUserDetailsService implements UserDetailsService {
 
     private final SessionRegistry sessionRegistry;
 
-
     /**
      * 进行认证授权的工作
      *
-     * @param username
-     * @return
-     * @throws UsernameNotFoundException
+     * @param username 用户名
+     * @return 用户登陆信息
+     * @throws UsernameNotFoundException 用户未找到
      */
     @Override
     public UserDetails loadUserByUsername(String username) {
         username = username.toUpperCase();
-        Cache tryCache = cacheManager.getCache("loginMaxTry");
+        Cache<String, Integer> tryCache = cacheManager.getCache("loginMaxTry");
 
-        Object object = tryCache.get(username);
+        Integer loginMaxTryCountInCache = tryCache.get(username);
 
         int loginMaxTryCount = 1;
-        if (!Objects.isNull(object)) {
-            loginMaxTryCount = (Integer) object + 1;
+        if (!Objects.isNull(loginMaxTryCountInCache)) {
+            loginMaxTryCount = loginMaxTryCountInCache + 1;
         }
         tryCache.put(username, loginMaxTryCount);
 
@@ -80,8 +74,8 @@ public class AdminUserDetailsService implements UserDetailsService {
 
     /**
      * 用户是否处于登录状态
-     * @param username
-     * @return
+     * @param username 用户名
+     * @return 返回登陆状态
      */
     private boolean isLogin(String username) {
         List<Object> list = sessionRegistry.getAllPrincipals();

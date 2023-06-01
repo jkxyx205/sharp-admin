@@ -2,6 +2,7 @@ package com.rick.admin.auth.controller;
 
 import com.rick.admin.auth.authentication.AdminUserDetails;
 import com.rick.admin.auth.common.AuthConstants;
+import com.rick.admin.common.ExceptionCodeEnum;
 import com.rick.admin.plugin.ztree.model.TreeNode;
 import com.rick.admin.sys.permission.PermissionService;
 import com.rick.admin.sys.permission.model.UserPermissionVO;
@@ -12,6 +13,7 @@ import com.rick.admin.sys.role.service.RoleService;
 import com.rick.admin.sys.user.dao.UserDAO;
 import com.rick.admin.sys.user.entity.User;
 import com.rick.admin.sys.user.service.UserService;
+import com.rick.common.http.exception.BizException;
 import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
 import com.rick.db.service.SharpService;
@@ -26,18 +28,13 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 
 /**
- * All rights Reserved, Designed By www.xhope.top
- *
- * @version V1.0
- * @Description: (用一句话描述该文件做什么)
- * @author: Rick.Xu
- * @date: 9/10/19 1:55 PM
- * @Copyright: 2019 www.yodean.com. All rights reserved.
+ * @author rick
  */
 @Controller
 @RequestMapping
@@ -60,8 +57,6 @@ public class AuthController {
 
     /**
      * login页面
-     *
-     * @return
      */
     @GetMapping("login")
     public String login(Principal principal) {
@@ -73,18 +68,16 @@ public class AuthController {
 
     @DeleteMapping("users/{id}")
     @ResponseBody
-    public Result deleteUser(@PathVariable Long id) {
+    public Result<Integer> deleteUser(@PathVariable Long id) {
         return ResultUtils.success(userDAO.deleteLogicallyById(id));
     }
 
     /**
      * 修改密码
-     *
-     * @return
      */
     @PostMapping("password/update")
     @ResponseBody
-    public Result updatePassword(@RequestBody User user, Principal principal) {
+    public Result<?> updatePassword(@RequestBody User user, Principal principal) {
         Long userId = ((AdminUserDetails) ((UsernamePasswordAuthenticationToken) principal).getPrincipal()).getUser().getId();
         userService.updatePassword(userId, user.getPassword());
         return ResultUtils.success();
@@ -92,13 +85,11 @@ public class AuthController {
 
     /**
      * 重置密码
-     *
-     * @return
      */
     @PostMapping("password/{userId}/reset")
     @PreAuthorize("hasAuthority('user_management')")
     @ResponseBody
-    public Result updatePassword(@PathVariable Long userId) {
+    public Result<String> updatePassword(@PathVariable Long userId) {
         String newPassword = AuthConstants.DEFAULT_PASSWORD;
         userService.updatePassword(userId, newPassword);
         return ResultUtils.success(newPassword);
@@ -106,8 +97,6 @@ public class AuthController {
 
     /**
      * 原密码验证
-     *
-     * @return
      */
     @GetMapping("password/check")
     @ResponseBody
@@ -149,9 +138,11 @@ public class AuthController {
     @ResponseBody
     @PreAuthorize("hasAuthority('role_management')")
     public Result<UserPermissionVO> getPermissionNodesByUserId(Long userId) {
-        User user = userDAO.selectById(userId).get();
+        Optional<User> optional = userDAO.selectById(userId);
 
-        List<TreeNode> treeNodeList = permissionService.findTreeNodeByRoleIds(user.getRoleIds().stream().map(roleId -> Long.parseLong(roleId)).collect(Collectors.toSet()));
+        User user = optional.orElseThrow(() -> new BizException(ExceptionCodeEnum.USER_NOT_FOUND));
+
+        List<TreeNode> treeNodeList = permissionService.findTreeNodeByRoleIds(user.getRoleIds().stream().map(Long::parseLong).collect(Collectors.toSet()));
 
         UserPermissionVO userPermissionVO = UserPermissionVO.builder().permissionList(treeNodeList)
                 .roleList(user.getRoleList()).build();
@@ -161,41 +152,38 @@ public class AuthController {
 
     /**
      * 用户保存
-     * @param roleId
-     * @param userIds
-     * @return
+     * @param roleId 角色id
+     * @param userIds 用户id
      */
     @PostMapping("/auth/assign/role/{roleId}/user")
     @ResponseBody
     @PreAuthorize("hasAuthority('role_management')")
-    public Result assignAuthUser(@PathVariable Long roleId, @RequestParam(value = "userIds[]", required = false) Set<String> userIds) {
+    public Result<?> assignAuthUser(@PathVariable Long roleId, @RequestParam(value = "userIds[]", required = false) Set<String> userIds) {
         roleService.addUser(roleId, userIds);
         return ResultUtils.success();
     }
 
     /**
      * 权限保存
-     * @param roleId
-     * @param permissionIds
-     * @return
+     * @param roleId 角色id
+     * @param permissionIds 权限ids
      */
     @PostMapping("/auth/assign/role/{roleId}/permission")
     @ResponseBody
     @PreAuthorize("hasAuthority('role_management')")
-    public Result assignAuthPermission(@PathVariable Long roleId, @RequestParam(value = "permissionIds[]", required = false) Set<Long> permissionIds) {
+    public Result<?> assignAuthPermission(@PathVariable Long roleId, @RequestParam(value = "permissionIds[]", required = false) Set<Long> permissionIds) {
         roleService.addPermission(roleId, permissionIds);
         return ResultUtils.success();
     }
 
     /**
      * 角色保存
-     * @param roleList
-     * @return
+     * @param roleList 角色列表
      */
     @PostMapping("/auth/add/roles")
     @ResponseBody
     @PreAuthorize("hasAuthority('role_management')")
-    public Result editAuthRole(@RequestBody List<Role> roleList) {
+    public Result<List<Role>> editAuthRole(@RequestBody List<Role> roleList) {
         Result<List<Role>> success = ResultUtils.success(roleService.editRoles(roleList));
         dictService.rebuild("sys_role");
         return success;
@@ -203,14 +191,13 @@ public class AuthController {
 
     /**
      * 移除用户角色
-     * @param roleId
-     * @param userId
-     * @return
+     * @param roleId 角色id
+     * @param userId 用户id
      */
     @PostMapping("/auth/assign/role/{roleId}/{userId}")
     @ResponseBody
     @PreAuthorize("hasAuthority('role_management')")
-    public Result removeUserRoleAuth(@PathVariable Long roleId, @PathVariable String userId) {
+    public Result<?> removeUserRoleAuth(@PathVariable Long roleId, @PathVariable String userId) {
         roleService.removeRoleByUserId(roleId, userId);
         return ResultUtils.success();
     }

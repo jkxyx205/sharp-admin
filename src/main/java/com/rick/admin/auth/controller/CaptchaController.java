@@ -3,7 +3,7 @@ package com.rick.admin.auth.controller;
 import com.google.code.kaptcha.impl.DefaultKaptcha;
 import com.rick.admin.auth.validate.image.CaptchaImageVO;
 import com.rick.admin.common.AdminConstants;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -16,20 +16,14 @@ import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
 
 /**
- * All rights Reserved, Designed By www.xhope.top
- *
- * @version V1.0
- * @Description: 获取验证码
- * @author: Rick.Xu
- * @date: 12/19/19 10:46 AM
- * @Copyright: 2019 www.yodean.com. All rights reserved.
+ * @author rick
  */
 @RestController
 @RequestMapping(value = "/kaptcha", method = RequestMethod.GET)
+@RequiredArgsConstructor
 public class CaptchaController {
 
-    @Autowired
-    DefaultKaptcha captchaProducer;
+    private final DefaultKaptcha captchaProducer;
 
     /**
      * 获取验证码

@@ -1,7 +1,6 @@
 package com.rick.admin.auth.authentication;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.session.SessionInformation;
@@ -9,40 +8,30 @@ import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.ServletException;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+
 /**
- * All rights Reserved, Designed By www.xhope.top
- *
- * @version V1.0
- * @Description: (用一句话描述该文件做什么)
- * @author: Rick.Xu
- * @date: 12/21/19 10:48 AM
- * @Copyright: 2019 www.yodean.com. All rights reserved.
+ * @author rick
  */
 @Component
 @Slf4j
 public class AdminLogoutSuccessHandler implements LogoutSuccessHandler {
 
-    @Autowired
+    @Resource
     private SessionRegistry sessionRegistry;
 
     @Override
-    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         AdminUserDetails userDetails = ((AdminUserDetails) authentication.getPrincipal());
         log.info("LOGOUT:用户{}退出系统", userDetails.getUsername());
         expireSession(request, userDetails);
         response.sendRedirect("/login");
     }
 
-    /**
-     * 清除session
-     * @param request
-     * @param user
-     */
     private  void expireSession(HttpServletRequest request, AdminUserDetails user) {
         List<SessionInformation> sessionsInfo = null;
         if (null != user) {

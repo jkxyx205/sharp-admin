@@ -10,7 +10,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
  * @author Rick
- * @createdAt 2021-04-08 14:47:00
+ * @date 2021-04-08 14:47:00
  */
 public class UserHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 

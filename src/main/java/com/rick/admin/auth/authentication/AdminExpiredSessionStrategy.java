@@ -4,14 +4,9 @@ import com.rick.common.http.HttpServletResponseUtils;
 import org.springframework.security.web.session.SessionInformationExpiredEvent;
 import org.springframework.security.web.session.SessionInformationExpiredStrategy;
 
+
 /**
- * All rights Reserved, Designed By www.xhope.top
- *
- * @version V1.0
- * @Description: (用一句话描述该文件做什么)
- * @author: Rick.Xu
- * @date: 12/24/19 7:48 PM
- * @Copyright: 2019 www.yodean.com. All rights reserved.
+ * @author rick
  */
 public class AdminExpiredSessionStrategy implements SessionInformationExpiredStrategy {
 

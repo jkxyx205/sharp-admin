@@ -11,6 +11,7 @@ import lombok.ToString;
 @Getter
 @ToString
 public enum ExceptionCodeEnum implements ExceptionCode {
+    USER_NOT_FOUND(400019, "用户不存在"),
     USER_NOT_AVAILABLE(400010, "用户状态不可用，请联系管理员"),
     INVALID_SESSION(400011, "访问超时，请退出后重新登录"),
     VALIDATE_CODE_ERROR(40003, "验证码输入不正确"),

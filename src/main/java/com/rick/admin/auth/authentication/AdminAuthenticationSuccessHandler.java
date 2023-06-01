@@ -6,7 +6,6 @@ import com.rick.admin.auth.common.UserContextHolder;
 import com.rick.admin.sys.user.entity.User;
 import com.rick.common.http.HttpServletRequestUtils;
 import com.rick.common.util.StringUtils;
-import com.rick.report.core.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mobile.device.Device;
@@ -21,14 +20,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+
 /**
- * All rights Reserved, Designed By www.xhope.topø
- *
- * @version V1.0
- * @Description: (用一句话描述该文件做什么)
- * @author: Rick.Xu
- * @date: 9/10/19 4:29 PM
- * @Copyright: 2019 www.yodean.com. All rights reserved.
+ * @author rick
  */
 @Component
 @Slf4j
@@ -37,13 +31,9 @@ public class AdminAuthenticationSuccessHandler implements AuthenticationSuccessH
 
     private final CacheManager cacheManager;
 
-    private final ReportService reportService;
-
-    @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-//        Device device = DeviceUtils.getCurrentDevice(request);
+        Cache<String, Integer> tryCache = cacheManager.getCache("loginMaxTry");
 
-        Cache tryCache = cacheManager.getCache("loginMaxTry");
         tryCache.remove(authentication.getName().toUpperCase());
         request.getSession().removeAttribute(AuthConstants.IMAGE_CODE_SESSION_KEY);
 
@@ -60,12 +50,6 @@ public class AdminAuthenticationSuccessHandler implements AuthenticationSuccessH
 
         String url = "/";
         UserContextHolder.set(userDetails.getUser());
-//        initMenu(request);
-
         response.sendRedirect(url);
     }
-
-//    private void initMenu(HttpServletRequest request) {
-//        request.getSession().setAttribute("report", reportService.findReportTablesByCurrentUser());
-//    }
 }

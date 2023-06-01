@@ -9,22 +9,19 @@ import org.thymeleaf.standard.StandardDialect;
 import java.util.Set;
 
 /**
- * All rights Reserved, Designed By www.xhope.top
- *
- * @version V1.0
- * @Description: (用一句话描述该文件做什么)
- * @author: Rick.Xu
- * @date: 9/27/19 11:38 AM
- * @Copyright: 2019 www.yodean.com. All rights reserved.
+ * @author Rick.Xu
+ * @date 2023/5/29 13:45
  */
 public class DictSelectDialect extends AbstractProcessorDialect {
 
-    // 定义方言名称
+    /**
+     * 定义方言名称
+     */
     private static final String DIALECT_NAME = "Dict Dialect";
 
     private static final String DIALECT_PREFIX = "sp";
 
-    private DictService dictService;
+    private final DictService dictService;
 
     public DictSelectDialect(DictService dictService) {
         super(DIALECT_NAME, DIALECT_PREFIX, StandardDialect.PROCESSOR_PRECEDENCE);
@@ -37,7 +34,6 @@ public class DictSelectDialect extends AbstractProcessorDialect {
 
         // 添加自定义标签
         processors.add(new DictTagProcessor(DIALECT_PREFIX, dictService));
-//        processors.add(new StandardXmlNsTagProcessor(TemplateMode.HTML, DIALECT_PREFIX));
         return processors;
     }
 }

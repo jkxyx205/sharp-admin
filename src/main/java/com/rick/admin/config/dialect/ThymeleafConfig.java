@@ -9,22 +9,12 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.StringTemplateResolver;
 
 /**
- * All rights Reserved, Designed By www.xhope.top
- *
- * @version V1.0
- * @Description: (用一句话描述该文件做什么)
- * @author: Rick.Xu
- * @date: 9/27/19 11:54 AM
- * @Copyright: 2019 www.yodean.com. All rights reserved.
+ * @author Rick.Xu
+ * @date 2023/5/29 13:45
  */
 @Configuration
 public class ThymeleafConfig {
 
-    /**
-     * 系统方言
-     *
-     * @return
-     */
     @Bean
     public DictSelectDialect dictSelectDialect(DictService dictService) {
         return new DictSelectDialect(dictService);
