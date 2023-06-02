@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.rick.admin.auth.common.AuthConstants;
 import com.rick.admin.sys.role.entity.Role;
 import com.rick.admin.sys.user.entity.User;
-import com.rick.common.util.JsonUtils;
 import com.rick.db.plugin.dao.core.EntityCodeDAOImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,8 +26,7 @@ public class UserDAO extends EntityCodeDAOImpl<User, Long> {
     public int insertOrUpdate(Map<String, Object> params) {
         params.put("password", passwordEncoder.encode(AuthConstants.DEFAULT_PASSWORD));
 
-        String roleIds = (String) params.get("roleIds");
-        List<String> roleIdList = JsonUtils.toList(roleIds, String.class);
+        List<String> roleIdList = (List<String>) params.get("roleIds");
         List<Role> roleList = Lists.newArrayListWithExpectedSize(roleIdList.size());
         for (String id : roleIdList) {
             roleList.add(Role.builder().id(Long.parseLong(id)).build());

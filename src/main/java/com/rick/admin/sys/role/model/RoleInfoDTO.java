@@ -1,5 +1,6 @@
 package com.rick.admin.sys.role.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rick.admin.plugin.ztree.model.TreeNode;
 import com.rick.admin.sys.user.entity.User;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,9 @@ import java.util.List;
 @NoArgsConstructor
 public class RoleInfoDTO implements Serializable {
 
+    @JsonProperty("userList")
     private List<User> userList;
 
+    @JsonProperty("permissionList")
     private List<TreeNode> permissionList;
 }

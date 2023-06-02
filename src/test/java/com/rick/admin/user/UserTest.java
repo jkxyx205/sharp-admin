@@ -1,7 +1,6 @@
 package com.rick.admin.user;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.rick.admin.sys.permission.dao.PermissionDAO;
 import com.rick.admin.sys.permission.entity.Permission;
 import com.rick.admin.sys.role.dao.RoleDAO;
@@ -29,7 +28,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -77,10 +75,25 @@ public class UserTest {
 
     @Test
     public void insertOrUpdatePermission() {
+//        permissionDAO.insertOrUpdate(Permission.builder()
+//                .code("mm_material")
+//                .name("物料")
+//                .pid(695624494395428864L)
+//                .permissionOrder(3)
+//                .build());
+
         permissionDAO.insertOrUpdate(Permission.builder()
-                .code("user_manager")
-                .name("用户管理")
-                .permissionOrder(0)
+                .code("mm_material_edit")
+                .name("编辑")
+                .pid(695981915009716224L)
+                .permissionOrder(1)
+                .build());
+
+        permissionDAO.insertOrUpdate(Permission.builder()
+                .code("mm_material_delete")
+                .name("删除")
+                .pid(695981915009716224L)
+                .permissionOrder(2)
                 .build());
     }
 
@@ -110,12 +123,13 @@ public class UserTest {
     public void test0() {
         reportService.saveOrUpdate(Report.builder()
                 .id(694714180413960192L)
+                .code("sys_user")
                 .tplName("tpl/list")
                 .name("用户管理")
                 .extraData("694980924206493696")
 //                .querySql("SELECT id, code, name, IF(is_available, '是', '否') is_available, DATE_FORMAT(create_time, '%Y-%m-%d %H:%i:%s') create_time FROM sys_user WHERE code LIKE :code AND name LIKE :name AND is_available = :is_available AND create_time >= :create_time0 AND create_time <= :create_time1 AND id <> 1")
                 // language=SQL
-                .querySql(" SELECT sys_user.id, sys_user.code, sys_user.name, IF(sys_user.is_available, '是', '否') is_available, t.name role_name, u.name create_by, DATE_FORMAT(sys_user.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM sys_user\n" +
+                .querySql(" SELECT sys_user.id, sys_user.code, sys_user.name, IF(sys_user.is_available, '是', '否') is_available, t.name role_name, u.name create_name, DATE_FORMAT(sys_user.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM sys_user\n" +
                         " LEFT JOIN sys_user u on u.id = sys_user.create_by\n" +
                         " LEFT JOIN ( SELECT sys_user.id, GROUP_CONCAT(r.name) name FROM sys_user\n" +
                         " LEFT JOIN sys_user_role ur on sys_user.id = ur.user_id AND ur.is_deleted = 0\n" +
@@ -129,13 +143,13 @@ public class UserTest {
                         new QueryField("create_time", "创建时间", QueryField.Type.DATE_RANGE)
                 ))
                 .reportColumnList(Arrays.asList(
-                    new HiddenReportColumn("id"),
-                    new ReportColumn("code", "用户名", true),
+                        new HiddenReportColumn("id"),
+                        new ReportColumn("code", "用户名", true),
                         new ReportColumn("name", "姓名", true),
                         new ReportColumn("role_name", "角色"),
                         new ReportColumn("is_available", "是否可用").setColumnWidth(80).setAlign(AlignEnum.CENTER),
-                        new ReportColumn("create_by", "创建人").setColumnWidth(100),
-                    new ReportColumn("create_time", "创建时间").setColumnWidth(180).setAlign(AlignEnum.CENTER)
+                        new ReportColumn("create_name", "创建人").setColumnWidth(100),
+                        new ReportColumn("create_time", "创建时间").setColumnWidth(180).setAlign(AlignEnum.CENTER)
                 ))
                 .pageable(true)
                 .sidx("id")

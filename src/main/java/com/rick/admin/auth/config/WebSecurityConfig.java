@@ -4,6 +4,7 @@ import com.rick.admin.auth.authentication.AdminExpiredSessionStrategy;
 import com.rick.admin.auth.validate.image.ValidateFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -48,6 +49,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/forbidden", "/kaptcha", "/login").permitAll()
                 .and()
                 .authorizeRequests()
+                // 第三方jar中的配置接口权限， 否则通过注解配置
+                .antMatchers("/reports/695981455636959232", "/reports/695981455636959232/export", "/forms/page/695978675677433856/**").hasAnyAuthority("mm_material_read")
+                .antMatchers(HttpMethod.POST,"/forms/ajax/695978675677433856").hasAnyAuthority("mm_material_add")
+                .antMatchers(HttpMethod.PUT,"/forms/ajax/695978675677433856/**").hasAnyAuthority("mm_material_edit")
+                .antMatchers(HttpMethod.DELETE,"/forms/ajax/695978675677433856/**").hasAnyAuthority("mm_material_delete")
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()

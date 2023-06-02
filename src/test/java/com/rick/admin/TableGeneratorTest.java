@@ -1,8 +1,6 @@
 package com.rick.admin;
 
-import com.rick.admin.sys.permission.entity.Permission;
-import com.rick.admin.sys.role.entity.Role;
-import com.rick.admin.sys.user.entity.User;
+import com.rick.admin.module.material.entity.Material;
 import com.rick.db.plugin.dao.core.TableGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +18,10 @@ public class TableGeneratorTest {
 
     @Test
     public void generateTable() {
-        tableGenerator.createTable(User.class);
-        tableGenerator.createTable(Role.class);
-        tableGenerator.createTable(Permission.class);
+//        tableGenerator.createTable(User.class);
+//        tableGenerator.createTable(Role.class);
+//        tableGenerator.createTable(Permission.class);
+//        tableGenerator.createTable(Partner.class);
+        tableGenerator.createTable(Material.class);
     }
 }

@@ -2,7 +2,7 @@ package com.rick.admin.sys.role.service;
 
 import com.rick.admin.common.ExceptionCodeEnum;
 import com.rick.admin.plugin.ztree.model.TreeNode;
-import com.rick.admin.sys.permission.PermissionService;
+import com.rick.admin.sys.permission.service.PermissionService;
 import com.rick.admin.sys.role.dao.RoleDAO;
 import com.rick.admin.sys.role.entity.Role;
 import com.rick.admin.sys.role.model.RoleInfoDTO;
@@ -76,6 +76,7 @@ public class RoleService {
     }
 
     public void addPermission(Long roleId, Set<Long> permissionIds) {
+        SQLUtils.delete("sys_role_permission", new Object[]{1}, "is_deleted = ?");
         SQLUtils.updateRefTable("sys_role_permission", "role_id", "permission_id", roleId, permissionIds);
     }
 
@@ -85,6 +86,7 @@ public class RoleService {
      * @param userIds 用户id
      */
     public void addUser(long roleId, Set<String> userIds) {
+        SQLUtils.delete("sys_user_role", new Object[]{1}, "is_deleted = ?");
         SQLUtils.updateRefTable("sys_user_role", "role_id", "user_id", roleId, userIds);
     }
 }

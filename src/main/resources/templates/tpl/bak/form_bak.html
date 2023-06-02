@@ -5,61 +5,66 @@
         .form-check {
             display: inline-block!important;
         }
+
+        .attachment_delete_btn {
+            position: absolute;
+            top: 6px;
+        }
     </style>
 </head>
 <body>
 <div class="container" th:with="required = ${new com.rick.formflow.form.valid.Required(true)}">
-    <form class="needs-validation dialog-form" th:action="'/forms/page/' + ${formBO.getActionUrl()}" method="post" th:id="${formBO.form.id}" th:name="${formBO.form.code}" novalidate>
+    <form class="needs-validation dialog-form" th:classappend="${query.readonly == 'true' ? 'readonly' : ''}" th:action="'/forms/page/' + ${formBO.getActionUrl()}" method="post" th:id="${formBO.form.id}" th:name="${formBO.form.code}" novalidate>
         <div class="form-group row" th:each="p : ${formBO.propertyList}" th:with="isRequired = ${p.configurer.validatorProperties.get('Required.required') eq null ? false : p.configurer.validatorProperties.get('Required.required')}">
             <label th:for="${p.name}" class="col-sm-2 col-form-label" th:classappend="${isRequired ? 'required' : ''}" th:text="${p.configurer.label}"></label>
             <div class="col-sm-10">
-                <input th:attr="pattern=${p.configurer.validatorProperties.get('CustomizeRegex.regex')}" th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).TEXT}" type="text" class="form-control" th:id="${p.name}" th:name="${p.name}" th:maxlength="${p.configurer.validatorProperties.get('Length.max')}"
+                <input th:disabled="${p.configurer.disabled == true}" th:attr="pattern=${p.configurer.validatorProperties.get('CustomizeRegex.regex')}" th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).TEXT}" type="text" class="form-control" th:id="${p.name}" th:name="${p.name}" th:maxlength="${p.configurer.validatorProperties.get('Length.max')}"
                        th:placeholder="${p.configurer.placeholder}" th:value="${p.value}" th:required="${isRequired}" th:classappend="${errors eq null ? '' : (#maps.containsKey(errors, p.name) ? 'is-invalid' : 'is-valid')}">
 
-                <input th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).NUMBER_TEXT}" type="text" class="form-control" th:id="${p.name}" th:name="${p.name}" th:max="${p.configurer.validatorProperties.get('Size.max')}" th:min="${p.configurer.validatorProperties.get('Size.min')}"
+                <input th:disabled="${p.configurer.disabled == true}" th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).NUMBER_TEXT}" type="text" class="form-control" th:id="${p.name}" th:name="${p.name}" th:max="${p.configurer.validatorProperties.get('Size.max')}" th:min="${p.configurer.validatorProperties.get('Size.min')}"
                        th:placeholder="${p.configurer.placeholder}" th:value="${p.value}" th:required="${isRequired}" th:classappend="${errors eq null ? '' : (#maps.containsKey(errors, p.name) ? 'is-invalid' : 'is-valid')}">
 
-                <input th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).INTEGER_NUMBER}" type="number" class="form-control" th:id="${p.name}" th:name="${p.name}" th:max="${p.configurer.validatorProperties.get('Size.max')}" th:min="${p.configurer.validatorProperties.get('Size.min')}"
+                <input th:disabled="${p.configurer.disabled == true}" th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).INTEGER_NUMBER}" type="number" class="form-control" th:id="${p.name}" th:name="${p.name}" th:max="${p.configurer.validatorProperties.get('Size.max')}" th:min="${p.configurer.validatorProperties.get('Size.min')}"
                        th:placeholder="${p.configurer.placeholder}" th:value="${p.value}" th:required="${isRequired}" th:classappend="${errors eq null ? '' : (#maps.containsKey(errors, p.name) ? 'is-invalid' : 'is-valid')}">
 
-                <input th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).MOBILE}" type="text" class="form-control" th:id="${p.name}" th:name="${p.name}" maxlength="11" pattern="1[34578]\d{9}$"
+                <input th:disabled="${p.configurer.disabled == true}" th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).MOBILE}" type="text" class="form-control" th:id="${p.name}" th:name="${p.name}" maxlength="11" pattern="1[34578]\d{9}$"
                        th:placeholder="${p.configurer.placeholder}" th:value="${p.value}" th:required="${isRequired}" th:classappend="${errors eq null ? '' : (#maps.containsKey(errors, p.name) ? 'is-invalid' : 'is-valid')}">
 
-                <textarea th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).TEXTAREA}" class="form-control" th:id="${p.name}" th:name="${p.name}" th:maxlength="${p.configurer.validatorProperties.get('Length.max')}"
+                <textarea th:disabled="${p.configurer.disabled == true}" th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).TEXTAREA}" class="form-control" th:id="${p.name}" th:name="${p.name}" th:maxlength="${p.configurer.validatorProperties.get('Length.max')}"
                           th:placeholder="${p.configurer.placeholder}" th:required="${isRequired}" th:classappend="${errors eq null ? '' : (#maps.containsKey(errors, p.name) ? 'is-invalid' : 'is-valid')}" th:text="${p.value}"></textarea>
 
-                <select th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).SELECT}" class="form-control" th:id="${p.name}" th:name="${p.name}"
+                <select th:disabled="${p.configurer.disabled == true}" th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).SELECT}" class="form-control" th:id="${p.name}" th:name="${p.name}"
                         th:placeholder="${p.configurer.placeholder}" th:required="${isRequired}" th:classappend="${errors eq null ? '' : (#maps.containsKey(errors, p.name) ? 'is-invalid' : 'is-valid')}">
                     <option th:each="option : ${p.configurer.options}" th:value="${option.name}" th:text="${option.label}" th:selected="${option.name eq p.value}"></option>
                 </select>
 
                 <div th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).FILE}">
-                    <input type="file" class="form-control" th:id="${p.name} + '_file'" th:name="${p.name} + '_file'" th:onchange="ajaxFileUpload([[${p.name}+ '_file']], [[${p.name}]])"
+                    <input th:disabled="${p.configurer.disabled == true}" type="file" class="form-control" th:id="${p.name} + '_file'" th:name="${p.name} + '_file'" th:onchange="ajaxFileUpload([[${p.name}+ '_file']], [[${p.name}]])"
                            th:placeholder="${p.configurer.placeholder}" multiple>
-                    <input type="text" style="display:none;" th:name="${p.name}" th:id="${p.name}" th:value="${p.value ne null ? T(com.rick.common.util.JsonUtils).toJson(p.value) : ''}" th:required="${isRequired}" th:classappend="${errors eq null ? '' : (#maps.containsKey(errors, p.name) ? 'is-invalid' : 'is-valid')}">
+                    <input th:disabled="${p.configurer.disabled == true}" type="text" style="display:none;" th:name="${p.name}" th:id="${p.name}" th:value="${p.value ne null ? T(com.rick.common.util.JsonUtils).toJson(p.value) : ''}" th:required="${isRequired}" th:classappend="${errors eq null ? '' : (#maps.containsKey(errors, p.name) ? 'is-invalid' : 'is-valid')}">
                     <!--前端验证所有验证信息-->
                     <div class="invalid-feedback" th:each="v : ${p.configurer.validatorList}"
                          th:text="${v.message}"></div>
                     <ul class="list-group list-group-flush">
                         <th:block th:if="${p.value ne null}">
                             <li class="list-group-item" th:each="f : ${p.value}">
-                                <a th:text="${f.full_name}" th:href="${f.url}" target="_blank"></a><button type="button" class="btn btn-link" th:onclick="deleteAttachment([[${p.name}]], [[${f.id}]], this)">删除</button>
+                                <a th:text="${f.full_name}" th:href="${f.url}" target="_blank"></a><button type="button" class="btn btn-link attachment_delete_btn" th:onclick="deleteAttachment([[${p.name}]], [[${f.id}]], this)">删除</button>
                             </li>
                         </th:block>
                     </ul>
                 </div>
 
-                <input th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).EMAIL}" type="email" class="form-control" th:id="${p.name}" th:name="${p.name}" th:maxlength="${p.configurer.validatorProperties.get('Length.max')}"
+                <input th:disabled="${p.configurer.disabled == true}" th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).EMAIL}" type="email" class="form-control" th:id="${p.name}" th:name="${p.name}" th:maxlength="${p.configurer.validatorProperties.get('Length.max')}"
                        th:placeholder="${p.configurer.placeholder}" th:value="${p.value}" th:required="${isRequired}" th:classappend="${errors eq null ? '' : (#maps.containsKey(errors, p.name) ? 'is-invalid' : 'is-valid')}">
 
                 <!--                    <input th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).DATE}" type="date" class="form-control" th:id="${p.name}" th:name="${p.name}"-->
                 <!--                           th:placeholder="${p.configurer.placeholder}" th:value="${p.value}" th:required="${isRequired}" th:classappend="${errors eq null ? '' : (#maps.containsKey(errors, p.name) ? 'is-invalid' : 'is-valid')}">-->
 
-                <input th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).DATE}" type="text" class="form-control" th:id="${p.name}" th:name="${p.name}"
+                <input th:disabled="${p.configurer.disabled == true}" th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).DATE}" type="text" class="form-control" th:id="${p.name}" th:name="${p.name}"
                        th:placeholder="${p.configurer.placeholder}" th:value="${p.value}" th:required="${isRequired}" th:classappend="${errors eq null ? '' : (#maps.containsKey(errors, p.name) ? 'is-invalid' : 'is-valid')}">
 
                 <div class="form-check col-form-label" th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).CHECKBOX}" th:each="option : ${p.configurer.options}">
-                    <input class="form-check-input" type="checkbox" th:name="${p.name}" th:id="${option.name}" th:value="${option.name}" th:checked="${p.value ne null && #sets.contains(p.value, option.name)}" th:required="${p.configurer.options.size() eq 1 && isRequired}"
+                    <input class="form-check-input" type="checkbox" th:disabled="${p.configurer.disabled == true}" th:name="${p.name}" th:id="${option.name}" th:value="${option.name}" th:checked="${p.value ne null && #sets.contains(p.value, option.name)}" th:required="${p.configurer.options.size() eq 1 && isRequired}"
                            th:classappend="${errors eq null ? '' : (#maps.containsKey(errors, p.name) ? 'is-invalid' : 'is-valid')}">
                     <label class="form-check-label" th:for="${option.name}" th:text="${option.label}"></label>
                     <th:block th:if="${p.configurer.options.size() eq 1}">
@@ -72,7 +77,7 @@
                 </div>
 
                 <div class="form-check col-form-label" th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).RADIO}" th:each="option : ${p.configurer.options}">
-                    <input class="form-check-input" type="radio" th:name="${p.name}" th:id="${option.name}" th:value="${option.name}" th:checked="${option.name eq p.value}"
+                    <input class="form-check-input" type="radio" th:disabled="${p.configurer.disabled == true}" th:name="${p.name}" th:id="${option.name}" th:value="${option.name}" th:checked="${option.name eq p.value}"
                            th:classappend="${errors eq null ? '' : (#maps.containsKey(errors, p.name) ? 'is-invalid' : 'is-valid')}">
                     <label class="form-check-label" th:for="${option.name}" th:text="${option.label}"></label>
                 </div>
@@ -119,6 +124,17 @@
 </body>
 <script th:inline="javascript">
     /*<![CDATA[*/
+    $(document).ready(function () {
+        var readonly = [[${query.readonly}]]
+        if (readonly === 'true') {
+            $("form.readonly :input").prop("disabled", true);
+            $('table .operator').hide()
+            $('#okId').hide()
+        } else {
+            $('#okId').show()
+        }
+    })
+
     var p = [[${formBO.propertyList}]]
     var tables = p.filter(c => c.configurer.cpnType == 'TABLE')
     tables.forEach(c => {
@@ -209,7 +225,7 @@
 
                     data.data.forEach(function (attachment) {
                         $('#' + fileElementId).siblings('ul').append("<li class=\"list-group-item\">\n" +
-                            "<a href=\""+attachment.url+"\" target=\"_blank\">"+attachment.full_name+"</a><button type=\"button\" class=\"btn btn-link\" onclick=\"deleteAttachment('"+fileElementId+"', "+attachment.id+", this)\">删除</button>\n" +
+                            "<a href=\""+attachment.url+"\" target=\"_blank\">"+attachment.full_name+"</a><button type=\"button\" class=\"btn btn-link attachment_delete_btn\" onclick=\"deleteAttachment('"+fileElementId+"', "+attachment.id+", this)\">删除</button>\n" +
                             "</li>")
                     })
 

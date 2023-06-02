@@ -5,11 +5,16 @@
         .form-check {
             display: inline-block!important;
         }
+
+        .attachment_delete_btn {
+            position: absolute;
+            top: 6px;
+        }
     </style>
 </head>
 <body>
 <div class="container" th:with="required = ${new com.rick.formflow.form.valid.Required(true)}">
-    <form class="needs-validation dialog-form" th:id="${formBO.form.id}" th:name="${formBO.form.code}" novalidate>
+    <form class="needs-validation dialog-form" th:classappend="${query.readonly == 'true' ? 'readonly' : ''}" th:id="${formBO.form.id}" th:name="${formBO.form.code}" novalidate>
         <div class="form-group row" th:each="p : ${formBO.propertyList}" th:with="isRequired = ${p.configurer.validatorProperties.get('Required.required') eq null ? false : p.configurer.validatorProperties.get('Required.required')}">
             <label th:for="${p.name}" class="col-sm-2 col-form-label" th:classappend="${isRequired ? 'required' : ''}" th:text="${p.configurer.label}"></label>
             <div class="col-sm-10">
@@ -43,7 +48,7 @@
                     <ul class="list-group list-group-flush">
                         <th:block th:if="${p.value ne null}">
                             <li class="list-group-item" th:each="f : ${p.value}">
-                                <a th:text="${f.full_name}" th:href="${f.url}" target="_blank"></a><button type="button" class="btn btn-link" th:onclick="deleteAttachment([[${p.name}]], [[${f.id}]], this)">删除</button>
+                                <a th:text="${f.full_name}" th:href="${f.url}" target="_blank"></a><button type="button" class="btn btn-link attachment_delete_btn" th:onclick="deleteAttachment([[${p.name}]], [[${f.id}]], this)">删除</button>
                             </li>
                         </th:block>
                     </ul>
@@ -119,6 +124,17 @@
 </body>
 <script th:inline="javascript">
     /*<![CDATA[*/
+    $(document).ready(function () {
+        var readonly = [[${query.readonly}]]
+        if (readonly === 'true') {
+            $("form.readonly :input").prop("disabled", true);
+            $('table .operator').hide()
+            $('#okId').hide()
+        } else {
+            $('#okId').show()
+        }
+    })
+
     var p = [[${formBO.propertyList}]]
     var tables = p.filter(c => c.configurer.cpnType == 'TABLE')
     tables.forEach(c => {
@@ -209,7 +225,7 @@
 
                     data.data.forEach(function (attachment) {
                         $('#' + fileElementId).siblings('ul').append("<li class=\"list-group-item\">\n" +
-                            "<a href=\""+attachment.url+"\" target=\"_blank\">"+attachment.full_name+"</a><button type=\"button\" class=\"btn btn-link\" onclick=\"deleteAttachment('"+fileElementId+"', "+attachment.id+", this)\">删除</button>\n" +
+                            "<a href=\""+attachment.url+"\" target=\"_blank\">"+attachment.full_name+"</a><button type=\"button\" class=\"btn btn-link attachment_delete_btn\" onclick=\"deleteAttachment('"+fileElementId+"', "+attachment.id+", this)\">删除</button>\n" +
                             "</li>")
                     })
 
