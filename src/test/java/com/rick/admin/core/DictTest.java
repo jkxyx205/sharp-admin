@@ -1,12 +1,6 @@
-package com.rick.admin;
+package com.rick.admin.core;
 
 import com.google.common.collect.Lists;
-import com.rick.admin.sys.permission.dao.PermissionDAO;
-import com.rick.admin.sys.permission.entity.Permission;
-import com.rick.admin.sys.role.dao.RoleDAO;
-import com.rick.admin.sys.role.entity.Role;
-import com.rick.admin.sys.user.dao.UserDAO;
-import com.rick.admin.sys.user.entity.User;
 import com.rick.formflow.form.cpn.core.CpnConfigurer;
 import com.rick.formflow.form.cpn.core.CpnTypeEnum;
 import com.rick.formflow.form.cpn.core.Form;
@@ -18,16 +12,17 @@ import com.rick.formflow.form.valid.Length;
 import com.rick.formflow.form.valid.Required;
 import com.rick.formflow.form.valid.core.Validator;
 import com.rick.report.core.entity.Report;
-import com.rick.report.core.model.*;
+import com.rick.report.core.model.HiddenReportColumn;
+import com.rick.report.core.model.QueryField;
+import com.rick.report.core.model.ReportColumn;
+import com.rick.report.core.model.SordEnum;
 import com.rick.report.core.service.ReportService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -121,6 +116,7 @@ public class DictTest {
     public void testReport() {
         reportService.saveOrUpdate(Report.builder()
                 .id(695316160014499840L)
+                .code("sys_dict")
                 .tplName("tpl/list")
                 .name("字典管理")
                 .extraData("695312747063197696")
@@ -130,9 +126,9 @@ public class DictTest {
                 ))
                 .reportColumnList(Arrays.asList(
                         new HiddenReportColumn("id"),
-                        new ReportColumn("type", "分类", true),
                         new ReportColumn("name", "编码"),
                         new ReportColumn("label", "显示值"),
+                        new ReportColumn("type", "分类", true),
                         new ReportColumn("sort", "排序号").setColumnWidth(30)
                 ))
                 .pageable(false)

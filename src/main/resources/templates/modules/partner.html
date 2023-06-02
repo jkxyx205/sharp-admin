@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style>
+        .form-check {
+            display: inline-block!important;
+        }
+
+        .attachment_delete_btn {
+            position: absolute;
+            top: 6px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <form class="needs-validation dialog-form" th:classappend="${query.readonly == 'true' ? 'readonly' : ''}" id="695708313425285120" name="core_partner" novalidate>
+        <div class="nav-tabs-boxed">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#pane-1" role="tab" aria-controls="home" aria-selected="true">基本信息</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pane-2" role="tab" aria-controls="profile" aria-selected="false">公司信息</a></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active" id="pane-1" role="tabpanel">
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label required">类型</label>
+                        <div class="col-sm-9">
+                            <div class="form-check col-form-label">
+                                <input class="form-check-input" type="radio" name="partnerType" id="CUSTOMER" value="CUSTOMER" th:checked="${'CUSTOMER' eq formBO.propertyMap.partnerType.value}">
+                                <label class="form-check-label" for="CUSTOMER">客户</label>
+                            </div>
+
+                            <div class="form-check col-form-label">
+                                <input class="form-check-input" type="radio" name="partnerType" id="VENDOR" value="VENDOR" th:checked="${'VENDOR' eq formBO.propertyMap.partnerType.value}">
+                                <label class="form-check-label" for="VENDOR">供应商</label>
+                            </div>
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">必填项需要填写</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label for="code" class="col-sm-3 col-form-label required">编码</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="code" name="code" maxlength="32" th:attr="disabled=${formBO.instanceId != null}"
+                                   placeholder="请输入编码" value="" pattern="^[0-9a-zA-Z_/%-]{1,}$" required="required" th:value="${formBO.propertyMap.code.value}">
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">CODE只能包含数字、字母、下划线、中划线</div>
+                            <div class="invalid-feedback">必填项需要填写</div>
+                            <div class="invalid-feedback">长度范围 0 - 32 个字符</div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="name" class="col-sm-3 col-form-label required">公司名称</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="name" name="name" maxlength="32" th:value="${formBO.propertyMap.name.value}"
+                                   placeholder="请输入公司名称" value="" required="required">
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">必填项需要填写</div>
+                            <div class="invalid-feedback">长度范围 0 - 32 个字符</div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="remark" class="col-sm-3 col-form-label">备注</label>
+                        <div class="col-sm-9">
+                <textarea class="form-control" id="remark" name="remark" maxlength="1000" th:text="${formBO.propertyMap.remark.value}"
+                          placeholder="请输入备注"></textarea>
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">长度范围 0 - 1000 个字符</div>
+                        </div>
+                    </div>
+                </div>
+                <div role="tabpanel" id="pane-2" class="tab-pane">
+                    <div class="form-group row">
+                        <label for="contactPerson" class="col-sm-3 col-form-label">联系人</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="contactPerson" name="contactPerson" maxlength="16" th:value="${formBO.propertyMap.contactPerson.value}"
+                                   placeholder="请输入联系人" value="">
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">长度范围 0 - 16 个字符</div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="contactNumber" class="col-sm-3 col-form-label">联系电话</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="contactNumber" name="contactNumber" maxlength="16" th:value="${formBO.propertyMap.contactNumber.value}"
+                                   placeholder="请输入联系电话" value="">
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">长度范围 0 - 16 个字符</div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="contactMail" class="col-sm-3 col-form-label">联系邮箱</label>
+                        <div class="col-sm-9">
+                            <input type="email" class="form-control" id="contactMail" name="contactMail" maxlength="32" th:value="${formBO.propertyMap.contactMail.value}"
+                                   placeholder="请输入联系邮箱" value="">
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">邮箱格式不正确</div>
+                            <div class="invalid-feedback">长度范围 0 - 32 个字符</div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="bankName" class="col-sm-3 col-form-label">开户银行</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="bankName" name="bankName" maxlength="16" th:value="${formBO.propertyMap.bankName.value}"
+                                   placeholder="请输入开户银行" value="">
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">长度范围 0 - 16 个字符</div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="bankAccount" class="col-sm-3 col-form-label">银行账户</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="bankAccount" name="bankAccount" maxlength="16" th:value="${formBO.propertyMap.bankAccount.value}"
+                                   placeholder="请输入银行账户" value="">
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">长度范围 0 - 16 个字符</div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="taxCode" class="col-sm-3 col-form-label">纳税人识别号</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="taxCode" name="taxCode" maxlength="18" th:value="${formBO.propertyMap.taxCode.value}"
+                                   placeholder="请输入纳税人识别号" value="">
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">长度范围 0 - 18 个字符</div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="address" class="col-sm-3 col-form-label">公司地址</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="address" name="address" maxlength="128" th:value="${formBO.propertyMap.address.value}"
+                                   placeholder="请输入公司地址" value="">
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">长度范围 0 - 128 个字符</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    $(document).ready(function () {
+        var readonly = [[${query.readonly}]]
+        if (readonly === 'true') {
+            $("form.readonly :input").prop("disabled", true);
+            $('table .operator').hide()
+            $('#okId').hide()
+        } else {
+            $('#okId').show()
+        }
+    })
+
+    var p = [[${formBO.propertyList}]]
+    var tables = p.filter(c => c.configurer.cpnType == 'TABLE')
+    tables.forEach(c => {
+        $('.' + c.name).editableTable({
+            columns: c.configurer.additionalInfo.columns.length
+        })
+    })
+
+    var dates = p.filter(c => c.configurer.cpnType == 'DATE')
+    dates.forEach(c => {
+        $('#'+c.name).datepicker({
+            language: "zh-CN",
+            autoclose: true,
+            clearBtn: true,
+            todayBtn: 'linked',
+            todayHighlight: true,
+            format: 'yyyy-mm-dd'
+        })
+    })
+
+    /*]]>*/
+
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    var form = document.querySelectorAll('.needs-validation')[0]
+
+    // TODO 先执行前端验证，再执行后端验证
+    form.addEventListener('submit', function (event) {
+        if (!valid()) {
+            event.preventDefault()
+            event.stopPropagation()
+        }
+    }, false)
+
+
+    /*<![CDATA[*/
+    function saveForm(successCallback) {
+        if (!valid()) {
+            return
+        }
+
+        var formData = $('.dialog-form').form2json({
+            multiValSelector: '[type=checkbox]'
+        });
+
+        tables.forEach(c => {
+            formData[c.name] = $('.' + c.name).editableTable('getValue')
+        })
+
+        console.log(formData)
+
+        $.ajax({
+            url: "/forms/ajax/" + "[(${formBO.actionUrl})]",
+            type: "[(${formBO.method})]",
+            data: JSON.stringify(formData),
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            success: function(){
+                successCallback && successCallback()
+            }
+        });
+    }
+    /*]]>*/
+
+    function valid() {
+        var validity = form.checkValidity()
+        form.classList.add('was-validated')
+        return validity;
+    }
+
+    function ajaxFileUpload(fileElementId, fileHidden) {
+        console.log(fileElementId)
+        $.ajaxFileUpload
+        (
+            {
+                url: '/documents/upload?name=' + fileElementId, //用于文件上传的服务器端请求地址
+                secureuri: false, //是否需要安全协议，一般设置为false
+                fileElementId: fileElementId, //文件上传域的ID
+                dataType: 'json', //返回值类型 一般设置为json
+                success: function (data, status)  //服务器成功响应处理函数
+                {
+                    var jsonString = $('#' + fileHidden).val()
+                    if(!jsonString) {
+                        jsonString = '[]'
+                    }
+
+                    var json = JSON.parse(jsonString);
+                    $("#" + fileElementId).next("input[type=text]").val(JSON.stringify(json.concat(data.data)))
+
+                    data.data.forEach(function (attachment) {
+                        $('#' + fileElementId).siblings('ul').append("<li class=\"list-group-item\">\n" +
+                            "<a href=\""+attachment.url+"\" target=\"_blank\">"+attachment.full_name+"</a><button type=\"button\" class=\"btn btn-link attachment_delete_btn\" onclick=\"deleteAttachment('"+fileElementId+"', "+attachment.id+", this)\">删除</button>\n" +
+                            "</li>")
+                    })
+
+                },
+                error: function (data, status, e)//服务器响应失败处理函数
+                {
+                    alert(e);
+                }
+            }
+        )
+        return false;
+    }
+
+    function deleteAttachment(fileHidden, attachmentId, obj) {
+        var jsonString = $('#' + fileHidden).val()
+        if(jsonString) {
+            var json = JSON.parse(jsonString);
+            var filteredJson = json.filter(function (m) {
+                return m.id !== attachmentId;
+            })
+
+            $('#' + fileHidden).val(JSON.stringify(filteredJson))
+        }
+
+        $(obj).parent().remove()
+
+    }
+
+</script>
+</html>
