@@ -87,7 +87,7 @@ public class AuthController {
      * 重置密码
      */
     @PostMapping("password/{userId}/reset")
-    @PreAuthorize("hasAuthority('user_management')")
+    @PreAuthorize("hasAuthority('sys_user')")
     @ResponseBody
     public Result<String> updatePassword(@PathVariable Long userId) {
         String newPassword = AuthConstants.DEFAULT_PASSWORD;

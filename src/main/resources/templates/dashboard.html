@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+>
 <head th:replace="includes/base :: common_header(~{},~{::link},~{::style})">
     <link rel="stylesheet" th:href="@{/css/tab-common.css}">
     <style>
@@ -13,13 +13,59 @@
         <div class="card">
             <div class="card-header">Card outline</div>
             <div class="card-body">这里是仪表盘</div>
+            <a class="a" href="javascript:;" onclick="showFormDialog('物料', '695978675677433856', '696078910634332160')">show material 1</a>
+            <a class="a" href="javascript:;" onclick="showFormDialog('物料', '695978675677433856', '696062598608588800')">show material 2</a>
+            <a class="a" href="javascript:;" onclick="showFormDialog('业务伙伴', '695708313425285120', '695729182495215616')">show material 3</a>
+            <a class="a" href="javascript:;" onclick="showReportDialog('列表', '695981455636959232')">show material 4</a>
         </div>
     </div>
 </th:block>
 <th:block th:replace="includes/base :: common_js(~{::script})">
+    <script th:src="@{/editable-table/editable-table.js}"></script>
+
     <script>
+        let __$modal = $('#__dialog')
+        function showFormDialog(title, formId, instanceId) {
+            $('#dialog-title').text(title)
+            $.get('/forms/page/' + formId + '/' + instanceId + '?readonly=true', function (res) {
+                __$modal.find('.modal-body').html(res)
+                __$modal.modal({
+                    show: true,
+                    backdrop: 'static'
+                })
+            })
+        }
+
+        function showReportDialog(title, reportId) {
+            $('#dialog-title').text(title)
+            $.get('/reports/' + reportId, function (res) {
+                __$modal.find('.modal-body').html(res)
+                __$modal.modal({
+                    show: true,
+                    backdrop: 'static'
+                })
+            })
+        }
 
     </script>
 </th:block>
 </body>
+<div class="modal fade" id="__dialog" tabindex="-1" role="dialog" aria-labelledby="modalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-primary modal-dialog-auto" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dialog-title"></h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary ok-show" id="okId">保存</button>
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
 </html>

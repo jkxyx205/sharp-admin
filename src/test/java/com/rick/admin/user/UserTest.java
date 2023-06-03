@@ -7,6 +7,7 @@ import com.rick.admin.sys.role.dao.RoleDAO;
 import com.rick.admin.sys.role.entity.Role;
 import com.rick.admin.sys.user.dao.UserDAO;
 import com.rick.admin.sys.user.entity.User;
+import com.rick.admin.sys.user.service.UserService;
 import com.rick.formflow.form.cpn.core.CpnConfigurer;
 import com.rick.formflow.form.cpn.core.CpnTypeEnum;
 import com.rick.formflow.form.cpn.core.Form;
@@ -60,6 +61,14 @@ public class UserTest {
 
     @Autowired
     private FormService formService;
+
+    @Autowired
+    private UserService userService;
+
+    @Test
+    public void testGetIdNameMapping() {
+        System.out.println(userService.getIdNameMapping());
+    }
 
     @Test
     public void insertOrUpdateUser() {
@@ -169,6 +178,7 @@ public class UserTest {
                 .tableName("sys_user")
                 .tplName("tpl/form")
                 .name("人员信息表")
+                .formAdviceName("userFormAdvice")
                 .repositoryName("userDAO")
                 .storageStrategy(Form.StorageStrategyEnum.CREATE_TABLE)
                 .build());

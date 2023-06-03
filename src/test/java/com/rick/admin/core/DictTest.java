@@ -78,7 +78,7 @@ public class DictTest {
 
         CpnConfigurer usernameCpn = CpnConfigurer.builder()
                 .cpnType(CpnTypeEnum.SELECT)
-                .datasource("dict-type")
+                .datasource("sys_dict")
                 .name("type")
                 .label("分类")
                 .placeholder("请输入分类")
@@ -122,7 +122,7 @@ public class DictTest {
                 .extraData("695312747063197696")
                 .querySql("select id, type, name, label, sort from sys_dict where type = :type order by type, sort asc")
                 .queryFieldList(Arrays.asList(
-                        new QueryField("type", "分类", QueryField.Type.SELECT, "dict-type")
+                        new QueryField("type", "分类", QueryField.Type.SELECT, "sys_dict")
                 ))
                 .reportColumnList(Arrays.asList(
                         new HiddenReportColumn("id"),

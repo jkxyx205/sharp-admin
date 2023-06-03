@@ -16,6 +16,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.rick.admin.common.ExceptionCodeEnum.USER_NOT_FOUND;
@@ -64,5 +65,9 @@ public class UserService {
 
     public void updatePassword(Long userId, String password) {
         userDAO.update("password", Params.builder(2).pv("password", passwordEncoder.encode(password)).pv("id", userId).build(), "id = :id");
+    }
+
+    public Map<Long, String> getIdNameMapping() {
+        return userDAO.selectByParamsAsMap(null, "id, name");
     }
 }
