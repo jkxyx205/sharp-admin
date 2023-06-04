@@ -129,7 +129,7 @@ public class UserTest {
     }
 
     @Test
-    public void test0() {
+    public void testReport() {
         reportService.saveOrUpdate(Report.builder()
                 .id(694714180413960192L)
                 .code("sys_user")

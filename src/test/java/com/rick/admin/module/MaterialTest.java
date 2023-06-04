@@ -239,7 +239,7 @@ public class MaterialTest {
         CpnConfigurer stockQuantityCpn = CpnConfigurer.builder()
                 .cpnType(CpnTypeEnum.LABEL)
                 .name("stockQuantity")
-                .label("库存数量")
+                .label("库存")
                 .additionalInfo(Params.builder(1).pv("pane-index", "5").build())
                 .build();
 
@@ -290,6 +290,7 @@ public class MaterialTest {
                 .tplName("tpl/list")
                 .name("物料")
                 .extraData("695978675677433856")
+                .reportAdviceName("materialReportAdvice")
                 .querySql("SELECT mm_material.id, mm_material.code, mm_material.name, characteristic, case when attachment is null or length(attachment) <= 2 then '无' else '有' end  attachment, material_type, mm_material.category_id, base_unit, sys_user.name create_name,DATE_FORMAT(mm_material.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM mm_material left join sys_user on sys_user.id = mm_material.create_by WHERE mm_material.code = :code AND mm_material.name like :name AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0")
                 .queryFieldList(Arrays.asList(
                         new QueryField("code", "编号", QueryField.Type.TEXT),
@@ -306,6 +307,7 @@ public class MaterialTest {
                         new ReportColumn("category_id", "分类", false, "core_material_category", Arrays.asList("dictConverter")),
                         new ReportColumn("base_unit", "基本单位", false, "unit", Arrays.asList("dictConverter")),
                         new ReportColumn("attachment", "附件"),
+                        new ReportColumn("stock_quantity", "库存").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
                         new ReportColumn("create_name", "创建人").setColumnWidth(100),
                         new ReportColumn("create_time", "创建时间").setColumnWidth(180).setAlign(AlignEnum.CENTER)
                 ))
