@@ -66,7 +66,7 @@
                     }
 
                     binding.value.show && binding.value.text && (el.title = binding.value.text)
-                    el.innerHTML = binding.value.text
+                    el.innerHTML =  !binding.value.text ? '' : binding.value.text
                     el.setAttribute("data-sort-value", binding.value.original === null ? '' : binding.value.original)
                 }
             }

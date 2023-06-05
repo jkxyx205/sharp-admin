@@ -287,7 +287,8 @@ public class MaterialTest {
         reportService.saveOrUpdate(Report.builder()
                 .id(695981455636959232L)
                 .code("mm_material")
-                .tplName("tpl/list")
+//                .tplName("tpl/list")
+                .tplName("tpl/ajax_list")
                 .name("物料")
                 .extraData("695978675677433856")
                 .reportAdviceName("materialReportAdvice")
@@ -301,15 +302,46 @@ public class MaterialTest {
                 .reportColumnList(Arrays.asList(
                         new HiddenReportColumn("id"),
                         new ReportColumn("code", "编号"),
-                        new ReportColumn("name", "名称"),
+                        new ReportColumn("name", "名称", true),
                         new ReportColumn("characteristic", "特征值", false, null, Arrays.asList("characteristicConverter")),
                         new ReportColumn("material_type", "类型", false, "material_type", Arrays.asList("dictConverter")),
-                        new ReportColumn("category_id", "分类", false, "core_material_category", Arrays.asList("dictConverter")),
+//                        new ReportColumn("category_id", "分类", false, "core_material_category", Arrays.asList("dictConverter")),
+                        new ReportColumn("category_path", "分类", false),
                         new ReportColumn("base_unit", "基本单位", false, "unit", Arrays.asList("dictConverter")),
                         new ReportColumn("attachment", "附件"),
                         new ReportColumn("stock_quantity", "库存").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
                         new ReportColumn("create_name", "创建人").setColumnWidth(100),
                         new ReportColumn("create_time", "创建时间").setColumnWidth(180).setAlign(AlignEnum.CENTER)
+                ))
+                .pageable(true)
+                .sidx("id")
+                .sord(SordEnum.ASC)
+                .build());
+    }
+
+    @Test
+    public void testSearchReport() {
+        reportService.saveOrUpdate(Report.builder()
+                .id(697147523487240192L)
+                .code("mm_material_search")
+                .tplName("tpl/query_list")
+                .name("物料查询")
+                .querySql("SELECT cast(mm_material.id as char(20)) id, mm_material.code, mm_material.name, characteristic, material_type, mm_material.category_id, base_unit FROM mm_material WHERE mm_material.code = :code AND (mm_material.name like :keywords or characteristic like :keywords or mm_material.code like :keywords) AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0")
+                .queryFieldList(Arrays.asList(
+//                        new QueryField("code", "编号", QueryField.Type.TEXT),
+                        new QueryField("keywords", "关键字", QueryField.Type.TEXT),
+//                        new QueryField("materialType", "类型", QueryField.Type.SELECT, "material_type"),
+                        new QueryField("categoryId", "分类", QueryField.Type.SELECT, "core_material_category")
+
+                ))
+                .reportColumnList(Arrays.asList(
+                        new HiddenReportColumn("id"),
+                        new ReportColumn("code", "编号"),
+                        new ReportColumn("name", "名称"),
+                        new ReportColumn("characteristic", "特征值", false, null, Arrays.asList("characteristicConverter")),
+                        new ReportColumn("base_unit", "基本单位", false, "unit", Arrays.asList("dictConverter")),
+//                        new ReportColumn("material_type", "类型", false, "material_type", Arrays.asList("dictConverter")),
+                        new ReportColumn("category_id", "分类", false, "core_material_category", Arrays.asList("dictConverter"))
                 ))
                 .pageable(true)
                 .sidx("id")

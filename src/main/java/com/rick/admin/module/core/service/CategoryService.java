@@ -32,12 +32,12 @@ public class CategoryService implements InitializingBean {
 
     Map<Long, String> idCategoryPathMap = new HashMap<>();
 
-    public String getPathById(Long parentId) {
-        if (parentId == 0) {
+    public String getPathById(Long id) {
+        if (id == 0) {
             return null;
         }
 
-        return idCategoryPathMap.get(parentId);
+        return idCategoryPathMap.get(id);
     }
 
     public void rebuild() {

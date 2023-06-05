@@ -42,7 +42,7 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-body">
-                <form class="form-inline query-form-container">
+                <form class="form-inline query-form-container" onsubmit="return false">
                     <th:block th:each="f : ${report.queryFieldList}" th:if="${report.queryFieldList.size() > 0}">
                         <div class="form-group">
                             <label class="col-form-label mr-2" th:for="${f.name}" th:text="${f.label}"></label>
@@ -68,7 +68,7 @@
                             <i class="fa fa-search"></i> 查询</button>
                         <button class="btn btn-secondary mr-2" type="button" name="reset" th:if="${report.queryFieldList.size() > 0}">
                             <i class="fa fa-remove"></i> 重置</button>
-                        <a class="btn btn-secondary mr-2" id="exportBtn" th:href="${'/reports/' + id + '/export'}" sec:authorize="${hasAuthority(#vars.report.code + '_read')}">
+                        <a class="btn btn-secondary mr-2" id="exportBtn" th:attr="data-url=${'/reports/' + id + '/export'}" sec:authorize="${hasAuthority(#vars.report.code + '_read')}">
                             <i class="fa fa-upload"></i> 导出</a>
                         <button class="btn btn-primary" type="button" onclick="showDialog('新增')" sec:authorize="${hasAuthority(#vars.report.code + '_add')}">
                             <i class="fa fa-save"></i> 新增</button>
@@ -78,63 +78,32 @@
         </div>
 
         <div class="card">
-            <div class="card-body" id="report-list" style="padding-bottom: 0">
-                <div class="card-body-scroll-panel">
-                    <table class="table table-responsive-sm table-bordered table-striped table-sm">
-                        <thead>
-                        <tr>
-                            <th style="width: 30px">序号</th>
-                            <th th:each="n : ${report.reportColumnList}" th:text="${n.label}" th:data-name="${n.name}" th:class="${n.sortable ? 'sortable text-' + n.align.name().toLowerCase() : 'text-' + n.align.name().toLowerCase() }"
-                                th:style="${n.columnWidth == null ? '': 'width: ' + n.columnWidth + 'px'}" th:if="${!n.hidden}"></th>
-                            <th class="text-center" style="width: 100px" sec:authorize="${hasAuthority(#vars.report.code + '_delete') or hasAuthority(#vars.report.code + '_delete')}" th:if="${report.extraData != null}">操作</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr th:each="m : ${grid.rows}">
-                            <td th:text="${mStat.index + 1 + (grid.page - 1) * grid.pageSize}"></td>
-                            <td th:each="v : ${grid.rows[mStat.index]}" th:class="${'text-' + report.reportColumnList.get(vStat.index).align.name().toLowerCase()}" th:if="${!report.reportColumnList.get(vStat.index).hidden}">
-                                <a href="javascript:;" th:if="${vStat.index == 1}" th:text="${report.reportColumnList.get(vStat.index).type.name() eq 'NUMERIC' ? #numbers.formatInteger(v, 0, 'COMMA') :v }" th:onclick="showDialog('查看', '[[${m[0]}]]')"></a>
-                                <span th:if="${vStat.index > 1}" th:text="${report.reportColumnList.get(vStat.index).type.name() eq 'NUMERIC' ? #numbers.formatInteger(v, 0, 'COMMA') :v }"></span>
-                            </td>
-                            <td class="text-center" sec:authorize="${hasAuthority(#vars.report.code + '_delete') or hasAuthority(#vars.report.code + '_delete')}" th:if="${report.extraData != null}">
-<!--                                <a class="dialogBtn mr-2" href="javascript:;" th:onclick="showDialog('查看', '[[${m[0]}]]')" sec:authorize="${hasAuthority(#vars.report.code + '_read')}">查看</a>-->
-                                <a class="dialogBtn mr-2" href="javascript:;" th:onclick="showDialog('编辑', '[[${m[0]}]]')" sec:authorize="${hasAuthority(#vars.report.code + '_edit')}">编辑</a>
-                                <a href="javascript:;" th:onclick="deleteRow('[[${m[0]}]]')" sec:authorize="${hasAuthority(#vars.report.code + '_delete')}">删除</a>
-                            </td>
-                        </tr>
-                        <tr th:if="${summary ne null}">
-                            <td style="font-weight: bold;">合计</td>
-                            <td th:each="n : ${report.reportColumnList}" th:text="${summary.get(n.name)}" th:if="${!n.hidden}"></td>
-                            <td></td>
-                        </tr>
-                        <tr class="tr-empty non-data" th:if="${grid.records < 1}">
-                            <td th:colspan="${report.visibleColumnSize + 2}" style="text-align: center;"><span class="empty-text">暂无数据</span></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="table-footer-bar">
-                    <div style="margin-bottom: 8px; float: left;">
-                        <span class="breadcrumb-item active" th:text="'共' + ${grid.records} + '条，'+${grid.totalPages}+'页'"></span>
-                        <select onchange="search('page=1&size=' + this.value)">
-                            <option value="15" th:selected="${grid.pageSize == 15}">15条</option>
-                            <option value="50" th:selected="${grid.pageSize == 50}">50条</option>
-                            <option value="100" th:selected="${grid.pageSize == 100}">100条</option>
-                            <option value="200" th:selected="${grid.pageSize == 200}">200条</option>
-                        </select>
-                        <span th:if="${grid.totalPages > 1}">，前往<input class="goto" style="width: 68px;" th:onkeyup="'gotoPage(this, ' + ${grid.page} + ')'" maxlength="6" th:value="${grid.page}">页</span>
-                    </div>
-                    <nav style="float: right" th:if="${grid.totalPages > 1}">
-                        <ul class="pagination pagination-sm">
-                            <li class="page-item" th:if="${grid.page > 1}"><a class="page-link" th:href="${'javascript:search(''page='+(grid.page - 1)+''')'}">上一页</a></li>
-                            <li th:class="'page-item ' + ${i == grid.page - 1 ? 'active': ''}" th:if="${grid.totalPages > 0}" th:each="i: ${#numbers.sequence(pageInfo.startPage - 1, pageInfo.endPage - 1)}">
-                                <a class="page-link" th:href="${i == grid.page - 1 ? 'javascript:;' : 'javascript:search(''page='+(i+1)+''')'}"  th:text="${i+1}"></a>
-                            </li>
-                            <li class="page-item" th:if="${grid.page < grid.totalPages}">
-                                <a class="page-link" th:href="${'javascript:search(''page='+(grid.page + 1)+''')'}">下一页</a>
-                            </li>
-                        </ul>
-                    </nav>
+            <div class="card-body" style="padding-bottom: 0">
+                <div id="report-list">
+                    <ajax-table :grid="grid" :display-page="displayPage" class="report-list-table" row-key="ID" @refresh="refresh"
+                                @page-change="pageChange"
+                                @sort-column="sortColumn"
+                                @size-change="sizeChange">
+                        <table-column
+                                type="index"
+                                label="序号"
+                                width="30">
+                        </table-column>
+                        <table-column th:each="n : ${report.reportColumnList}" th:if="${!n.hidden}" th:attr="prop=${n.name}, label=${n.label}, ':sortable'=${n.sortable}, ':tooltip'=${n.tooltip}, width=${n.columnWidth == null? 'auto': n. columnWidth}, align=${n.align.name().toLowerCase()}">
+                            <template slot-scope="scope" th:if="${n.type.name() eq 'NUMERIC'}">
+                                {{ scope.row.<th:block th:text="${n.name}"></th:block> | formatInteger}}
+                            </template>
+                            <template slot-scope="scope" th:if="${nStat.index == 1}">
+                                {{openDetailLink('查看', scope.row.id, scope.row.<th:block th:text="${n.name}"></th:block>)}}
+                            </template>
+                        </table-column>
+                        <table-column label="操作" align="center" th:if="${report.extraData != null}">
+                            <template slot-scope="scope">
+                                {{ openDetailLink('编辑', scope.row.id, '编辑') }}
+                                {{ deleteLink(scope.row.id) }}
+                            </template>
+                        </table-column>
+                    </ajax-table>
                 </div>
 
                 <div class="modal fade" id="dialog" tabindex="-1" role="dialog" aria-labelledby="modalCenterTitle" aria-hidden="true">
@@ -155,6 +124,8 @@
                         </div>
                     </div>
                 </div>
+
+
             </div>
         </div>
 
@@ -164,6 +135,7 @@
     <script type="text/javascript" th:src="@{/js/table/jquery.form.js}"></script>
     <script type="text/javascript" th:src="@{/plugins/jquery.form2json.js}"></script>
     <script type="text/javascript" th:src="@{/js/table/jquery.table.js}"></script>
+    <script type="text/javascript" th:src="@{/js/jquery.ajaxTable.js}"></script>
     <script type="text/javascript" th:src="@{/js/table/jquery.pageTable.js}"></script>
     <script type="text/javascript" th:src="@{/js/table/jquery.formautofill.min.js}"></script>
     <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js}"></script>
@@ -219,18 +191,54 @@
 
         /*]]>*/
 
-        $('#report-list').table({
-            type: 'server',
-            clicked: function (obj, e) {
-                search('page=1&sidx='+$(e).data('name')+'&sord='+e.sord+'')
+        var $listTable;
+
+        $('.query-form-container').pageTable()
+
+        // 覆盖base中的方法
+        function search(params) {
+            listRequest(params)
+        }
+
+        let report_id =/*[[${report.id} + '']]*/
+
+        function listRequest(params) {
+            console.log('list ajax request...')
+            params.page = 1
+            params.sord = /*[[${report.sord}]]*/
+            params.sidx = /*[[${report.sidx}]]*/
+
+            if (!$listTable) {
+                $listTable = $('#report-list').ajaxTable({
+                    url: '/reports/'+report_id+'/json',
+                    query: params,
+                    displayPage: function () {
+                        if(/*[[${device.isNormal()}]]*/) {
+                            return 15
+                        } else if(/*[[${device.isTablet()}]]*/) {
+                            return 10
+                        }
+                        return 5
+                    }
+                })
+            } else {
+                $listTable.ajaxTable('reload', params)
             }
-        })
+            $('#exportBtn').attr('href', $('#exportBtn').data('url') + "?" + $.param($listTable.ajaxTable('getQuery')))
+        }
 
-        $('.query-form-container').autofill(urlObject).pageTable()
+        listRequest({})
 
-        $('#exportBtn').attr('href', $('#exportBtn').attr('href') + _newUrl())
+        function openDetailLink(title, id, name) {
+            return '<a href="javascript:;" onclick="showDialog(\''+title+'\', \''+id+'\')">'+name+'</a>'
+        }
+
+        function deleteLink(id) {
+            return '<a href="javascript:;" onclick="deleteRow(\''+id+'\')">删除</a>'
+        }
 
         let $modal = $('#dialog')
+
         let form_id =/*[[${report.extraData} + '']]*/
 
         function showDialog(title, id) {
@@ -248,10 +256,9 @@
         $('#okId').on('click', function () {
             saveForm(() => {
                 $modal.modal('hide');
-                toastr.success("保存成功")
                 setTimeout(() => {
-                    // $('[name=reset]').click()
-                    window.location.reload()
+                    $listTable.ajaxTable('reload')
+                    toastr.success("保存成功")
                 }, 1000)
             })
         })
@@ -263,10 +270,10 @@
                     type: "delete",
                     success: function(){
                         $modal.modal('hide');
-                        toastr.success("删除成功")
+
                         setTimeout(() => {
-                            // $('[name=reset]').click()
-                            window.location.reload()
+                            $listTable.ajaxTable('reload')
+                            toastr.success("删除成功")
                         }, 1000)
                     }
                 });
