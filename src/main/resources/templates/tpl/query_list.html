@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sp="">
+      xmlns:sp="" th:with="reportDomId = ${'report-list' + T(java.lang.System).currentTimeMillis()}">
 <head th:replace="includes/base :: common_header(~{},~{::link},~{::style})">
     <link rel="stylesheet" th:href="@{/css/tab-common.css}">
     <link rel="stylesheet" th:href="@{/plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css}">
@@ -50,10 +50,13 @@
             display: none;
         }
 
-
+        table tr.active {
+            background: #20a8d8!important;
+        }
     </style>
 </head>
 <body class="app">
+<input type="hidden" name="qid" id="qid">
 <th:block th:replace="includes/base :: common_content(~{::div})">
     <div>
         <div class="card" style="margin-bottom: .5rem;">
@@ -91,11 +94,13 @@
 
         <div class="card" style="margin-bottom: 0;">
             <div class="card-body" style="padding-bottom: 0">
-                <div id="report-list">
-                    <ajax-table :grid="grid" :display-page="displayPage" class="report-list-table" row-key="ID" @refresh="refresh"
+                <div th:id="${reportDomId}">
+                    <ajax-table :grid="grid" :display-page="displayPage" class="report-list-table" row-key="id" @refresh="refresh"
                                 @page-change="pageChange"
                                 @sort-column="sortColumn"
-                                @size-change="sizeChange">
+                                @size-change="sizeChange"
+                                @row-click = "rowClick"
+                                @row-dbclick = "rowDbclick">
                         <table-column th:each="n : ${report.reportColumnList}" th:if="${!n.hidden}" th:attr="prop=${n.name}, label=${n.label}, ':sortable'=${n.sortable}, ':tooltip'=${n.tooltip}, width=${n.columnWidth == null? 'auto': n. columnWidth}, align=${n.align.name().toLowerCase()}">
                         </table-column>
                     </ajax-table>
@@ -174,18 +179,17 @@
             listRequest(params)
         }
 
-        let report_id =/*[[${report.id} + '']]*/
-
+        let report_id = /*[[${report.id} + '']]*/
+        let reportDomId = /*[[${reportDomId}]]*/
         function listRequest(params) {
             console.log('list ajax request...')
             params.page = 1
             params.size = 10
-            params.sord = /*
-            [[${report.sord}]]*/
+            params.sord = /*[[${report.sord}]]*/
             params.sidx = /*[[${report.sidx}]]*/
 
             if (!$listTable) {
-                $listTable = $('#report-list').ajaxTable({
+                $listTable = $('#' + reportDomId).ajaxTable({
                     url: '/reports/'+report_id+'/json',
                     query: params,
                     displayPage: function () {
@@ -204,12 +208,18 @@
 
         listRequest({})
 
-        let $modal = $('#dialog')
+        window[reportDomId + 'RowClick'] = function(row, event) {
+            $(event.target.parentElement).siblings().removeClass()
+            event.target.parentElement.className = 'active'
+            document.getElementById('qid').row = row
+        }
 
-        $('#okId').on('click', function () {
+        window[reportDomId + 'RowDbclick'] = function(row, event) {
+            $(event.target.parentElement).siblings().removeClass()
+            event.target.parentElement.className = 'active'
 
-        })
-
+            window.parent['dialogRowDbClick'] && window.parent['dialogRowDbClick'](row)
+        }
     </script>
 </th:block>
 </body>
