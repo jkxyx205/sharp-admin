@@ -91,9 +91,11 @@ public class DictTagProcessor extends AbstractElementTagProcessor {
 
         model.add(modelFactory.createOpenElementTag(openElementString.toString()));
 
+        String emptyItemText = iProcessableElementTag.hasAttribute("emptyItemText") ? StringUtils.defaultString(iProcessableElementTag.getAttributeValue("emptyItemText"), "") : "全部";
+
         if (!iProcessableElementTag.hasAttribute("hideAllItem")) {
             model.add(modelFactory.createOpenElementTag("option value=\"\"selected"));
-            model.add(modelFactory.createText("全部"));
+            model.add(modelFactory.createText(emptyItemText));
             model.add(modelFactory.createCloseElementTag("option"));
         }
 
