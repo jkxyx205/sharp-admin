@@ -26,8 +26,8 @@ head.appendChild(style)
             '                <iframe id="{{iframeId}}" name="{{iframeId}}" src="" width="100%" style="border: 0; padding: 0; margin: 0; height: calc(100% - 6px);"></iframe>\n' +
             '            </div>\n' +
             '            <div class="modal-footer">\n' +
-            '                <button class="btn btn-primary ok-show" id="{{okId}}">确定</button>\n' +
-            '                <button class="btn btn-secondary" type="button" data-dismiss="modal">关闭</button>\n' +
+            '                <button class="btn btn-primary ok-show" id="{{okId}}"><i class="fa fa-cog"></i> 确定</button>\n' +
+            '                <button class="btn btn-secondary" type="button" data-dismiss="modal"><i class="fa fa-remove"></i> 关闭</button>\n' +
             '            </div>\n' +
             '        </div>\n' +
             '    </div>\n' +

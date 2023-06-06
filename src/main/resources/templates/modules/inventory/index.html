@@ -61,6 +61,10 @@
                         <input class="form-control" type="text" id="documentDate" name="documentDate" required th:value="${#calendars.format(#calendars.createNow(), 'yyyy-MM-dd')}">
                     </div>
                     <div class="form-group">
+                        <label class="col-form-label mr-2">库房</label>
+                        <sp:dict id="plantId" name="plantId" key="core_plant" class="form-control" hideAllItem/>
+                    </div>
+                    <div class="form-group">
                         <label class="col-form-label mr-2">操作人</label>
                         <sp:dict id="operatorId" name="operatorId" key="sys_user" class="form-control" emptyItemText/>
                     </div>

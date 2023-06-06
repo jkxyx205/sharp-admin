@@ -142,7 +142,7 @@
                                 <div>
                                     <div style="height: 28px; line-height: 28px; margin-bottom: 12px;">
                                         <label class="pull-left"><input type="checkbox" v-model="showSelectedUser" style="margin-right: 8px;">仅显示授权人员</label>
-                                        <button class="btn btn-primary pull-right btn-sm" @click="save"><i class="fa fa-save"></i>  保存</button>
+                                        <button class="btn btn-primary pull-right btn-sm" @click="save"><i class="fa fa-save"></i> 保存</button>
                                         <span v-cloak class="warning-text pull-right" v-show="isNeedSave" style="line-height: 28px; margin-right: 4px;">授权人员发生变更尚未保存</span>
                                     </div>
                                     <input class="form-control keyword-input" type="text" v-model="keyword" placeholder="关键字" autocomplete="off">
@@ -191,12 +191,12 @@
                                     <tr v-for="(r, index) in form2.roleList" :key="index">
                                         <td style="vertical-align: middle; text-align: center"><a href="javascript:;" @click="roleUp(index)"><i class="fa fa-arrow-up"></i></a></td>
                                         <td><input class="form-control" type="text" v-model="r.name"></td>
-                                        <td style="vertical-align: middle;"><a href="javascript:;" @click="form2.roleList.splice(index, 1)">删除</a></td>
+                                        <td style="vertical-align: middle;"><a href="javascript:;" @click="form2.roleList.splice(index, 1)">X</a></td>
                                     </tr>
                                     <tr style="text-align: center">
                                         <td colspan="3" style="padding: 12px 0;">
                                             <button class="btn btn-secondary mr-2 btn-sm" type="button" @click="form2.roleList.push({})">
-                                                <i class="fa fa-dot-circle-o"></i> 新增</button>
+                                                <i class="fa fa-plus"></i> 新增</button>
                                         </td>
                                     </tr>
                                     </tbody>
@@ -205,8 +205,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-primary" id="saveRoleBtn" @click="saveRole">保存</button>
-                        <button class="btn btn-secondary" type="button" data-dismiss="modal">关闭</button>
+                        <button class="btn btn-primary" id="saveRoleBtn" @click="saveRole"><i class="fa fa-save"></i> 保存</button>
+                        <button class="btn btn-secondary" type="button" data-dismiss="modal"><i class="fa fa-remove"></i> 关闭</button>
                     </div>
                 </div>
             </div>
@@ -544,8 +544,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary" id="savePermissionBtn">保存</button>
-                <button class="btn btn-secondary" type="button" data-dismiss="modal">关闭</button>
+                <button class="btn btn-primary" id="savePermissionBtn"><i class="fa fa-save"></i> 保存</button>
+                <button class="btn btn-secondary" type="button" data-dismiss="modal"><i class="fa fa-remove"></i> 关闭</button>
             </div>
         </div>
     </div>
@@ -586,7 +586,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" type="button" data-dismiss="modal">关闭</button>
+                <button class="btn btn-secondary" type="button" data-dismiss="modal"><i class="fa fa-remove"></i> 关闭</button>
             </div>
         </div>
     </div>
