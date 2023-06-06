@@ -60,6 +60,10 @@ public class CategoryService implements InitializingBean {
         this.rebuild();
     }
 
+    public Map<Long, String> getIdCategoryPathMap() {
+        return idCategoryPathMap;
+    }
+
     private String recursionName(Category category, Map<Long, Category> idNameMap) {
         String name = category.getName();
         Long parentId = category.getParentId();

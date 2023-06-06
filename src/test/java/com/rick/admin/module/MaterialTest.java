@@ -118,7 +118,8 @@ public class MaterialTest {
                 .cpnType(CpnTypeEnum.SELECT)
                 .name("categoryId")
                 .label("分类")
-                .datasource("core_material_category")
+//                .datasource("core_material_category")
+                .datasource("category_path")
                 .validatorList(Arrays.asList(new Required(true)))
                 .additionalInfo(Params.builder(1).pv("pane-index", "1").build())
                 .build();
@@ -297,6 +298,7 @@ public class MaterialTest {
                         new QueryField("code", "编号", QueryField.Type.TEXT),
                         new QueryField("materialType", "类型", QueryField.Type.SELECT, "material_type"),
                         new QueryField("categoryId", "分类", QueryField.Type.SELECT, "core_material_category"),
+//                        new QueryField("categoryId", "分类", QueryField.Type.SELECT, "category_path"),
                         new QueryField("name", "名称", QueryField.Type.TEXT)
                 ))
                 .reportColumnList(Arrays.asList(
@@ -332,6 +334,7 @@ public class MaterialTest {
                         new QueryField("keywords", "关键字", QueryField.Type.TEXT),
 //                        new QueryField("materialType", "类型", QueryField.Type.SELECT, "material_type"),
                         new QueryField("categoryId", "分类", QueryField.Type.SELECT, "core_material_category")
+//                        new QueryField("categoryId", "分类", QueryField.Type.SELECT, "category_path")
 
                 ))
                 .reportColumnList(Arrays.asList(

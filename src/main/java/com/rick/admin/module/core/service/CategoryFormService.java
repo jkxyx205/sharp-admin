@@ -1,5 +1,6 @@
 package com.rick.admin.module.core.service;
 
+import com.rick.admin.common.DictDOSupplierImpl;
 import com.rick.formflow.form.service.FormAdvice;
 import com.rick.formflow.form.service.bo.FormBO;
 import com.rick.meta.dict.service.DictService;
@@ -27,7 +28,8 @@ public class CategoryFormService implements FormAdvice {
 
     @Override
     public void afterInstanceHandle(FormBO form, Long instanceId, Map<String, Object> values) {
-        dictService.rebuild("core_material_category");
         categoryService.rebuild();
+        dictService.rebuild("core_material_category");
+        dictService.rebuild(DictDOSupplierImpl.CATEGORY_PATH);
     }
 }
