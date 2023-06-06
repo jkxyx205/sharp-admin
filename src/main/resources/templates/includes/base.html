@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no, maximum-scale=1.0,minimum-scale=1.0,user-scalable=0">
     <meta name="description" content="XXXX科技">
     <meta name="author" content="Rick">
-    <meta name="keyword" content="XXXX科技 芯片">
+    <meta name="keyword" content="XXXX科技">
     <title th:replace="${title}">XXXX科技</title>
     <!-- Common styles and scripts -->
     <!-- Icons-->
@@ -280,6 +280,12 @@
         @media (max-width: 768px) {
             .form-line .col-form-btn {
                 padding-top: calc(.375rem + 1px);
+            }
+        }
+
+        @media screen and (min-width: 576px) {
+            .form-inline .form-group {
+                margin: 0 .5rem .5rem 0;
             }
         }
 

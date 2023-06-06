@@ -29,12 +29,6 @@
                 display: block;
             }
         }
-
-        @media screen and (min-width: 576px) {
-            .form-inline .form-group {
-                margin: 0 .5rem .5rem 0;
-            }
-        }
     </style>
 </head>
 <body class="app">
@@ -116,7 +110,7 @@
                 <div class="table-footer-bar">
                     <div style="margin-bottom: 8px; float: left;">
                         <span class="breadcrumb-item active" th:text="'共' + ${grid.records} + '条，'+${grid.totalPages}+'页'"></span>
-                        <select onchange="search('page=1&size=' + this.value)">
+                        <select onchange="search('page=1&size=' + this.value)" th:if="${report.pageable}">
                             <option value="15" th:selected="${grid.pageSize == 15}">15条</option>
                             <option value="50" th:selected="${grid.pageSize == 50}">50条</option>
                             <option value="100" th:selected="${grid.pageSize == 100}">100条</option>

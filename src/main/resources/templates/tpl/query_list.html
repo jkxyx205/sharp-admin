@@ -19,7 +19,7 @@
 
         @media screen and (min-width: 576px) {
             .card-body-scroll-panel {
-                max-height: calc(100vh - 220px);
+                max-height: calc(100vh - 152px);
             }
         }
 
@@ -29,21 +29,9 @@
             }
         }
 
-        @media screen and (min-width: 576px) {
-            .form-inline .form-group {
-                margin: 0 .5rem .5rem 0;
-            }
-        }
-
         .scroll-panel {
             padding: 0!important;
             overflow: hidden!important;
-        }
-
-        @media screen and (min-width: 576px) {
-            .card-body-scroll-panel {
-                max-height: 100%;
-            }
         }
 
         .ac-sidebar {
@@ -180,11 +168,13 @@
         }
 
         let report_id = /*[[${report.id} + '']]*/
+        let pageable = /*[[${report.pageable}]]*/
         let reportDomId = /*[[${reportDomId}]]*/
+
         function listRequest(params) {
             console.log('list ajax request...')
             params.page = 1
-            params.size = 10
+            params.size = pageable ? 10 : -1 // 不分页
             params.sord = /*[[${report.sord}]]*/
             params.sidx = /*[[${report.sidx}]]*/
 

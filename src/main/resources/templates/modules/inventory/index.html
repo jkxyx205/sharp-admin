@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sp="" lang="zh">
+<head th:replace="includes/base :: common_header(~{},~{::link},~{::style})">
+    <link rel="stylesheet" th:href="@{/css/tab-common.css}">
+    <link rel="stylesheet" th:href="@{/plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css}">
+    <style>
+        .form-control:disabled, .form-control[readonly] {
+            background: #fff;
+        }
+
+        .operator-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: .2rem 1.25rem;
+            background: #fff;
+        }
+    </style>
+</head>
+<body class="app">
+<th:block th:replace="includes/base :: common_content(~{::div})">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-body">
+                <form class="form-inline query-form-container" id="form-operator">
+                    <div class="form-group">
+                        <label class="col-form-label mr-2" for="type">场景</label>
+                        <select id="type" name="type" class="form-control">
+                            <option value="INBOUND">入库</option>
+                            <option value="OUTBOUND">出库</option>
+                            <option value="RETURN">退货</option>
+                            <option value="CANCEL">取消</option>
+                            <option value="DISPLAY">显示</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label mr-2" for="referenceType">参考凭证</label>
+                        <select id="referenceType" name="referenceType" class="form-control">
+                            <option value="OTHER">无</option>
+                            <option value="MATERIAL_DOCUMENT">参考凭证</option>
+                            <option value="PO">采购订单</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input class="form-control" id="referenceCode" type="text" name="referenceCode">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary mr-2" type="button" name="search">
+                            <i class="fa fa-cog"></i> 确定</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <form class="form-inline query-form-container" id="form-header">
+                    <div class="form-group">
+                        <label class="col-form-label mr-2 required">凭证日期</label>
+                        <input class="form-control" type="text" id="documentDate" name="documentDate" required th:value="${#calendars.format(#calendars.createNow(), 'yyyy-MM-dd')}">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label mr-2">操作人</label>
+                        <sp:dict id="operatorId" name="operatorId" key="sys_user" class="form-control" emptyItemText/>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label mr-2">备注</label>
+                        <input class="form-control" type="text" id="remark" name="remark">
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <table id="table">
+                    <thead>
+                    <tr>
+                        <th><label class="col-form-label col-sm-2 required">物料</label></th>
+                        <th><label class="col-form-label col-sm-2 required">数量</label></th>
+                        <th>单位</th>
+                        <th>备注</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+
+
+            </div>
+        </div>
+        <div id="dialogInput" style="display: none"></div>
+        <div class="operator-bar text-center">
+            <button class="btn btn-primary" type="button" name="send" onclick="send()">
+                <i class="fa fa-send"></i> 提交</button>
+        </div>
+    </div>
+</th:block>
+<th:block th:replace="includes/base :: common_js(~{::script})">
+    <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js}"></script>
+    <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.zh-CN.min.js}"></script>
+    <script type="text/javascript" th:src="@{/plugins/jquery.form2json.js}"></script>
+
+    <script th:src="@{/js/jquery.dialogInput.js}"></script>
+    <script th:src="@{/editable-table/editable-table.js}"></script>
+    <script>
+        let dialogInput = $('#dialogInput');
+        var currentMaterialDom;
+
+        $('#documentDate').datepicker({
+            language: "zh-CN",
+            autoclose: true,
+            clearBtn: true,
+            todayBtn: 'linked',
+            todayHighlight: true,
+            format: 'yyyy-mm-dd'
+        })
+
+        $('#table').editableTable({
+            columns: 4,
+            addEmptyLineCallback: function ($tr) {
+                $tr.find('td:nth-child(1) input').attr('readonly', true)
+                $tr.find('td:nth-child(1)').append('<input type="hidden" name="materialId">')
+
+                $tr.find('td:nth-child(2) input').attr('type', 'number').attr('name', "quantity").attr("required", true)
+                $tr.find('td:nth-child(3) input').attr('readonly', true)
+                $tr.find('td:nth-child(4) input').attr('name', "remark")
+
+            }
+        })
+
+        $('#dialogInput').dialogInput({
+            title: '选择物料',
+            name: 'material_id',
+            reportId: '697147523487240192',
+            labelDisplay: function (row) {
+                return row.name + ' ' + (!row.characteristic ? '' : row.characteristic)
+            },
+            selected: function (row) {
+                console.log(row)
+                currentMaterialDom.value = this.labelDisplay(row)
+                $(currentMaterialDom).parents('tr').find('td:nth-child(3) input').val(row.base_unit)
+                $(currentMaterialDom).siblings().val(row.id)
+            }
+        })
+
+        $('#table tbody').delegate('td:nth-child(1) input[type=text]', 'click', function(){
+            dialogInput.click();
+            currentMaterialDom = this
+        });
+
+        function send() {
+            var params = {}
+            var items = []
+            $('#table tr:not(:last-child)').each(function () {
+                var row = {}
+                $(this).find('td input[name]').each(function () {
+                    row[$(this).attr('name')] = $(this).val()
+
+                })
+                items.push(row)
+            })
+
+            params['items'] = items
+
+            params = $.extend({},
+                params, $('#form-operator').form2json({allowEmptyMultiVal:true}), $('#form-header').form2json({allowEmptyMultiVal:true})); //合并参数
+
+            console.log(params)
+        }
+    </script>
+</th:block>
+</body>
+</html>

@@ -1,4 +1,9 @@
-(function($) {
+;var style = document.createElement("style")
+style.appendChild(document.createTextNode("@media (min-width: 576px) {.dialog-input .modal-dialog {max-width: 620px!important;} .dialog-input .modal-dialog .modal-body {padding: 0!important;height: 540px;}}"))
+var head = document.getElementsByTagName("head")[0]
+head.appendChild(style)
+
+;(function($) {
     var DialogInput = function(element, options) {
         this.$element = $(element);
         this.options = $.extend({},
@@ -8,7 +13,7 @@
 
     DialogInput.prototype = {
         constructor: DialogInput,
-        tpl: '<div class="modal fade" id="{{id}}" tabindex="-1" role="dialog" aria-labelledby="modalCenterTitle" aria-hidden="true">\n' +
+        tpl: '<div class="dialog-input modal fade" id="{{id}}" tabindex="-1" role="dialog" aria-labelledby="modalCenterTitle" aria-hidden="true">\n' +
             '    <div class="modal-dialog modal-primary modal-dialog-auto" role="document">\n' +
             '        <div class="modal-content">\n' +
             '            <div class="modal-header">\n' +
@@ -84,6 +89,7 @@
                 this.$modal.modal('hide')
                 this.iframe.input.val(row.id)
                 this.iframe.label.text(this.options.labelDisplay(row))
+                this.options.selected && this.options.selected(row)
             } else {
                 toastr.error('请先选择一条记录后再点击确定');
             }

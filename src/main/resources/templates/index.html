@@ -56,7 +56,7 @@
                         <i class="nav-icon icon-speedometer"></i> 仪表盘
                     </a>
                 </li>
-                <li class="nav-item nav-dropdown open" sec:authorize="hasAuthority('core_data')">
+                <li class="nav-item nav-dropdown" sec:authorize="hasAuthority('core_data')">
                     <a class="nav-link nav-dropdown-toggle" href="#">
                         <i class="nav-icon icon-wallet"></i> 主数据</a>
                     <ul class="nav-dropdown-items">
@@ -81,10 +81,29 @@
                             </a>
                         </li>
                     </ul>
-
-
                 </li>
-                <li class="nav-item nav-dropdown open" sec:authorize="hasAuthority('sys_management')">
+                <li class="nav-item nav-dropdown open" sec:authorize="hasAuthority('inventory')">
+                    <a class="nav-link nav-dropdown-toggle" href="#">
+                        <i class="nav-icon icon-layers"></i> 库存管理</a>
+                    <ul class="nav-dropdown-items">
+                        <li class="nav-item" sec:authorize="hasAuthority('inventory_move')">
+                            <a class="nav-link" href="javascript:addTab('inventory_move', '库存移动', '/inventory/move')">
+                                <i class="nav-icon icon-cursor-move"></i> 库存移动
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasAuthority('inventory_list')">
+                            <a class="nav-link" href="javascript:addTab('inventory_list', '物料凭证', '/reports/695623902415556608')">
+                                <i class="nav-icon icon-chart"></i> 物料凭证
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasAuthority('inventory_count')">
+                            <a class="nav-link" href="javascript:addTab('inventory_count', '盘点', '/reports/695623902415556608')">
+                                <i class="nav-icon icon-calculator"></i> 盘点
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item nav-dropdown" sec:authorize="hasAuthority('sys_management')">
                     <a class="nav-link nav-dropdown-toggle" href="#">
                         <i class="nav-icon icon-settings"></i> 系统管理</a>
                     <ul class="nav-dropdown-items">
@@ -186,19 +205,19 @@
         $(function () {
             $('[data-toggle="tooltip"]').tooltip()
 
-            nthTabs.addTab({
-                id: "dashboard",
-                title: '仪表盘',
-                url: "/dashboard",
-                allowClose: false
-            });
-
             // nthTabs.addTab({
-            //     id: "mm_material",
-            //     title: '物料',
-            //     url: "/reports/695981455636959232",
+            //     id: "dashboard",
+            //     title: '仪表盘',
+            //     url: "/dashboard",
             //     allowClose: false
             // });
+
+            nthTabs.addTab({
+                id: "inventory_move",
+                title: '库存移动',
+                url: "/inventory/move",
+                allowClose: false
+            });
         })
     </script>
 </div>

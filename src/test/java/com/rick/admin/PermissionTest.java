@@ -28,7 +28,32 @@ public class PermissionTest {
     private JdbcTemplate jdbcTemplate;
 
     @Test
-    public void testAddPermission() {
+    public void testAddPermission0() {
+        permissionDAO.insertOrUpdate(Permission.builder()
+                .code("inventory_move")
+                .name("库存移动")
+                .pid(697500384922439680L)
+                .permissionOrder(0)
+                .build());
+
+        permissionDAO.insertOrUpdate(Permission.builder()
+                .code("inventory_list")
+                .name("物料凭证")
+                .pid(697500384922439680L)
+                .permissionOrder(0)
+                .build());
+
+        permissionDAO.insertOrUpdate(Permission.builder()
+                .code("inventory_count")
+                .name("盘点")
+                .pid(697500384922439680L)
+                .permissionOrder(0)
+                .build());
+    }
+
+
+    @Test
+    public void testAddPermission1() {
 //        final String CODE = "mm_material";
 //        final String NAME = "物料";
 //        final Long PARENT_ID = 695624494395428864L;
