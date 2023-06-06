@@ -16,9 +16,18 @@
             var $search = this.$element.find('button[name=search]')
 
             $search.on('click', function () {
-                var param = _this.$element.form2json({allowEmptyMultiVal:true});
-                param.page = 1
-                search(param)
+                var params = _this.$element.form2json({allowEmptyMultiVal:true});
+                params.page = 1
+
+                // 处理日期时间: 约定优于配置
+                for(let key in params) {
+                    if (key.endsWith("0")) {
+                        params[key] = (params[key] ? params[key] + " 00:00:00" :  params[key])
+                    } else if (key.endsWith("1")) {
+                        params[key] = (params[key] ? params[key] + " 23:59:59" :  params[key])
+                    }
+                }
+                search(params)
             })
 
             this.$element.find('button[name=reset]').on('click', function () {
