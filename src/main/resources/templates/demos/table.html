@@ -148,7 +148,7 @@
 
                 $tr.find('td:nth-child(3) input')
                     // .attr('type', 'number')
-                    .attr('pattern', '^\\d+(\\.\\d{1,2})?$')
+                    .attr('pattern', '^\\d+(\\.\\d{1,3})?$')
                     .attr('title', '必须数字')
                     .attr('name', "quantity");
                 $tr.find('td:nth-child(4) input').attr('disabled', true)

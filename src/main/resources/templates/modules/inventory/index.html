@@ -6,7 +6,7 @@
     <link rel="stylesheet" th:href="@{/plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css}">
     <style>
         .form-control:disabled, .form-control[readonly] {
-            background: #fff;
+            /*background: #fff;*/
         }
 
         .operator-bar {
@@ -29,10 +29,10 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-body">
-                <form class="form-inline query-form-container" id="form-operator">
+                <form class="form-inline query-form-container readonly" id="form-operator" onsubmit="return false">
                     <div class="form-group">
                         <label class="col-form-label mr-2" for="type">场景</label>
-                        <select id="type" name="type" class="form-control">
+                        <select id="type" name="type" class="form-control" onchange="changeType(this)">
                             <option value="INBOUND">入库</option>
                             <option value="OUTBOUND">出库</option>
                             <option value="RETURN">退货</option>
@@ -42,17 +42,17 @@
                     </div>
                     <div class="form-group">
                         <label class="col-form-label mr-2" for="referenceType">参考凭证</label>
-                        <select id="referenceType" name="referenceType" class="form-control">
-                            <option value="OTHER">无</option>
-                            <option value="MATERIAL_DOCUMENT">参考凭证</option>
-                            <option value="PO">采购订单</option>
+                        <select id="referenceType" name="referenceType" class="form-control" onchange="changeReferenceType(this)">
+                            <option value="OTHER" hidden>无</option>
+                            <option value="MATERIAL_DOCUMENT" hidden>参考凭证</option>
+                            <option value="PO" hidden>采购订单</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <input class="form-control" id="referenceCode" type="text" name="referenceCode">
+                        <input class="form-control" id="referenceCode" type="text" name="referenceCode" required>
                     </div>
                     <div class="form-group">
-                        <button class="btn btn-primary mr-2" type="button" name="search">
+                        <button class="btn btn-primary mr-2" type="button" id="execBtn" onclick="execute(this)">
                             <i class="fa fa-cog"></i> 确定</button>
                     </div>
                 </form>
@@ -62,19 +62,19 @@
             <div class="card-body">
                 <form class="form-inline query-form-container" id="form-header">
                     <div class="form-group">
-                        <label class="col-form-label mr-2 required">凭证日期</label>
+                        <label class="col-form-label mr-2 required" for="documentDate">凭证日期</label>
                         <input class="form-control" type="text" id="documentDate" name="documentDate" required th:value="${#calendars.format(#calendars.createNow(), 'yyyy-MM-dd')}">
                     </div>
                     <div class="form-group">
-                        <label class="col-form-label mr-2">库房</label>
+                        <label class="col-form-label mr-2" for="plantId">库房</label>
                         <sp:dict id="plantId" name="plantId" key="core_plant" class="form-control" hideAllItem/>
                     </div>
                     <div class="form-group">
-                        <label class="col-form-label mr-2">操作人</label>
+                        <label class="col-form-label mr-2" for="operatorId">操作人</label>
                         <sp:dict id="operatorId" name="operatorId" key="sys_user" class="form-control" emptyItemText th:value="${session.user.id}"/>
                     </div>
                     <div class="form-group">
-                        <label class="col-form-label mr-2">备注</label>
+                        <label class="col-form-label mr-2" for="remark">备注</label>
                         <input class="form-control" type="text" id="remark" name="remark">
                     </div>
                 </form>
@@ -109,7 +109,7 @@
             </div>
         </div>
         <div id="dialogInput" style="display: none"></div>
-        <div class="operator-bar text-center">
+        <div class="operator-bar text-center" id="operator-bar">
             <button class="btn btn-primary" type="button" name="send" onclick="send()">
                 <i class="fa fa-send"></i> 提交</button>
         </div>
@@ -124,6 +124,101 @@
     <script th:src="@{/js/jquery.table.js}"></script>
     <script th:src="@{/editable-table/editable-table.js}"></script>
     <script>
+        let formOperator = document.getElementById('form-operator');
+        let $operatorBar = $('#operator-bar')
+        let $referenceCode = $('#referenceCode')
+        let $execBtn= $('#execBtn')
+        let formHeader = document.getElementById('form-header');
+        let formItem = document.getElementById('form-item');
+
+        formOperator.addEventListener('submit', function (event) {
+            execute()
+        }, false)
+
+        let selectMapping = {
+            "INBOUND": ["OTHER", "PO"],
+            "OUTBOUND": ["OTHER"],
+            "RETURN": ["PO"],
+            "CANCEL": ["MATERIAL_DOCUMENT"],
+            "DISPLAY": ["MATERIAL_DOCUMENT"]
+        }
+
+        let referenceTypeDom = document.getElementById('referenceType')
+        changeType(document.getElementById('type'))
+
+        function changeType(select) {
+            let selected = false
+            for (let option of referenceTypeDom.options) {
+                option.hidden = true
+                for(let referenceType of selectMapping[select.value]) {
+                    if (option.value === referenceType) {
+                        option.hidden = false
+                        if (!selected) {
+                            option.selected = 'selected'
+                            selected = true
+
+                            if (option.value === 'OTHER') {
+                                $referenceCode.hide()
+                                $execBtn.hide()
+                                $("#form-item :input:not(readonly)").prop("disabled", false)
+                                $("#form-item input[readonly]").prop("disabled", true)
+                            } else {
+                                $referenceCode.show()
+                                $execBtn.show()
+                                $("#form-item :input").prop("disabled", true);
+                            }
+                        }
+                        break
+                    }
+                }
+            }
+
+            if (select.value === 'DISPLAY') {
+                $operatorBar.hide()
+            } else {
+                $operatorBar.show()
+            }
+            reset()
+        }
+
+        function changeReferenceType(select) {
+            if (select.value === 'OTHER') {
+                $referenceCode.hide()
+                $execBtn.hide()
+                $("#form-item :input:not(readonly)").prop("disabled", false)
+                $("#form-item input[readonly]").prop("disabled", true)
+            } else {
+                $referenceCode.show()
+                $execBtn.show()
+                $("#form-item :input").prop("disabled", true);
+            }
+            reset()
+        }
+        
+        function execute() {
+            let formOperatorValidity = formOperator.checkValidity()
+            formOperator.classList.add('was-validated')
+            if (formOperatorValidity) {
+                console.log(referenceTypeDom.value)
+                console.log($referenceCode.val())
+
+                // ajax
+                $('#table tbody').prepend('<tr>\n' +
+                    '                                        <td></td>\n' +
+                    '                                        <td><input class="form-control" type="text" value="轮胎 黄色/中/25G" autocomplete="off" required="required" disabled><input class="form-control" type="hidden" name="materialId" required="required" value="696078910634332160"><input class="form-control" type="hidden" name="referenceItemId" required="required" value="999"></td>\n' +
+                    '                                        <td><input class="form-control" type="text" value="3" autocomplete="off" pattern="^\\d+(\\.\\d{1,3})?$" title="必须数字" name="quantity" required="required"></td>\n' +
+                    '                                        <td><input class="form-control" type="text" value="个" autocomplete="off" disabled><input class="form-control" type="hidden" name="unit" required="" value="EA"></td>\n' +
+                    '                                        <td><input class="form-control" type="text" value="" autocomplete="off" name="remark"></td>\n' +
+                    '                                        <td class="operator btn-link"></td>\n' +
+                    '                                    </tr>')
+
+                $("form.readonly :input").prop("disabled", true);
+                $("#table tr:last-child").prop("disabled", true);
+                rebuildIndex()
+            }
+        }
+
+        // end
         let dialogInput = $('#dialogInput');
         var currentMaterialDom;
 
@@ -148,10 +243,13 @@
 
                 $tr.find('td:nth-child(3) input')
                     // .attr('type', 'number')
-                    .attr('pattern', '^\\d+(\\.\\d{1,2})?$')
+                    .attr('pattern', '^\\d+(\\.\\d{1,3})?$')
                     .attr('title', '必须数字')
                     .attr('name', "quantity");
-                $tr.find('td:nth-child(4) input').attr('disabled', true)
+
+                $tr.find('td:nth-child(4) input').attr('disabled', true).attr('readonly', true)
+                $tr.find('td:nth-child(4)').append('<input class="form-control" type="hidden" name="unit" required>')
+
                 $tr.find('td:nth-child(5) input').attr('name', "remark")
 
                 rebuildIndex()
@@ -186,7 +284,6 @@
 
         $('#dialogInput').dialogInput({
             title: '选择物料',
-            name: 'material_id',
             reportId: '697147523487240192',
             labelDisplay: function (row) {
                 return row.name + ' ' + (!row.characteristic ? '' : row.characteristic)
@@ -204,7 +301,9 @@
                 currentMaterialDom.value = this.labelDisplay(row)
                 setCaretPosition(currentMaterialDom, currentMaterialDom.value.length)
 
-                $(currentMaterialDom).parents('tr').find('td:nth-child(4) input').val(row.base_unit)
+                $(currentMaterialDom).parents('tr').find('td:nth-child(4) input[type=text]').val(row.base_unit_name)
+                $(currentMaterialDom).parents('tr').find('td:nth-child(4) input[type=hidden]').val(row.base_unit)
+
                 $(currentMaterialDom).siblings().val(row.id)
             }
         })
@@ -245,9 +344,6 @@
             }
         })
 
-        let formHeader = document.getElementById('form-header');
-        let formItem = document.getElementById('form-item');
-
         function valid() {
             var formHeaderValidity = formHeader.checkValidity()
             var formItemValidity = formItem.checkValidity()
@@ -259,9 +355,13 @@
         function reset() {
             formHeader.classList.remove('was-validated')
             formItem.classList.remove('was-validated')
+            formOperator.classList.remove('was-validated')
+
             $('#table tbody tr:not(:last-child)').remove()
             rebuildIndex()
             document.getElementById('referenceCode').value = ''
+            $("form.readonly :input").prop("disabled", false);
+            $("form-item #table tr:last-child").prop("disabled", false);
         }
 
         function send() {
@@ -295,18 +395,34 @@
             })
 
             rebuildIndex()
-            params['items'] = items
+
+            params['itemList'] = items
 
             if (!valid()) {
                 return
+            }
+
+            if (items.length == 0) {
+                toastr.error('行项目缺少物料信息');
+                return;
             }
 
             params = $.extend({},
                 params, $('#form-operator').form2json({allowEmptyMultiVal:true}), $('#form-header').form2json({allowEmptyMultiVal:true})); //合并参数
 
             console.log(params)
-            toastr.success('提交成功');
-            reset()
+            params.code = '1' // 临时code
+            $.ajax({
+                url: '/inventory',
+                type: "POST",
+                data: JSON.stringify(params),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function(res){
+                    toastr.success('提交成功 ' + res.data);
+                    reset()
+                }
+            });
         }
     </script>
 </th:block>

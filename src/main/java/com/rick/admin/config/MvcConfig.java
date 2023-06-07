@@ -3,7 +3,6 @@ package com.rick.admin.config;
 import com.rick.admin.auth.common.UrlHandlerInterceptor;
 import com.rick.common.http.exception.ApiExceptionHandler;
 import com.rick.common.http.util.MessageUtils;
-import com.rick.common.http.web.SharpWebMvcConfigurer;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -13,6 +12,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
@@ -26,7 +26,8 @@ import java.util.Locale;
  */
 @Configuration
 @ComponentScan(basePackageClasses = {ApiExceptionHandler.class, MessageUtils.class})
-public class MvcConfig extends SharpWebMvcConfigurer {
+//public class MvcConfig extends SharpWebMvcConfigurer {
+public class MvcConfig implements WebMvcConfigurer {
 
     @Resource
     private MessageSource messageSource;
