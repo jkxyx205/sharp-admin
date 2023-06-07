@@ -18,17 +18,6 @@
             line-height: 33px;
         }
 
-        @media screen and (min-width: 576px) {
-            .card-body-scroll-panel {
-                max-height: calc(100vh - 220px);
-            }
-        }
-
-        @media screen and (max-width: 576px) {
-            .form-inline {
-                display: block;
-            }
-        }
     </style>
 </head>
 <body class="app">
@@ -81,7 +70,7 @@
                         <table-column
                                 type="index"
                                 label="序号"
-                                width="30">
+                                width="40">
                         </table-column>
                         <table-column th:each="n : ${report.reportColumnList}" th:if="${!n.hidden}" th:attr="prop=${n.name}, label=${n.label}, ':sortable'=${n.sortable}, ':tooltip'=${n.tooltip}, width=${n.columnWidth == null? 'auto': n. columnWidth}, align=${n.align.name().toLowerCase()}">
                             <template slot-scope="scope" th:if="${n.type.name() eq 'NUMERIC'}">
