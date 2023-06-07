@@ -45,7 +45,6 @@ public class DictTest {
     private FormService formService;
 
 
-
     @Test
     public void testForm() {
         // 设计控件
@@ -57,6 +56,7 @@ public class DictTest {
                 .code("sys_dict")
                 .tableName("sys_dict")
                 .tplName("tpl/form")
+                .formAdviceName("dictFormService")
                 .name("字典表")
                 .repositoryName("dictDAO")
                 .storageStrategy(Form.StorageStrategyEnum.CREATE_TABLE)
