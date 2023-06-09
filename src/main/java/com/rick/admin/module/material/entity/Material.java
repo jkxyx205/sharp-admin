@@ -7,6 +7,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +31,8 @@ public class Material extends BaseCodeEntity {
     String remark;
 
     String baseUnit;
+
+    BigDecimal standardPrice;
 
     Long categoryId;
 

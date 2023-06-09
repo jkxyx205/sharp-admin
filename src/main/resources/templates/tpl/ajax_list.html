@@ -76,6 +76,9 @@
                             <template slot-scope="scope" th:if="${n.type.name() eq 'NUMERIC'}">
                                 {{ scope.row.<th:block th:text="${n.name}"></th:block> | formatInteger}}
                             </template>
+                            <template slot-scope="scope" th:if="${n.type.name() eq 'DECIMAL'}">
+                                {{ scope.row.<th:block th:text="${n.name}"></th:block> | formatDecimal}}
+                            </template>
                             <template slot-scope="scope" th:if="${nStat.index == 1}">
                                 {{openDetailLink('查看', scope.row.id, scope.row.<th:block th:text="${n.name}"></th:block>)}}
                             </template>

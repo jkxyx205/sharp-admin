@@ -24,7 +24,7 @@
                        th:placeholder="${p.configurer.placeholder}" th:value="${p.value}" th:required="${isRequired}" th:classappend="${errors eq null ? '' : (#maps.containsKey(errors, p.name) ? 'is-invalid' : 'is-valid')}">
 
                 <input th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).NUMBER_TEXT}" type="text" class="form-control" th:id="${p.name}" th:name="${p.name}" th:max="${p.configurer.validatorProperties.get('Size.max')}" th:min="${p.configurer.validatorProperties.get('Size.min')}"
-                       th:placeholder="${p.configurer.placeholder}" th:value="${p.value}" th:required="${isRequired}" th:classappend="${errors eq null ? '' : (#maps.containsKey(errors, p.name) ? 'is-invalid' : 'is-valid')}">
+                       th:placeholder="${p.configurer.placeholder}" th:value="${p.value}" th:required="${isRequired}" th:classappend="${errors eq null ? '' : (#maps.containsKey(errors, p.name) ? 'is-invalid' : 'is-valid')}" pattern="-?\d+(\.\d+)?">
 
                 <input th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).INTEGER_NUMBER}" type="number" class="form-control" th:id="${p.name}" th:name="${p.name}" th:max="${p.configurer.validatorProperties.get('Size.max')}" th:min="${p.configurer.validatorProperties.get('Size.min')}"
                        th:placeholder="${p.configurer.placeholder}" th:value="${p.value}" th:required="${isRequired}" th:classappend="${errors eq null ? '' : (#maps.containsKey(errors, p.name) ? 'is-invalid' : 'is-valid')}">

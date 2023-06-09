@@ -133,6 +133,14 @@ public class MaterialTest {
                 .additionalInfo(Params.builder(1).pv("pane-index", "1").build())
                 .build();
 
+        CpnConfigurer standardPriceCpn = CpnConfigurer.builder()
+                .cpnType(CpnTypeEnum.NUMBER_TEXT)
+                .name("standardPrice")
+                .label("标准价格(元)")
+                .placeholder("基本单位价格")
+                .additionalInfo(Params.builder(1).pv("pane-index", "1").build())
+                .build();
+
         CpnConfigurer batchManagementCpn = CpnConfigurer.builder()
                 .cpnType(CpnTypeEnum.CHECKBOX)
                 .name("batchManagement")
@@ -244,6 +252,13 @@ public class MaterialTest {
                 .additionalInfo(Params.builder(1).pv("pane-index", "5").build())
                 .build();
 
+        CpnConfigurer stockQuantityPriceCpn = CpnConfigurer.builder()
+                .cpnType(CpnTypeEnum.LABEL)
+                .name("stockQuantityPrice")
+                .label("库存金额")
+                .additionalInfo(Params.builder(1).pv("pane-index", "5").build())
+                .build();
+
         CpnConfigurer createNameCpn = CpnConfigurer.builder()
                 .cpnType(CpnTypeEnum.LABEL)
                 .name("createBy")
@@ -277,9 +292,9 @@ public class MaterialTest {
                 .build();
 
 
-        List<CpnConfigurer> cpnConfigurerList = Lists.newArrayList(codeCpn, materialTypeCpn, nameCpn, categoryCpn, baseUnitCpn, batchManagementCpn, serialManagementCpn,
+        List<CpnConfigurer> cpnConfigurerList = Lists.newArrayList(codeCpn, materialTypeCpn, nameCpn, categoryCpn, baseUnitCpn, standardPriceCpn, batchManagementCpn, serialManagementCpn,
                 remarkCpn, grossWeightCpn, netWeightCpn, weightUnitCpn, volumeCpn, volumeUnitCpn, sizeCpn, characteristicCpn, attachmentCpn,
-                stockQuantityCpn, createNameCpn, createTimeCpn, updateNameCpn, updateTimeCpn);
+                stockQuantityCpn, stockQuantityPriceCpn, createNameCpn, createTimeCpn, updateNameCpn, updateTimeCpn);
         return cpnConfigurerList;
     }
 
@@ -293,7 +308,7 @@ public class MaterialTest {
                 .name("物料")
                 .extraData("695978675677433856")
                 .reportAdviceName("materialReportAdvice")
-                .querySql("SELECT mm_material.id, mm_material.code, mm_material.name, characteristic, case when attachment is null or length(attachment) <= 2 then '无' else '有' end  attachment, material_type, mm_material.category_id, base_unit, sys_user.name create_name,DATE_FORMAT(mm_material.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM mm_material left join sys_user on sys_user.id = mm_material.create_by WHERE mm_material.code = :code AND mm_material.name like :name AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0")
+                .querySql("SELECT mm_material.id, mm_material.code, mm_material.name, characteristic, case when attachment is null or length(attachment) <= 2 then '无' else '有' end  attachment, material_type, mm_material.category_id, base_unit, standard_price, sys_user.name create_name,DATE_FORMAT(mm_material.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM mm_material left join sys_user on sys_user.id = mm_material.create_by WHERE mm_material.code = :code AND mm_material.name like :name AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0")
                 .queryFieldList(Arrays.asList(
                         new QueryField("code", "编号", QueryField.Type.TEXT),
                         new QueryField("materialType", "类型", QueryField.Type.SELECT, "material_type"),
@@ -311,7 +326,9 @@ public class MaterialTest {
                         new ReportColumn("category_path", "分类", false),
                         new ReportColumn("base_unit", "基本单位", false, "unit", Arrays.asList("dictConverter")),
                         new ReportColumn("attachment", "附件"),
+                        new ReportColumn("standard_price", "标准价格(元)").setType(ReportColumn.TypeEnum.DECIMAL).setAlign(AlignEnum.RIGHT),
                         new ReportColumn("stock_quantity", "库存").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
+                        new ReportColumn("stock_quantity_standard_price", "库存金额(元)").setType(ReportColumn.TypeEnum.DECIMAL).setAlign(AlignEnum.RIGHT),
                         new ReportColumn("create_name", "创建人").setColumnWidth(100),
                         new ReportColumn("create_time", "创建时间").setColumnWidth(180).setAlign(AlignEnum.CENTER)
                 ))
