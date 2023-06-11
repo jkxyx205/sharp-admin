@@ -1,6 +1,7 @@
 package com.rick.admin.core;
 
 import com.google.common.collect.Lists;
+import com.rick.db.service.support.Params;
 import com.rick.formflow.form.cpn.core.CpnConfigurer;
 import com.rick.formflow.form.cpn.core.CpnTypeEnum;
 import com.rick.formflow.form.cpn.core.Form;
@@ -96,7 +97,7 @@ public class CategoryTest {
                 .code("core_material_category")
                 .tplName("tpl/list")
                 .name("分类")
-                .extraData("695658661183229952")
+                .additionalInfo(Params.builder(1).pv("formId", "695658661183229952").build())
                 .querySql("SELECT core_material_category.id, core_material_category.parent_id, core_material_category.name, p.name parent_name, sys_user.name create_name,DATE_FORMAT(core_material_category.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM core_material_category left join sys_user on sys_user.id = core_material_category.create_by left join core_material_category p on p.id = core_material_category.parent_id WHERE core_material_category.parent_id = :parentId AND core_material_category.name like :name AND core_material_category.is_deleted = 0")
                 .queryFieldList(Arrays.asList(
                         new QueryField("parentId", "上级分类", QueryField.Type.SELECT, "core_material_category"),

@@ -8,6 +8,7 @@ import com.rick.admin.sys.role.entity.Role;
 import com.rick.admin.sys.user.dao.UserDAO;
 import com.rick.admin.sys.user.entity.User;
 import com.rick.admin.sys.user.service.UserService;
+import com.rick.db.service.support.Params;
 import com.rick.formflow.form.cpn.core.CpnConfigurer;
 import com.rick.formflow.form.cpn.core.CpnTypeEnum;
 import com.rick.formflow.form.cpn.core.Form;
@@ -135,7 +136,7 @@ public class UserTest {
                 .code("sys_user")
                 .tplName("tpl/list")
                 .name("用户管理")
-                .extraData("694980924206493696")
+                .additionalInfo(Params.builder(1).pv("formId", "694980924206493696").build())
 //                .querySql("SELECT id, code, name, IF(is_available, '是', '否') is_available, DATE_FORMAT(create_time, '%Y-%m-%d %H:%i:%s') create_time FROM sys_user WHERE code LIKE :code AND name LIKE :name AND is_available = :is_available AND create_time >= :create_time0 AND create_time <= :create_time1 AND id <> 1")
                 // language=SQL
                 .querySql(" SELECT sys_user.id, sys_user.code, sys_user.name, IF(sys_user.is_available, '是', '否') is_available, t.name role_name, u.name create_name, DATE_FORMAT(sys_user.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM sys_user\n" +

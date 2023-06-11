@@ -1,6 +1,7 @@
 package com.rick.admin.core;
 
 import com.google.common.collect.Lists;
+import com.rick.db.service.support.Params;
 import com.rick.formflow.form.cpn.core.CpnConfigurer;
 import com.rick.formflow.form.cpn.core.CpnTypeEnum;
 import com.rick.formflow.form.cpn.core.Form;
@@ -119,7 +120,7 @@ public class DictTest {
                 .code("sys_dict")
                 .tplName("tpl/list")
                 .name("字典管理")
-                .extraData("695312747063197696")
+                .additionalInfo(Params.builder(1).pv("formId", "695312747063197696").build())
                 .querySql("select id, type, name, label, sort from sys_dict where type = :type order by type, sort asc")
                 .queryFieldList(Arrays.asList(
                         new QueryField("type", "分类", QueryField.Type.SELECT, "sys_dict_type")

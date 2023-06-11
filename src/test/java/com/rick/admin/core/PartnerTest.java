@@ -1,6 +1,7 @@
 package com.rick.admin.core;
 
 import com.google.common.collect.Lists;
+import com.rick.db.service.support.Params;
 import com.rick.formflow.form.cpn.core.CpnConfigurer;
 import com.rick.formflow.form.cpn.core.CpnTypeEnum;
 import com.rick.formflow.form.cpn.core.Form;
@@ -181,7 +182,7 @@ public class PartnerTest {
                 .code("core_partner")
                 .tplName("tpl/list")
                 .name("合作伙伴")
-                .extraData("695708313425285120")
+                .additionalInfo(Params.builder(1).pv("formId", "695708313425285120").build())
                 .querySql("SELECT core_partner.id, core_partner.partner_type, core_partner.code, core_partner.name, core_partner.remark, core_partner.contact_person, core_partner.contact_number, core_partner.contact_mail, core_partner.bank_name, core_partner.bank_account, core_partner.tax_code, core_partner.address, sys_user.name create_name,DATE_FORMAT(core_partner.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM core_partner left join sys_user on sys_user.id = core_partner.create_by WHERE core_partner.partner_type = :partnerType AND core_partner.code = :code AND core_partner.name like :name AND core_partner.is_deleted = 0")
                 .queryFieldList(Arrays.asList(
                         new QueryField("partnerType", "类型", QueryField.Type.SELECT, "partner_type"),

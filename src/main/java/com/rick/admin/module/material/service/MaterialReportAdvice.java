@@ -45,10 +45,10 @@ public class MaterialReportAdvice implements ReportAdvice {
 
             // 可以做一些权限处理，比如将库存金额设置为空； 删选某些数据
         }
-    }
 
-    @Override
-    public void combineSummaryList(List<BigDecimal> summaryList, String conditionSql) {
-        ReportAdvice.super.combineSummaryList(summaryList, conditionSql);
+        // 添加样式
+//        report.getAdditionalInfo().put("css", "#report-list div.card-body-scroll-panel > table > thead > th:nth-child(10) { color: red;}");
+//        report.getAdditionalInfo().put("css", "div {color: red;}");
+//        report.getAdditionalInfo().put("js", "alert(123)");
     }
 }

@@ -1,6 +1,7 @@
 package com.rick.admin.core;
 
 import com.google.common.collect.Lists;
+import com.rick.db.service.support.Params;
 import com.rick.formflow.form.cpn.core.CpnConfigurer;
 import com.rick.formflow.form.cpn.core.CpnTypeEnum;
 import com.rick.formflow.form.cpn.core.Form;
@@ -133,7 +134,7 @@ public class PlantTest {
                 .code("core_plant")
                 .tplName("tpl/list")
                 .name("库房")
-                .extraData("695620585685782528")
+                .additionalInfo(Params.builder(1).pv("formId", "695620585685782528").build())
                 .querySql("SELECT core_plant.id, core_plant.code, core_plant.name, detail_address, contact_person, contact_number, sys_user.name create_name,DATE_FORMAT(core_plant.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM core_plant left join sys_user on sys_user.id = core_plant.create_by WHERE core_plant.code = :code AND core_plant.name like :name AND core_plant.is_deleted = 0")
                 .queryFieldList(Arrays.asList(
                         new QueryField("code", "编号", QueryField.Type.TEXT),

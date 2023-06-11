@@ -6,7 +6,7 @@
     <link rel="stylesheet" th:href="@{/css/tab-common.css}">
     <link rel="stylesheet" th:href="@{/plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css}">
     <link rel="stylesheet" th:href="@{/plugins/multiple-select/multiple-select.min.css}">
-    <style>
+    <style th:inline="css">
         .ms-parent {
             padding: 0;
         }
@@ -17,6 +17,8 @@
             height: 33px;
             line-height: 33px;
         }
+
+        /*[(${(report.additionalInfo != null && report.additionalInfo['css'] != null ) ? report.additionalInfo['css'] : ''})]*/
 
     </style>
 </head>
@@ -69,7 +71,7 @@
                             <th style="width: 40px">序号</th>
                             <th th:each="n : ${report.reportColumnList}" th:text="${n.label}" th:data-name="${n.name}" th:class="${n.sortable ? 'sortable text-' + n.align.name().toLowerCase() : 'text-' + n.align.name().toLowerCase() }"
                                 th:style="${n.columnWidth == null ? '': 'width: ' + n.columnWidth + 'px'}" th:if="${!n.hidden}"></th>
-                            <th class="text-center" style="width: 100px" sec:authorize="${hasAuthority(#vars.report.code + '_delete') or hasAuthority(#vars.report.code + '_delete')}" th:if="${report.extraData != null}">操作</th>
+                            <th class="text-center" style="width: 100px" sec:authorize="${hasAuthority(#vars.report.code + '_delete') or hasAuthority(#vars.report.code + '_delete')}" th:if="${report.additionalInfo != null && report.additionalInfo['formId'] != null}">操作</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -79,7 +81,7 @@
                                 <a href="javascript:;" th:if="${vStat.index == 1}" th:text="${report.reportColumnList.get(vStat.index).type.name() eq 'NUMERIC' ? #numbers.formatInteger(v, 0, 'COMMA') : (report.reportColumnList.get(vStat.index).type.name() eq 'DECIMAL' ? #numbers.formatDecimal(v,1,'COMMA',2,'POINT') : v) }" th:onclick="showDialog('查看', '[[${m[0]}]]')"></a>
                                 <span th:if="${vStat.index > 1}" th:text="${report.reportColumnList.get(vStat.index).type.name() eq 'NUMERIC' ? #numbers.formatInteger(v, 0, 'COMMA') : (report.reportColumnList.get(vStat.index).type.name() eq 'DECIMAL' ? #numbers.formatDecimal(v,1,'COMMA',2,'POINT') : v) }"></span>
                             </td>
-                            <td class="text-center" sec:authorize="${hasAuthority(#vars.report.code + '_delete') or hasAuthority(#vars.report.code + '_delete')}" th:if="${report.extraData != null}">
+                            <td class="text-center" sec:authorize="${hasAuthority(#vars.report.code + '_delete') or hasAuthority(#vars.report.code + '_delete')}" th:if="${report.additionalInfo != null && report.additionalInfo['formId'] != null}">
 <!--                                <a class="dialogBtn mr-2" href="javascript:;" th:onclick="showDialog('查看', '[[${m[0]}]]')" sec:authorize="${hasAuthority(#vars.report.code + '_read')}">查看</a>-->
                                 <a class="dialogBtn mr-2" href="javascript:;" th:onclick="showDialog('编辑', '[[${m[0]}]]')" sec:authorize="${hasAuthority(#vars.report.code + '_edit')}">编辑</a>
                                 <a href="javascript:;" th:onclick="deleteRow('[[${m[0]}]]')" sec:authorize="${hasAuthority(#vars.report.code + '_delete')}">删除</a>
@@ -214,7 +216,7 @@
         $('#exportBtn').attr('href', $('#exportBtn').attr('href') + _newUrl())
 
         let $modal = $('#dialog')
-        let form_id =/*[[${report.extraData} + '']]*/
+        let form_id =/*[[${report.additionalInfo['formId']} + '']]*/
 
         function showDialog(title, id) {
             $('#dialog-title').text(title)
@@ -255,6 +257,8 @@
                 });
             }
         }
+
+        /*[(${(report.additionalInfo != null && report.additionalInfo['js'] != null ) ? report.additionalInfo['js'] : ''})]*/
     </script>
 </th:block>
 </body>
