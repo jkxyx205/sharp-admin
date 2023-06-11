@@ -360,7 +360,7 @@ public class MaterialTest {
                         new ReportColumn("code", "编号"),
                         new ReportColumn("name", "名称"),
                         new ReportColumn("characteristic", "特征值", false, null, Arrays.asList("characteristicConverter")),
-                        new ReportColumn("", "基本单位", false, "unit", Arrays.asList("dictConverter")),
+//                        new ReportColumn("base_unit", "基本单位", false, "unit", Arrays.asList("dictConverter")),
                         new HiddenReportColumn("base_unit"),
                         new ReportColumn("base_unit_name", "基本单位", false, "unit", Arrays.asList("dictConverter")),
 //                        new ReportColumn("material_type", "类型", false, "material_type", Arrays.asList("dictConverter")),
