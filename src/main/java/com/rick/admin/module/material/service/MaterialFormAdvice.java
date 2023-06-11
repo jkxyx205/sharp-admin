@@ -1,5 +1,6 @@
 package com.rick.admin.module.material.service;
 
+import com.rick.admin.module.inventory.dao.StockDAO;
 import com.rick.formflow.form.service.FormAdvice;
 import com.rick.formflow.form.service.bo.FormBO;
 import com.rick.meta.dict.service.DictService;
@@ -23,6 +24,8 @@ import java.util.Objects;
 public class MaterialFormAdvice implements FormAdvice {
 
     private final DictService dictService;
+
+    private final StockDAO stockDAO;
 
     @Override
     public void beforeInstanceHandle(FormBO form, Long instanceId, Map<String, Object> values) {
@@ -48,12 +51,13 @@ public class MaterialFormAdvice implements FormAdvice {
     @Override
     public void beforeGetInstance(Long instanceId, Map<String, Object> valueMap) {
         Numbers numbers = new Numbers(Locale.CHINA);
-        valueMap.put("stockQuantity", "1299.99 " + dictService.getDictByTypeAndName("unit", valueMap.get("base_unit").toString()).get().getLabel());
 
+        BigDecimal stockQuantity = stockDAO.getStockQuantityByMaterialId((Long)valueMap.get("id"));
+        valueMap.put("stockQuantity", stockQuantity + " " + dictService.getDictByTypeAndName("unit", valueMap.get("base_unit").toString()).get().getLabel());
         BigDecimal standardPrice = (BigDecimal) valueMap.get("standardPrice");
 
         if (Objects.nonNull(standardPrice)) {
-            valueMap.put("stockQuantityPrice", numbers.formatDecimal(new BigDecimal("1299.99").multiply(BigDecimal.valueOf(2)), 1, "COMMA", 2, "POINT") + " 元");
+            valueMap.put("stockQuantityPrice", numbers.formatDecimal(stockQuantity.multiply(standardPrice), 1, "COMMA", 2, "POINT") + " 元");
         }
     }
 }

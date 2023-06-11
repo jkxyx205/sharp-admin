@@ -308,7 +308,8 @@ public class MaterialTest {
                 .name("物料")
                 .extraData("695978675677433856")
                 .reportAdviceName("materialReportAdvice")
-                .querySql("SELECT mm_material.id, mm_material.code, mm_material.name, characteristic, case when attachment is null or length(attachment) <= 2 then '无' else '有' end  attachment, material_type, mm_material.category_id, base_unit, standard_price, sys_user.name create_name,DATE_FORMAT(mm_material.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM mm_material left join sys_user on sys_user.id = mm_material.create_by WHERE mm_material.code = :code AND mm_material.name like :name AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0")
+//                .querySql("SELECT mm_material.id, mm_material.code, mm_material.name, characteristic, case when attachment is null or length(attachment) <= 2 then '无' else '有' end  attachment, material_type, mm_material.category_id, base_unit, standard_price, sys_user.name create_name,DATE_FORMAT(mm_material.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM mm_material left join sys_user on sys_user.id = mm_material.create_by WHERE mm_material.code = :code AND mm_material.name like :name AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0")
+                .querySql("SELECT mm_material.id, mm_material.code, mm_material.name, characteristic, case when attachment is null or length(attachment) <= 2 then '无' else '有' end  attachment, material_type, mm_material.category_id, base_unit, standard_price, sys_user.name create_name,DATE_FORMAT(mm_material.create_time, '%Y-%m-%d %H:%i:%s') create_time,stock.quantity stock_quantity, standard_price * stock.quantity stock_quantity_standard_price FROM mm_material left join sys_user on sys_user.id = mm_material.create_by left join (select material_id, sum(quantity) quantity from inv_stock group by material_id) stock on stock.material_id = mm_material.id WHERE mm_material.code = :code AND mm_material.name like :name AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0")
                 .queryFieldList(Arrays.asList(
                         new QueryField("code", "编号", QueryField.Type.TEXT),
                         new QueryField("materialType", "类型", QueryField.Type.SELECT, "material_type"),
@@ -334,6 +335,7 @@ public class MaterialTest {
                 ))
                 .pageable(true)
                 .sidx("id")
+                .summaryColumnNames("stock_quantity_standard_price")
                 .sord(SordEnum.ASC)
                 .build());
     }
