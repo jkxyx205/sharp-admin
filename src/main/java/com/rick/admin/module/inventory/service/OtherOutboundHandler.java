@@ -3,8 +3,6 @@ package com.rick.admin.module.inventory.service;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-
 /**
  * @author Rick.Xu
  * @date 2023/6/11 11:42
@@ -24,9 +22,7 @@ public class OtherOutboundHandler extends AbstractHandler {
 
     @Override
     public void handle0(InventoryDocument inventoryDocument) {
-        for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
-            item.setQuantity(BigDecimal.ZERO.subtract(item.getQuantity()));
-        }
+
     }
 
     @Override

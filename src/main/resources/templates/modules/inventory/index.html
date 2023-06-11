@@ -91,6 +91,7 @@
                                 <tr>
                                     <th style="width: 40px;">序号</th>
                                     <th><label class="col-form-label col-sm-2 required">物料</label></th>
+                                    <th><label class="col-form-label col-sm-2">描述</label></th>
                                     <th><label class="col-form-label col-sm-2 required">数量</label></th>
                                     <th><label class="col-form-label col-sm-2">单位</label></th>
                                     <th><label class="col-form-label col-sm-2">备注</label></th>
@@ -130,6 +131,38 @@
         let $execBtn= $('#execBtn')
         let formHeader = document.getElementById('form-header');
         let formItem = document.getElementById('form-item');
+        let $documentDate = $('#documentDate')
+        let $plantId = $('#plantId')
+        let $operatorId = $('#operatorId')
+        let $remark = $('#remark')
+
+        let editableTableIndex = 1
+
+        let columnConfigs = [
+            {
+                type: "material_input",
+                name: "materialId",
+                required: true,
+            },
+            {
+                type: "label",
+                name: "materialText",
+            },
+            {
+                type: "number",
+                name: "quantity",
+                required: true,
+            },
+            {
+                type: "text-label",
+                name: "unit",
+                required: true,
+            },
+            {
+                type: "text",
+                name: "remark",
+            }
+        ]
 
         formOperator.addEventListener('submit', function (event) {
             execute()
@@ -144,6 +177,8 @@
         }
 
         let referenceTypeDom = document.getElementById('referenceType')
+        let type = document.getElementById('type')
+
         changeType(document.getElementById('type'))
 
         function changeType(select) {
@@ -202,19 +237,61 @@
                 console.log(referenceTypeDom.value)
                 console.log($referenceCode.val())
 
+                tableReset()
                 // ajax
-                $('#table tbody').prepend('<tr>\n' +
-                    '                                        <td></td>\n' +
-                    '                                        <td><input class="form-control" type="text" value="轮胎 黄色/中/25G" autocomplete="off" required="required" disabled><input class="form-control" type="hidden" name="materialId" required="required" value="696078910634332160"><input class="form-control" type="hidden" name="referenceItemId" required="required" value="999"></td>\n' +
-                    '                                        <td><input class="form-control" type="text" value="3" autocomplete="off" pattern="^\\d+(\\.\\d{1,3})?$" title="必须数字" name="quantity" required="required"></td>\n' +
-                    '                                        <td><input class="form-control" type="text" value="个" autocomplete="off" disabled><input class="form-control" type="hidden" name="unit" required="" value="EA"></td>\n' +
-                    '                                        <td><input class="form-control" type="text" value="" autocomplete="off" name="remark"></td>\n' +
-                    '                                        <td class="operator btn-link"></td>\n' +
-                    '                                    </tr>')
+                $.get("/inventory/documents", {referenceType:referenceTypeDom.value, referenceCode: $referenceCode.val()},function (res) {
+                    console.log(res)
+                    $documentDate.val(res.documentDate)
+                    $plantId.val(res.plantId)
+                    $operatorId.val(res.operatorId)
+                    $remark.val(res.remark)
 
-                $("form.readonly :input").prop("disabled", true);
-                $("#table tr:last-child").prop("disabled", true);
-                rebuildIndex()
+                    let $currentTr
+
+                    for (let item of res.itemList) {
+                        let $tr = $('<tr>\n    ' +
+                            '<td></td>\n    ' +
+                            '<td><input class="form-control" type="text" autocomplete="off"></td>\n    ' +
+                            '<td><input class="form-control" type="text" autocomplete="off"></td>\n    ' +
+                            '<td><input class="form-control" type="text" autocomplete="off"></td>\n    ' +
+                            '<td><input class="form-control" type="text" autocomplete="off"></td>\n    ' +
+                            '<td><input class="form-control" type="text" autocomplete="off"></td>\n    ' +
+                            '<td class="operator btn-link"><input type="hidden" name="referenceItemId"></td>\n' +
+                            '</tr>')
+
+                        if ($currentTr) {
+                            $currentTr.after($tr)
+                        } else {
+                            $('#table tbody').prepend($tr)
+                        }
+
+                        formatTr($tr);
+                        $tr.find("input[name]").each(function () {
+                            $(this).val(item[this.name])
+                        })
+
+                        // 其他值
+                        $tr.find('td:nth-child(5) input[type=text]').val(item.unitText)
+                        // 出库入库
+                        $tr.find('td:nth-child(4)').css('position', 'relative').append("<span style='position: absolute;left: 5px; top: 8px;'>"+(item.movementType === 'OUTBOUND' ? '-' : '+')+"</span>")
+                        $currentTr = $tr
+                    }
+
+                    if (type.value === 'DISPLAY') {
+                        $("form :input").prop("disabled", true);
+                        $referenceCode.prop("disabled", false);
+                        $execBtn.prop("disabled", false);
+                    } else if (type.value === 'CANCEL') {
+                        $("form :input").prop("disabled", true);
+                    } else {
+                        $("form.readonly :input").prop("disabled", true);
+                        $("#table tr:last-child").prop("disabled", true);
+                    }
+
+                    rebuildIndex()
+                }).fail(function(err) {
+                    console.log(err.responseJSON)
+                })
             }
         }
 
@@ -234,24 +311,11 @@
         $('#table-container').table({fixedHead: true})
         $('.tr-empty.non-data').remove()
 
-        var editableTableIndex = 1;
+
         $('#table').editableTable({
-            columns: 5,
+            columns: columnConfigs.length + 1,
             addEmptyLineCallback: function ($tr) {
-                $tr.find('td:nth-child(2) input').attr('readonly', false);
-                $tr.find('td:nth-child(2)').append('<input class="form-control" type="hidden" name="materialId" required>')
-
-                $tr.find('td:nth-child(3) input')
-                    // .attr('type', 'number')
-                    .attr('pattern', '^\\d+(\\.\\d{1,3})?$')
-                    .attr('title', '必须数字')
-                    .attr('name', "quantity");
-
-                $tr.find('td:nth-child(4) input').attr('disabled', true).attr('readonly', true)
-                $tr.find('td:nth-child(4)').append('<input class="form-control" type="hidden" name="unit" required>')
-
-                $tr.find('td:nth-child(5) input').attr('name', "remark")
-
+                formatTr($tr)
                 rebuildIndex()
             },
             beforeRemoveCallback: function ($parent) {
@@ -264,6 +328,33 @@
                 return true
             }
         })
+
+        function formatTr($tr) {
+            for (let i = 0; i < columnConfigs.length; i++) {
+                let columnConfig = columnConfigs[i];
+                let childIndex = i + 2
+
+                if (columnConfig.type === 'material_input') {
+                    $tr.find('td:nth-child('+childIndex+') input')
+                        .attr('name', 'materialCode')
+                        .attr('readonly', false);
+                    $tr.find('td:nth-child('+childIndex+')').append('<input class="form-control" type="hidden" name="'+columnConfig.name+'">')
+                } else if (columnConfig.type === 'number') {
+                    $tr.find('td:nth-child('+childIndex+') input')
+                        // .attr('type', 'number')
+                        .attr('pattern', '^\\d+(\\.\\d{1,3})?$')
+                        .attr('title', '必须数字')
+                        .attr('name', columnConfig.name);
+                } else if (columnConfig.type === 'text-label') {
+                    $tr.find('td:nth-child('+childIndex+') input').attr('disabled', true).attr('readonly', true)
+                    $tr.find('td:nth-child('+childIndex+')').append('<input class="form-control" type="hidden" name="'+columnConfig.name+'">')
+                } else if (columnConfig.type === 'label') {
+                    $tr.find('td:nth-child('+childIndex+') input').attr('disabled', true).attr('readonly', true).attr('name', columnConfig.name)
+                } else if (columnConfig.type === 'text') {
+                        $tr.find('td:nth-child('+childIndex+') input').attr('name', columnConfig.name)
+                    }
+                }
+        }
 
         function rebuildIndex() {
             editableTableIndex = 1;
@@ -278,8 +369,14 @@
                 $requiredTr = $tr
             }
 
-            $requiredTr.find('td:nth-child(2) input').attr('required', true)
-            $requiredTr.find('td:nth-child(3) input').attr("required", true)
+            for (let i = 0; i < columnConfigs.length; i++) {
+                let columnConfig = columnConfigs[i];
+                let childIndex = i + 2
+
+                if (columnConfig.required === true) {
+                    $requiredTr.find('td:nth-child('+childIndex+') input').attr('required', true)
+                }
+            }
         }
 
         $('#dialogInput').dialogInput({
@@ -298,11 +395,13 @@
                 else
                     currentMaterialDom.fireEvent("input");
 
-                currentMaterialDom.value = this.labelDisplay(row)
+                currentMaterialDom.value = row.code
                 setCaretPosition(currentMaterialDom, currentMaterialDom.value.length)
 
-                $(currentMaterialDom).parents('tr').find('td:nth-child(4) input[type=text]').val(row.base_unit_name)
-                $(currentMaterialDom).parents('tr').find('td:nth-child(4) input[type=hidden]').val(row.base_unit)
+                $(currentMaterialDom).parent().next().find('input[type=text]').val(this.labelDisplay(row))
+
+                $(currentMaterialDom).parents('tr').find('td:nth-child(5) input[type=text]').val(row.base_unit_name)
+                $(currentMaterialDom).parents('tr').find('td:nth-child(5) input[type=hidden]').val(row.base_unit)
 
                 $(currentMaterialDom).siblings().val(row.id)
             }
@@ -324,25 +423,36 @@
             }
         }
 
-        $('#table tbody').delegate('td:nth-child(2) input[type=text]', 'click keydown focus', function(event){
-            // if ((event.keyCode && event.keyCode === 13) || !event.keyCode) {
-            if ((event.keyCode && event.keyCode !== 9) || !event.keyCode) {
-                dialogInput.click();
-                currentMaterialDom = this
-            }
+        // 注册事件
+        (function () {
+            for (let i = 0; i < columnConfigs.length; i++) {
+                let columnConfig = columnConfigs[i];
+                let childIndex = i + 2
 
-            if (event.keyCode !== 9 ) {
-                event.preventDefault();
-                return;
-            }
-        })
+                if (columnConfig.type === 'material_input') {
+                    $('#table tbody').delegate('td:nth-child('+childIndex+') input[type=text]', 'click keydown focus', function(event){
+                        // if ((event.keyCode && event.keyCode === 13) || !event.keyCode) {
+                        if ((event.keyCode && event.keyCode !== 9) || !event.keyCode) {
+                            dialogInput.click();
+                            currentMaterialDom = this
+                        }
 
-        $('#table tbody').delegate('td:nth-child(3) input[type=text]', 'keydown', function(event){
-            if ((event.keyCode > 57 || event.keyCode < 48) && event.keyCode !== 8 && event.keyCode !== 190 && event.keyCode !== 39 && event.keyCode !== 37 && event.keyCode !== 9) {
-                event.preventDefault();
-                return;
+                        if (event.keyCode !== 9 ) {
+                            event.preventDefault();
+                            return;
+                        }
+                    })
+
+                } else if (columnConfig.type === 'number') {
+                    $('#table tbody').delegate('td:nth-child('+childIndex+') input[type=text]', 'keydown', function(event){
+                        if ((event.keyCode > 57 || event.keyCode < 48) && event.keyCode !== 8 && event.keyCode !== 190 && event.keyCode !== 39 && event.keyCode !== 37 && event.keyCode !== 9) {
+                            event.preventDefault();
+                            return;
+                        }
+                    })
+                }
             }
-        })
+        })()
 
         function valid() {
             var formHeaderValidity = formHeader.checkValidity()
@@ -357,11 +467,16 @@
             formItem.classList.remove('was-validated')
             formOperator.classList.remove('was-validated')
 
-            $('#table tbody tr:not(:last-child)').remove()
-            rebuildIndex()
+            tableReset()
+
             document.getElementById('referenceCode').value = ''
             $("form.readonly :input").prop("disabled", false);
             $("form-item #table tr:last-child").prop("disabled", false);
+        }
+
+        function tableReset() {
+            $('#table tbody tr:not(:last-child)').remove()
+            rebuildIndex()
         }
 
         function send() {
@@ -371,12 +486,12 @@
                 var row = {}
                 $(this).find('td input[name]').each(function () {
                     row[$(this).attr('name')] = $(this).val()
-
-                    // 处理material
-                    if (!row.materialId) {
-                        $(this).siblings().val('')
-                    }
                 })
+
+                // 处理material
+                if (!row.materialId) {
+                    $(this).siblings().val('')
+                }
 
                 // 如何全部为空删除该行
                 let allEmpty = true

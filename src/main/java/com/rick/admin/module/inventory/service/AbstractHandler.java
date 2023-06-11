@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 
 /**
  * @author Rick.Xu
@@ -35,13 +36,14 @@ public abstract class AbstractHandler implements MovementHandler {
         }
 
         handle0(inventoryDocument);
+
         inventoryDocumentDAO.insert(inventoryDocument);
 
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
             stockService.changeStockQuantity(Stock.builder()
                     .plantId(item.getPlantId())
                     .materialId(item.getMaterialId())
-                    .quantity(item.getQuantity())
+                    .quantity(item.getMovementType() == InventoryDocument.MovementTypeEnum.OUTBOUND ? BigDecimal.ZERO.subtract(item.getQuantity()) : item.getQuantity())
                     .unit(item.getUnit())
                     .build());
         }

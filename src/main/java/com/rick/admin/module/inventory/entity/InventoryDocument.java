@@ -1,11 +1,14 @@
 package com.rick.admin.module.inventory.entity;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.rick.db.dto.BaseCodeEntity;
 import com.rick.db.dto.BaseEntity;
 import com.rick.db.plugin.dao.annotation.Column;
 import com.rick.db.plugin.dao.annotation.OneToMany;
 import com.rick.db.plugin.dao.annotation.Table;
+import com.rick.db.plugin.dao.annotation.Transient;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
@@ -44,10 +47,12 @@ public class InventoryDocument extends BaseCodeEntity {
     @Column(comment = "凭证日期")
     LocalDate documentDate;
 
+    @JsonSerialize(using = ToStringSerializer.class)
     @NotNull
     @Column(comment = "库房")
     Long plantId;
 
+    @JsonSerialize(using = ToStringSerializer.class)
     @Column(comment = "操作人")
     Long operatorId;
 
@@ -74,6 +79,7 @@ public class InventoryDocument extends BaseCodeEntity {
         @Column(comment = "参考凭证号")
         String referenceCode;
 
+        @JsonSerialize(using = ToStringSerializer.class)
         @Column(comment = "参考凭证行项目id")
         Long referenceItemId;
 
@@ -101,6 +107,15 @@ public class InventoryDocument extends BaseCodeEntity {
         String remark;
 
         Long inventoryDocumentId;
+
+        @Transient
+        String materialCode;
+
+        @Transient
+        String materialText;
+
+        @Transient
+        String unitText;
     }
 
     @AllArgsConstructor

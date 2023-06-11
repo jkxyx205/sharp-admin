@@ -3,6 +3,7 @@ package com.rick.admin.module.inventory.service;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.module.inventory.dao.StockDAO;
 import com.rick.admin.module.inventory.entity.Stock;
+import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.common.http.exception.BizException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,8 @@ public class StockService {
 
     StockDAO stockDAO;
 
+    MaterialDAO materialDAO;
+
     /**
      * 修改库存
      * @param stock
@@ -48,7 +51,8 @@ public class StockService {
 
         // check
         if (BigDecimalUtils.lt(stock.getQuantity(), BigDecimal.ZERO)) {
-            throw new BizException(LOW_STOCKS_ERROR);
+            throw new BizException(LOW_STOCKS_ERROR,
+                    new Object[]{materialDAO.selectSingleValueById(stock.getMaterialId(), "code", String.class).get()});
         }
 
         stockDAO.insertOrUpdate(stock);

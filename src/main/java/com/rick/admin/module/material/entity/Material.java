@@ -6,10 +6,12 @@ import com.rick.db.plugin.dao.annotation.Table;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Rick.Xu
@@ -57,4 +59,8 @@ public class Material extends BaseCodeEntity {
 
     @Column(comment = "附件", columnDefinition = "text", value = "attachment", nullable = false)
     private List<Map<String, Object>> attachmentList;
+
+    public String getCharacteristicText() {
+        return CollectionUtils.isNotEmpty(getCharacteristicList()) ? getCharacteristicList().stream().map(list -> list.get(1).toString()).collect(Collectors.joining("/")) : "";
+    }
 }

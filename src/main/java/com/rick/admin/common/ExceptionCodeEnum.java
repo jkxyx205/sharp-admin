@@ -16,7 +16,8 @@ public enum ExceptionCodeEnum implements ExceptionCode {
     INVALID_SESSION(400011, "访问超时，请退出后重新登录"),
     VALIDATE_CODE_ERROR(40003, "验证码输入不正确"),
     ROLE_NULL_ERROR(404009, "角色名不能为空"),
-    LOW_STOCKS_ERROR(504001, "库存不足");
+    LOW_STOCKS_ERROR(504001, "「%s」库存不足"),
+    MATERIAL_DOCUMENT_NOT_FOUND_ERROR(504002, "物料凭证「%s」不存在!");
 
     private int code;
     private String message;
