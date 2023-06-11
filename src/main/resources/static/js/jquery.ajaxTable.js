@@ -308,7 +308,7 @@
                                 if (typeof summaryVal === 'object') {
                                     summaryData[summaryVal.index] = summaryVal.name
                                 } else {
-                                    summaryData[summaryVal] = formatInteger(that.data[i])
+                                    summaryData[summaryVal] = formatDecimal(that.data[i])
                                 }
                             }
                             that.$saleListTbody.append('<tr class="tr-summary non-data" style="border-top: 0;"><td class="text-right bold">' + summaryData.join('</span></td><td class="text-right bold"><span>') + '</td></tr>')

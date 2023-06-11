@@ -87,7 +87,7 @@
                         </tr>
                         <tr th:if="${summary ne null}">
                             <td style="font-weight: bold;">合计</td>
-                            <td th:each="n : ${report.reportColumnList}" th:text="${summary.get(n.name)}" th:if="${!n.hidden}"></td>
+                            <td class="text-right bold" th:each="n : ${report.reportColumnList}" th:text="${#numbers.formatDecimal(summary.get(n.name),1,'COMMA',2,'POINT')}" th:if="${!n.hidden}"></td>
                             <td></td>
                         </tr>
                         <tr class="tr-empty non-data" th:if="${grid.records < 1}">
