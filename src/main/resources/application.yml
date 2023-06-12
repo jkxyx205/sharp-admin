@@ -55,7 +55,7 @@ dict:
     - type: core_material_category
       sql: "select 0 as id, '无' from core_material_category union all select id, name from core_material_category order by id asc"
     - type: partner_type
-      map: { "CUSTOMER" : "客户", "VENDOR": "供应商" }
+      map: { "CUSTOMER": "客户", "VENDOR": "供应商" }
     - type: core_partner
       sql: "select id, name from core_partner order by id asc"
     - type: core_plant
@@ -67,9 +67,16 @@ dict:
     - type: material_type
       sql: "select name, label from sys_dict where type = 'MATERIAL_TYPE' order by sort asc"
     - type: bol
-      map: { "1" : "是", "0": "否" }
+      map: { "1": "是", "0": "否" }
     - type: mm_material
       sql: "select id, name from mm_material order by id asc"
+    - type: movement_type
+      map: { "INBOUND": "入库", "OUTBOUND": "出库" }
+    - type: inv_type
+      map: { "INBOUND": "入库", "OUTBOUND": "出库", "RETURN": "退货", "CANCEL":"取消", "COUNT": "盘点"}
+    - type: reference_type
+      map: { "OTHER": "无","MATERIAL_DOCUMENT": "物料凭证", "PO": "采购订单"}
+
 
 fileupload:
   tmp: /Users/rick/Space/tmp/fastdfs/tmp # 下载的临时目录

@@ -512,16 +512,15 @@
             return urlObj
         }
 
-        function openDetail(pkMaterial, name, hash) {
-            var url = "/materials/" + pkMaterial
+        function openOnNewTab(url, name, hash) {
             if (hash)
                 url += '#' + hash
 
-            window.parent.addTab("material-" + pkMaterial, name, url)
+            window.parent.addTab("tab-" + new Date().getTime(), name, url)
         }
 
-        function openDetailLink(pkMaterial, name) {
-            return '<a href="javascript:;" onclick="openDetail(\''+pkMaterial+'\', \''+name+'\')">'+name+'</a>'
+        function openOnNewTabLink(url, name) {
+            return '<a href="javascript:;" onclick="openOnNewTab(\''+url+'\', \''+name+'\')">'+name+'</a>'
         }
 
         function openSaleOutDetail(name, startDate, endDate) {
@@ -626,7 +625,7 @@
 
         Vue.filter('formatInteger', formatInteger)
         Vue.filter('formatDecimal', formatDecimal)
-        Vue.filter('openDetailLink', openDetailLink)
+        Vue.filter('openOnNewTabLink', openOnNewTabLink)
 
         // https://css-tricks.com/snippets/jquery/make-jquery-contains-case-insensitive/
         $.expr[":"].contains = $.expr.createPseudo(function(arg) {

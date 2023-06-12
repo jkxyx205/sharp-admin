@@ -72,6 +72,13 @@ head.appendChild(style)
                 this.iframe.label = this.$element.find('label')
 
                 this.domBind = true
+
+                // init value
+                if (this.options.value) {
+                    $.get('/reports/' + this.options.reportId + "/" +this.options.value, (res) => {
+                        this.iframe.label.text(this.options.labelDisplay(res))
+                    })
+                }
             }
         },
         _showReportDialog:function (title) {

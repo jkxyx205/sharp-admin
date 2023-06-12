@@ -346,7 +346,7 @@ public class MaterialTest {
                 .code("mm_material_search")
                 .tplName("tpl/query_list")
                 .name("物料查询")
-                .querySql("SELECT cast(mm_material.id as char(20)) id, mm_material.code, mm_material.name, characteristic, material_type, mm_material.category_id, base_unit, base_unit as base_unit_name FROM mm_material WHERE mm_material.code = :code AND (mm_material.name like :keywords or characteristic like :keywords or mm_material.code like :keywords) AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0")
+                .querySql("SELECT cast(mm_material.id as char(20)) id, mm_material.code, mm_material.name, characteristic, material_type, mm_material.category_id, base_unit, base_unit as base_unit_name FROM mm_material WHERE mm_material.code = :code AND (mm_material.name like :keywords or characteristic like :keywords or mm_material.code like :keywords) AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0 AND id = :id")
                 .queryFieldList(Arrays.asList(
 //                        new QueryField("code", "编号", QueryField.Type.TEXT),
                         new QueryField("keywords", "关键字", QueryField.Type.TEXT),

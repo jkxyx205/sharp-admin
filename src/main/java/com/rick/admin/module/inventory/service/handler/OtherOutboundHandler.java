@@ -1,6 +1,7 @@
-package com.rick.admin.module.inventory.service;
+package com.rick.admin.module.inventory.service.handler;
 
 import com.rick.admin.module.inventory.entity.InventoryDocument;
+import com.rick.admin.module.inventory.service.AbstractHandler;
 import org.springframework.stereotype.Component;
 
 /**
@@ -22,12 +23,12 @@ public class OtherOutboundHandler extends AbstractHandler {
 
     @Override
     public void handle0(InventoryDocument inventoryDocument) {
+        for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
+            item.setMovementType(InventoryDocument.MovementTypeEnum.OUTBOUND);
+            item.setRootReferenceCode(item.getInventoryDocumentCode());
+        }
 
-    }
-
-    @Override
-    public InventoryDocument.MovementTypeEnum itemMovementType(InventoryDocument.Item item) {
-        return InventoryDocument.MovementTypeEnum.OUTBOUND;
+        inventoryDocument.setRootReferenceCode(inventoryDocument.getCode());
     }
 
 }

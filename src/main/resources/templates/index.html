@@ -92,12 +92,12 @@
                             </a>
                         </li>
                         <li class="nav-item" sec:authorize="hasAuthority('inventory_list')">
-                            <a class="nav-link" href="javascript:addTab('inventory_list', '物料凭证', '/reports/695623902415556608')">
+                            <a class="nav-link" href="javascript:addTab('inventory_list', '物料凭证', '/reports/699659248728047616')">
                                 <i class="nav-icon icon-chart"></i> 物料凭证
                             </a>
                         </li>
                         <li class="nav-item" sec:authorize="hasAuthority('inventory_count')">
-                            <a class="nav-link" href="javascript:addTab('inventory_count', '盘点', '/reports/695623902415556608')">
+                            <a class="nav-link" href="javascript:addTab('inventory_count', '盘点', '/inventory/count')">
                                 <i class="nav-icon icon-calculator"></i> 盘点
                             </a>
                         </li>
@@ -212,12 +212,26 @@
             //     allowClose: false
             // });
 
+            // nthTabs.addTab({
+            //     id: "inventory_move",
+            //     title: '库存移动',
+            //     url: "/inventory/move",
+            //     allowClose: false
+            // });
+
             nthTabs.addTab({
-                id: "inventory_move",
-                title: '库存移动',
-                url: "/inventory/move",
+                id: "inventory_count",
+                title: '盘点',
+                url: "/inventory/count",
                 allowClose: false
             });
+
+            // nthTabs.addTab({
+            //     id: "inventory_list",
+            //     title: '物料凭证',
+            //     url: "/reports/699659248728047616",
+            //     allowClose: false
+            // });
 
             // nthTabs.addTab({
             //     id: "mm_material",

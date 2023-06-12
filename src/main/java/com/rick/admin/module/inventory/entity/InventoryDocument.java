@@ -43,6 +43,9 @@ public class InventoryDocument extends BaseCodeEntity {
     @Column(comment = "参考凭证号")
     String referenceCode;
 
+    @Column(comment = "root参考凭证号")
+    String rootReferenceCode;
+
     @NotNull
     @Column(comment = "凭证日期")
     LocalDate documentDate;
@@ -63,6 +66,9 @@ public class InventoryDocument extends BaseCodeEntity {
     @OneToMany(subTable = "inv_document_item", reversePropertyName = "inventoryDocumentId", cascadeInsert = true, joinValue = "inventory_document_id")
     List<Item> itemList;
 
+    @Column(comment = "是否已经被取消")
+    Boolean canceled;
+
     @Getter
     @Setter
     @NoArgsConstructor
@@ -71,6 +77,9 @@ public class InventoryDocument extends BaseCodeEntity {
     @SuperBuilder
     @Table(value = "inv_document_item", comment = "物料凭证行项目")
     public static class Item extends BaseEntity {
+
+        @Column(comment = "场景")
+        TypeEnum type;
 
         @NotNull
         @Column(comment = "参考凭证类型", columnDefinition = "varchar(32)")
@@ -83,16 +92,21 @@ public class InventoryDocument extends BaseCodeEntity {
         @Column(comment = "参考凭证行项目id")
         Long referenceItemId;
 
+        @Column(comment = "root参考凭证号")
+        String rootReferenceCode;
+
         @NotNull
         @Column(comment = "移动类型")
         MovementTypeEnum movementType;
 
         @NotNull
         @Column(comment = "库房")
+        @JsonSerialize(using = ToStringSerializer.class)
         Long plantId;
 
         @NotNull
         @Column(comment = "物料")
+        @JsonSerialize(using = ToStringSerializer.class)
         Long materialId;
 
         @NotNull
@@ -107,6 +121,8 @@ public class InventoryDocument extends BaseCodeEntity {
         String remark;
 
         Long inventoryDocumentId;
+
+        String inventoryDocumentCode;
 
         @Transient
         String materialCode;
@@ -142,7 +158,9 @@ public class InventoryDocument extends BaseCodeEntity {
         INBOUND("入库"),
         OUTBOUND("出库"),
         RETURN("退货"),
-        CANCEL("取消");
+        CANCEL("取消"),
+        DISPLAY("显示"),
+        COUNT("盘点");
 
         @JsonValue
         public String getCode() {
@@ -160,9 +178,8 @@ public class InventoryDocument extends BaseCodeEntity {
     @Getter
     public enum ReferenceTypeEnum {
         OTHER("无"),
-        MATERIAL_DOCUMENT("参考凭证"),
-        PO("采购订单"),
-        COUNT("盘点");
+        MATERIAL_DOCUMENT("物料凭证"),
+        PO("采购订单");
 
         @JsonValue
         public String getCode() {

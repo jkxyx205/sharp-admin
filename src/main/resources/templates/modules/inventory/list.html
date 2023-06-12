@@ -49,6 +49,10 @@
                         </div>
                     </th:block>
                     <div class="form-group">
+                        <label class="col-form-label mr-2" for="material_id_container">物料</label>
+                        <div id="material_id_container"></div>
+                    </div>
+                    <div class="form-group">
                         <button class="btn btn-primary mr-2" type="button" name="search" th:if="${report.queryFieldList.size() > 0}">
                             <i class="fa fa-search"></i> 查询</button>
                         <button class="btn btn-secondary mr-2" type="button" name="reset" th:if="${report.queryFieldList.size() > 0}">
@@ -78,8 +82,9 @@
                         <tr th:each="m : ${grid.rows}">
                             <td th:text="${mStat.index + 1 + (grid.page - 1) * grid.pageSize}"></td>
                             <td th:each="v : ${grid.rows[mStat.index]}" th:class="${'text-' + report.reportColumnList.get(vStat.index).align.name().toLowerCase()}" th:if="${!report.reportColumnList.get(vStat.index).hidden}">
-                                <a href="javascript:;" th:if="${vStat.index == 1}" th:text="${report.reportColumnList.get(vStat.index).type.name() eq 'NUMERIC' ? #numbers.formatInteger(v, 0, 'COMMA') : (report.reportColumnList.get(vStat.index).type.name() eq 'DECIMAL' ? #numbers.formatDecimal(v,1,'COMMA',2,'POINT') : v) }" th:onclick="showDialog('查看', '[[${m[0]}]]')"></a>
-                                <span th:if="${vStat.index > 1}" th:text="${report.reportColumnList.get(vStat.index).type.name() eq 'NUMERIC' ? #numbers.formatInteger(v, 0, 'COMMA') : (report.reportColumnList.get(vStat.index).type.name() eq 'DECIMAL' ? #numbers.formatDecimal(v,1,'COMMA',2,'POINT') : v) }"></span>
+                                <a href="javascript:;" th:if="${vStat.index == 2}" th:text="${report.reportColumnList.get(vStat.index).type.name() eq 'NUMERIC' ? #numbers.formatInteger(v, 0, 'COMMA') : (report.reportColumnList.get(vStat.index).type.name() eq 'DECIMAL' ? #numbers.formatDecimal(v,1,'COMMA',2,'POINT') : v) }" th:onclick="openOnNewTab('[(${\'/inventory/move?referenceCode=\' + m[2]})]', '[(${m[2]})]')"></a>
+                                <a href="javascript:;" th:if="${vStat.index == 10}" th:text="${report.reportColumnList.get(vStat.index).type.name() eq 'NUMERIC' ? #numbers.formatInteger(v, 0, 'COMMA') : (report.reportColumnList.get(vStat.index).type.name() eq 'DECIMAL' ? #numbers.formatDecimal(v,1,'COMMA',2,'POINT') : v) }" th:onclick="showDialog('查看', '[[${m[9]}]]')"></a>
+                                <span th:if="${vStat.index != 10 and vStat.index != 2}" th:text="${report.reportColumnList.get(vStat.index).type.name() eq 'NUMERIC' ? #numbers.formatInteger(v, 0, 'COMMA') : (report.reportColumnList.get(vStat.index).type.name() eq 'DECIMAL' ? #numbers.formatDecimal(v,1,'COMMA',2,'POINT') : v) }"></span>
                             </td>
                             <td class="text-center" sec:authorize="${hasAuthority(#vars.report.code + '_delete') or hasAuthority(#vars.report.code + '_delete')}" th:if="${report.additionalInfo != null && report.additionalInfo['formId'] != null}">
 <!--                                <a class="dialogBtn mr-2" href="javascript:;" th:onclick="showDialog('查看', '[[${m[0]}]]')" sec:authorize="${hasAuthority(#vars.report.code + '_read')}">查看</a>-->
@@ -157,8 +162,24 @@
     <script type="text/javascript" th:src="@{/js/table/jquery.exportTable.js}"></script>
     <script th:src="@{/editable-table/editable-table.js}"></script>
     <script th:src="@{/ajaxfileupload.js}"></script>
+    <script th:src="@{/js/jquery.dialogInput.js}"></script>
 
     <script th:inline="javascript">
+        let urlObject = getUrlObject();
+
+        $('#material_id_container').dialogInput({
+            title: '选择物料',
+            name: 'material_id',
+            value: urlObject.material_id,
+            reportId: '697147523487240192',
+            labelDisplay: function (row) {
+                return row.name + ' ' + (!row.characteristic ? '' : row.characteristic)
+            },
+            selected: function () {
+                $('.query-form-container button[name=search]').click()
+            }
+        })
+
         $.fn.multipleSelect.locales['zh-CN'] = {
             formatSelectAll: function () {
                 return '[全选]'
@@ -176,7 +197,7 @@
 
         $.extend($.fn.multipleSelect.defaults, $.fn.multipleSelect.locales['zh-CN'])
 
-        let urlObject = getUrlObject();
+
 
         /*<![CDATA[*/
         var fz = [[${report.queryFieldList}]]
@@ -259,6 +280,7 @@
         }
 
         /*[(${(report.additionalInfo != null && report.additionalInfo['js'] != null ) ? report.additionalInfo['js'] : ''})]*/
+
     </script>
 </th:block>
 </body>

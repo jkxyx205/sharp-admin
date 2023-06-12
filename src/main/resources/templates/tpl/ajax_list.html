@@ -236,7 +236,7 @@
 
         let $modal = $('#dialog')
 
-        let form_id =/*[[${report.additionalInfo['formId']} + '']]*/
+        let form_id =/*[[${report.additionalInfo != null && report.additionalInfo['formId'] != null ? report.additionalInfo['formId'] : '' } + '']]*/
 
         function showDialog(title, id) {
             $('#dialog-title').text(title)

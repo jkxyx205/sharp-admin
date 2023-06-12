@@ -3,7 +3,9 @@ package com.rick.admin.module.inventory.controller;
 import com.rick.admin.common.ExceptionCodeEnum;
 import com.rick.admin.module.inventory.dao.InventoryDocumentDAO;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
+import com.rick.admin.module.inventory.service.HandlerHelper;
 import com.rick.admin.module.inventory.service.HandlerManager;
+import com.rick.admin.module.inventory.service.InventoryDocumentService;
 import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.entity.Material;
 import com.rick.common.http.exception.BizException;
@@ -16,6 +18,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -38,6 +41,8 @@ public class InventoryController {
 
     final DictService dictService;
 
+    final InventoryDocumentService inventoryDocumentService;
+
     @GetMapping("move")
     public String gotoInventoryPage() {
         return "modules/inventory/index";
@@ -52,15 +57,25 @@ public class InventoryController {
 
     @GetMapping("documents")
     @ResponseBody
-    public InventoryDocument getInventoryDocument(InventoryDocument.ReferenceTypeEnum referenceType, String referenceCode) {
+    public InventoryDocument getInventoryDocument(InventoryDocument.TypeEnum type, InventoryDocument.ReferenceTypeEnum referenceType, String referenceCode) {
         if (referenceType == InventoryDocument.ReferenceTypeEnum.MATERIAL_DOCUMENT) {
-            Optional<InventoryDocument> option = inventoryDocumentDAO.selectByCode(referenceCode);
+            Optional<InventoryDocument> optional = inventoryDocumentDAO.selectByCode(referenceCode);
 
-            if (!option.isPresent()) {
+            if (!optional.isPresent()) {
                 throw new BizException(ExceptionCodeEnum.MATERIAL_DOCUMENT_NOT_FOUND_ERROR, new Object[]{referenceCode});
             }
 
-            InventoryDocument inventoryDocument = option.get();
+            InventoryDocument inventoryDocument = optional.get();
+
+            if (inventoryDocument.getType() == InventoryDocument.TypeEnum.COUNT && type != InventoryDocument.TypeEnum.DISPLAY) {
+                throw new BizException(ExceptionCodeEnum.COUNT_MATERIAL_DOCUMENT_REF_ERROR);
+            }
+
+            Map<Long, BigDecimal> materialOpenQuantityMap = null;
+            if (type == InventoryDocument.TypeEnum.RETURN) {
+                materialOpenQuantityMap = inventoryDocumentService.openQuantity(HandlerHelper.oppositeMovementType(inventoryDocument.getItemList().get(0).getMovementType()),
+                        inventoryDocument.getRootReferenceCode());
+            }
 
             Map<Long, Material> idMaterialMap = materialDAO.selectByIdsAsMap(inventoryDocument.getItemList().stream().map(InventoryDocument.Item::getMaterialId).collect(Collectors.toSet()));
 
@@ -70,6 +85,10 @@ public class InventoryController {
                 item.setMaterialText(material.getName() + " " + material.getCharacteristicText());
                 item.setUnitText(dictService.getDictByTypeAndName("unit", item.getUnit()).get().getLabel());
                 item.setReferenceItemId(item.getId());
+                if (type == InventoryDocument.TypeEnum.RETURN) {
+                    item.setQuantity(materialOpenQuantityMap.get(item.getMaterialId()));
+                }
+
             }
 
             return inventoryDocument;
@@ -77,5 +96,20 @@ public class InventoryController {
 
         return null;
     }
+
+    @GetMapping("count")
+    public String gotoInventoryCountPage() {
+        return "modules/inventory/count";
+    }
+
+    @PostMapping("count")
+    @ResponseBody
+    public Result<String> gotoInventoryCount(@RequestBody InventoryDocument inventoryDocument) {
+        inventoryDocument.setType(InventoryDocument.TypeEnum.COUNT);
+        inventoryDocument.setReferenceType(InventoryDocument.ReferenceTypeEnum.OTHER);
+        handlerManager.handle(inventoryDocument);
+        return ResultUtils.success(inventoryDocument.getCode());
+    }
+
 
 }

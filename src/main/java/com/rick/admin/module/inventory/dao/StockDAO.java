@@ -31,8 +31,12 @@ public class StockDAO extends EntityDAOImpl<Stock, Long> {
     }
 
     public Map<Long, BigDecimal> getStockQuantityByMaterialId(Collection<?> materialIds) {
-        List<Stock> values = sharpService.query("select material_id materialId, IFNULL(sum(quantity), 0) quantity from inv_stock where material_id IN (:materialId) group by material_id",
-                Params.builder(1).pv("materialIds", materialIds).build(), Stock.class);
+        return getStockQuantityByMaterialId(materialIds, null);
+    }
+
+    public Map<Long, BigDecimal> getStockQuantityByMaterialId(Collection<?> materialIds, Long plantId) {
+        List<Stock> values = sharpService.query("select material_id materialId, IFNULL(sum(quantity), 0) quantity from inv_stock where material_id IN (:materialId) AND plant_id = :plantId group by material_id",
+                Params.builder(2).pv("materialIds", materialIds).pv("plantId", plantId).build(), Stock.class);
         return values.stream().collect(Collectors.toMap(s -> s.getMaterialId(), s -> s.getQuantity()));
     }
 }

@@ -5,7 +5,7 @@ import com.rick.admin.module.inventory.dao.InventoryDocumentDAO;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.inventory.entity.Stock;
 import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
+import org.apache.commons.collections4.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -24,18 +24,23 @@ public abstract class AbstractHandler implements MovementHandler {
     protected StockService stockService;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void handle(InventoryDocument inventoryDocument) {
         inventoryDocument.setCode(CodeHelper.generateCode("MD"));
+        inventoryDocument.setCanceled(false);
 
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
+            item.setType(inventoryDocument.getType());
             item.setReferenceType(inventoryDocument.getReferenceType());
             item.setReferenceCode(inventoryDocument.getReferenceCode());
+            item.setInventoryDocumentCode(inventoryDocument.getCode());
             item.setPlantId(inventoryDocument.getPlantId());
-            item.setMovementType(itemMovementType(item));
         }
 
         handle0(inventoryDocument);
+        if (CollectionUtils.isEmpty(inventoryDocument.getItemList())) {
+            inventoryDocument.setCode(null);
+            return;
+        }
 
         inventoryDocumentDAO.insert(inventoryDocument);
 
@@ -50,7 +55,5 @@ public abstract class AbstractHandler implements MovementHandler {
     }
 
     public abstract void handle0(InventoryDocument inventoryDocument);
-
-    public abstract InventoryDocument.MovementTypeEnum itemMovementType(InventoryDocument.Item item);
 
 }

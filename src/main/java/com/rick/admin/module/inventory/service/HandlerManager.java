@@ -4,6 +4,7 @@ import com.rick.admin.module.inventory.entity.InventoryDocument;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -19,6 +20,7 @@ public class HandlerManager {
 
     private final List<MovementHandler> movementHandlerList;
 
+    @Transactional(rollbackFor = Exception.class)
     public void handle(InventoryDocument inventoryDocument) {
         MovementHandler determinMovementHandler = null;
         for (MovementHandler movementHandler : movementHandlerList) {
