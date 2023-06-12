@@ -1,5 +1,6 @@
 package com.rick.admin.module.inventory.service;
 
+import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.module.core.service.CodeHelper;
 import com.rick.admin.module.inventory.dao.InventoryDocumentDAO;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
@@ -9,6 +10,7 @@ import org.apache.commons.collections4.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.stream.Collectors;
 
 /**
  * @author Rick.Xu
@@ -37,6 +39,8 @@ public abstract class AbstractHandler implements MovementHandler {
         }
 
         handle0(inventoryDocument);
+        inventoryDocument.setItemList(inventoryDocument.getItemList().stream().filter(item -> BigDecimalUtils.gt(item.getQuantity(), BigDecimal.ZERO)).collect(Collectors.toList()));
+
         if (CollectionUtils.isEmpty(inventoryDocument.getItemList())) {
             inventoryDocument.setCode(null);
             return;

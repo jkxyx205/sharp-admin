@@ -95,6 +95,10 @@ public class InventoryDocument extends BaseCodeEntity {
         @Column(comment = "root参考凭证号")
         String rootReferenceCode;
 
+        @JsonSerialize(using = ToStringSerializer.class)
+        @Column(comment = "root参考凭证行项目id")
+        Long rootReferenceItemId;
+
         @NotNull
         @Column(comment = "移动类型")
         MovementTypeEnum movementType;

@@ -71,9 +71,9 @@ public class InventoryController {
                 throw new BizException(ExceptionCodeEnum.COUNT_MATERIAL_DOCUMENT_REF_ERROR);
             }
 
-            Map<Long, BigDecimal> materialOpenQuantityMap = null;
+            Map<Long, BigDecimal> itemOpenQuantityMap = null;
             if (type == InventoryDocument.TypeEnum.RETURN) {
-                materialOpenQuantityMap = inventoryDocumentService.openQuantity(HandlerHelper.oppositeMovementType(inventoryDocument.getItemList().get(0).getMovementType()),
+                itemOpenQuantityMap = inventoryDocumentService.openQuantity(HandlerHelper.oppositeMovementType(inventoryDocument.getItemList().get(0).getMovementType()),
                         inventoryDocument.getRootReferenceCode());
             }
 
@@ -86,7 +86,7 @@ public class InventoryController {
                 item.setUnitText(dictService.getDictByTypeAndName("unit", item.getUnit()).get().getLabel());
                 item.setReferenceItemId(item.getId());
                 if (type == InventoryDocument.TypeEnum.RETURN) {
-                    item.setQuantity(materialOpenQuantityMap.get(item.getMaterialId()));
+                    item.setQuantity(itemOpenQuantityMap.get(item.getRootReferenceItemId()));
                 }
 
             }

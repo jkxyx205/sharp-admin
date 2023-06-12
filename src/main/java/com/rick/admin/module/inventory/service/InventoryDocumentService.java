@@ -35,18 +35,16 @@ public class InventoryDocumentService {
      * @return
      */
     public Map<Long, BigDecimal> openQuantity(InventoryDocument.MovementTypeEnum movementType, String rootReferenceCode) {
-        String sql = "select material_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where `root_reference_code` = :rootReferenceCode group by material_id";
+        String sql = "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where `root_reference_code` = :rootReferenceCode group by root_reference_item_id";
         Map<Long, BigDecimal> maxReturnQuantityMap = sharpService.queryForKeyValue(sql, Params.builder(1).pv("rootReferenceCode", rootReferenceCode).build());
 
         Optional<InventoryDocument> optional = inventoryDocumentDAO.selectByCode(rootReferenceCode);
-
         InventoryDocument.MovementTypeEnum originMovementType = InventoryDocument.MovementTypeEnum.valueOf(optional.get().getType().name());
         if (movementType == originMovementType) {
             // 同向
             for (InventoryDocument.Item item : optional.get().getItemList()) {
-                maxReturnQuantityMap.put(item.getMaterialId(), item.getQuantity().subtract(maxReturnQuantityMap.get(item.getMaterialId())));
+                maxReturnQuantityMap.put(item.getRootReferenceItemId(), item.getQuantity().subtract(maxReturnQuantityMap.get(item.getRootReferenceItemId())));
             }
-
         }
 
         return maxReturnQuantityMap;

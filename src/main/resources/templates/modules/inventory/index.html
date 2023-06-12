@@ -524,7 +524,11 @@
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
                 success: function(res){
-                    toastr.success('提交成功 ' + res.data);
+                    let msg = res.data
+                    if (!msg) {
+                        msg = '没有产生物料凭证！'
+                    }
+                    toastr.success('提交成功! ' + msg);
                     reset()
                 }
             });

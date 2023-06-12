@@ -27,6 +27,7 @@ public class OtherInboundHandler extends AbstractHandler {
             item.setMovementType(InventoryDocument.MovementTypeEnum.INBOUND);
             item.setRootReferenceCode(item.getInventoryDocumentCode());
         }
+
         inventoryDocument.setRootReferenceCode(inventoryDocument.getCode());
     }
 

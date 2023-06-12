@@ -8,6 +8,7 @@ import com.rick.admin.module.inventory.service.HandlerHelper;
 import com.rick.admin.module.inventory.service.InventoryDocumentService;
 import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.common.http.exception.BizException;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -52,7 +53,7 @@ public class DocumentReturnHandler extends AbstractHandler {
 
         inventoryDocument.setRootReferenceCode(StringUtils.defaultString(inventoryDocumentInDb.getRootReferenceCode(), inventoryDocument.getReferenceCode()));
 
-        Map<Long, BigDecimal> materialOpenQuantityMap = inventoryDocumentService.openQuantity(HandlerHelper.oppositeMovementType(inventoryDocumentInDb.getItemList().get(0).getMovementType()),
+        Map<Long, BigDecimal> itemOpenQuantityMap = inventoryDocumentService.openQuantity(HandlerHelper.oppositeMovementType(inventoryDocumentInDb.getItemList().get(0).getMovementType()),
                 inventoryDocumentInDb.getRootReferenceCode());
 
         Map<Long, InventoryDocument.Item> idDocumentMap = inventoryDocumentInDb.getItemList().stream().collect(Collectors.toMap(InventoryDocument.Item::getId, d -> d));
@@ -60,9 +61,10 @@ public class DocumentReturnHandler extends AbstractHandler {
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
             InventoryDocument.Item itemInDb = idDocumentMap.get(item.getReferenceItemId());
             item.setMovementType(HandlerHelper.oppositeMovementType(itemInDb.getMovementType()));
-            item.setRootReferenceCode(StringUtils.defaultString(itemInDb.getRootReferenceCode(), item.getReferenceCode()));
+            item.setRootReferenceCode(StringUtils.defaultString(itemInDb.getRootReferenceCode(), itemInDb.getReferenceCode()));
+            item.setRootReferenceItemId(ObjectUtils.defaultIfNull(itemInDb.getRootReferenceItemId(), itemInDb.getId()));
 
-            checkOpenQuantity(item.getMaterialId(), item.getQuantity(), materialOpenQuantityMap.get(item.getMaterialId()));
+            checkOpenQuantity(item.getMaterialId(), item.getQuantity(), itemOpenQuantityMap.get(item.getRootReferenceItemId()));
         }
 
         handle1(inventoryDocument, inventoryDocumentInDb, idDocumentMap);
