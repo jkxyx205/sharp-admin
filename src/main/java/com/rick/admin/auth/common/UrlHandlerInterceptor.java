@@ -1,7 +1,7 @@
 package com.rick.admin.auth.common;
 
 import com.rick.admin.auth.authentication.AdminUserDetails;
-import com.rick.admin.common.ExceptionCodeEnum;
+import com.rick.admin.common.exception.ExceptionCodeEnum;
 import com.rick.admin.sys.user.entity.User;
 import com.rick.common.http.HttpServletRequestUtils;
 import com.rick.common.http.exception.BizException;

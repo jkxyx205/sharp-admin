@@ -1,6 +1,6 @@
 package com.rick.admin.module.inventory.controller;
 
-import com.rick.admin.common.ExceptionCodeEnum;
+import com.rick.admin.common.exception.ExceptionCodeEnum;
 import com.rick.admin.module.inventory.dao.InventoryDocumentDAO;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.inventory.service.HandlerHelper;

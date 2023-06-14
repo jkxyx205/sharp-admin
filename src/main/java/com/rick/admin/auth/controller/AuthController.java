@@ -2,7 +2,7 @@ package com.rick.admin.auth.controller;
 
 import com.rick.admin.auth.authentication.AdminUserDetails;
 import com.rick.admin.auth.common.AuthConstants;
-import com.rick.admin.common.ExceptionCodeEnum;
+import com.rick.admin.common.exception.ExceptionCodeEnum;
 import com.rick.admin.plugin.ztree.model.TreeNode;
 import com.rick.admin.sys.permission.model.UserPermissionVO;
 import com.rick.admin.sys.permission.service.PermissionService;

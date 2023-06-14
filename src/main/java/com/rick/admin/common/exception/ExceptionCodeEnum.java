@@ -1,4 +1,4 @@
-package com.rick.admin.common;
+package com.rick.admin.common.exception;
 
 import com.rick.common.http.exception.ExceptionCode;
 import lombok.Getter;
@@ -11,6 +11,9 @@ import lombok.ToString;
 @Getter
 @ToString
 public enum ExceptionCodeEnum implements ExceptionCode {
+    CODE_NOT_EXISTS_ERROR(400, "%s code「%s」不存在"),
+    RESOURCE_NOT_EXISTS_ERROR(4004, "「%s」不存在"),
+
     USER_NOT_FOUND(400019, "用户不存在！"),
     USER_NOT_AVAILABLE(400010, "用户状态不可用，请联系管理员！"),
     INVALID_SESSION(400011, "访问超时，请退出后重新登录！"),

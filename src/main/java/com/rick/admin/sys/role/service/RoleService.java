@@ -1,6 +1,6 @@
 package com.rick.admin.sys.role.service;
 
-import com.rick.admin.common.ExceptionCodeEnum;
+import com.rick.admin.common.exception.ExceptionCodeEnum;
 import com.rick.admin.plugin.ztree.model.TreeNode;
 import com.rick.admin.sys.permission.service.PermissionService;
 import com.rick.admin.sys.role.dao.RoleDAO;

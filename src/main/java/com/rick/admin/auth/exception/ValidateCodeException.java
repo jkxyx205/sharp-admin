@@ -1,6 +1,6 @@
 package com.rick.admin.auth.exception;
 
-import com.rick.admin.common.ExceptionCodeEnum;
+import com.rick.admin.common.exception.ExceptionCodeEnum;
 import org.springframework.security.core.AuthenticationException;
 
 /**

@@ -14,7 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static com.rick.admin.common.ExceptionCodeEnum.LOW_STOCKS_ERROR;
+import static com.rick.admin.common.exception.ExceptionCodeEnum.LOW_STOCKS_ERROR;
 
 /**
  * @author Rick.Xu

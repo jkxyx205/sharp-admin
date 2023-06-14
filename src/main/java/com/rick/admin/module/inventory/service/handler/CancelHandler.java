@@ -1,6 +1,6 @@
 package com.rick.admin.module.inventory.service.handler;
 
-import com.rick.admin.common.ExceptionCodeEnum;
+import com.rick.admin.common.exception.ExceptionCodeEnum;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.common.http.exception.BizException;
 import org.springframework.stereotype.Component;

@@ -1,6 +1,6 @@
 package com.rick.admin.sys.user.service;
 
-import com.rick.admin.common.ExceptionCodeEnum;
+import com.rick.admin.common.exception.ExceptionCodeEnum;
 import com.rick.admin.sys.permission.entity.Permission;
 import com.rick.admin.sys.role.entity.Role;
 import com.rick.admin.sys.user.dao.UserDAO;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.rick.admin.common.ExceptionCodeEnum.USER_NOT_FOUND;
+import static com.rick.admin.common.exception.ExceptionCodeEnum.USER_NOT_FOUND;
 
 /**
  * @author Rick.Xu
