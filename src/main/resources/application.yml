@@ -1,3 +1,5 @@
+server:
+  port: 8080
 spring:
   profiles:
     active: dev
@@ -58,6 +60,8 @@ dict:
       map: { "CUSTOMER": "客户", "VENDOR": "供应商" }
     - type: core_partner
       sql: "select id, name from core_partner order by id asc"
+    - type: core_partner_vendor
+      sql: "select id, name from core_partner where partner_type = 'VENDOR' order by id asc"
     - type: core_plant
       sql: "select id, name from core_plant order by id asc"
     - type: sys_dict_type

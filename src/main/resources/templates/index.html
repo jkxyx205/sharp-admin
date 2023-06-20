@@ -82,7 +82,23 @@
                         </li>
                     </ul>
                 </li>
-                <li class="nav-item nav-dropdown open" sec:authorize="hasAuthority('inventory')">
+                <li class="nav-item nav-dropdown open" sec:authorize="hasAuthority('purchase')">
+                    <a class="nav-link nav-dropdown-toggle" href="#">
+                        <i class="nav-icon icon-basket-loaded"></i>采购</a>
+                    <ul class="nav-dropdown-items">
+                        <li class="nav-item" sec:authorize="hasAuthority('pur_purchase_order_add')">
+                            <a class="nav-link" href="javascript:addTab('pur_purchase_order_add', '采购订单', '/purchase_order')">
+                                <i class="nav-icon icon-cursor-move"></i> 新增采购订单
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasAuthority('pur_purchase_order_read')">
+                            <a class="nav-link" href="javascript:addTab('purchase_order_list', '订单列表', '/reports/702566176051462144')">
+                                <i class="nav-icon icon-calculator"></i> 订单列表
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item nav-dropdown" sec:authorize="hasAuthority('inventory')">
                     <a class="nav-link nav-dropdown-toggle" href="#">
                         <i class="nav-icon icon-layers"></i> 库存管理</a>
                     <ul class="nav-dropdown-items">
@@ -219,12 +235,12 @@
             //     allowClose: false
             // });
 
-            nthTabs.addTab({
-                id: "inventory_count",
-                title: '盘点',
-                url: "/inventory/count",
-                allowClose: false
-            });
+            // nthTabs.addTab({
+            //     id: "inventory_count",
+            //     title: '盘点',
+            //     url: "/inventory/count",
+            //     allowClose: false
+            // });
 
             // nthTabs.addTab({
             //     id: "inventory_list",
@@ -239,6 +255,20 @@
             //     url: "/reports/695981455636959232",
             //     allowClose: false
             // });
+
+            // nthTabs.addTab({
+            //     id: "pur_purchase_order_add",
+            //     title: '采购订单',
+            //     url: "/purchase_order/add",
+            //     allowClose: false
+            // });
+
+            nthTabs.addTab({
+                id: "purchase_order_list",
+                title: '订单列表',
+                url: "/reports/702566176051462144",
+                allowClose: false
+            });
         })
     </script>
 </div>

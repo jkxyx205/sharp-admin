@@ -29,26 +29,13 @@ public class PermissionTest {
 
     @Test
     public void testAddPermission0() {
-        permissionDAO.insertOrUpdate(Permission.builder()
-                .code("inventory_move")
-                .name("库存移动")
-                .pid(697500384922439680L)
-                .permissionOrder(0)
-                .build());
+//        permissionDAO.insertOrUpdate(Permission.builder()
+//                .code("purchase_order")
+//                .name("采购")
+//                .pid(0L)
+//                .permissionOrder(0)
+//                .build());
 
-        permissionDAO.insertOrUpdate(Permission.builder()
-                .code("inventory_list")
-                .name("物料凭证")
-                .pid(697500384922439680L)
-                .permissionOrder(0)
-                .build());
-
-        permissionDAO.insertOrUpdate(Permission.builder()
-                .code("inventory_count")
-                .name("盘点")
-                .pid(697500384922439680L)
-                .permissionOrder(0)
-                .build());
     }
 
 
@@ -74,9 +61,13 @@ public class PermissionTest {
 //        final String NAME = "用户管理";
 //        final Long PARENT_ID = 695624494395428864L;
 
-        final String CODE = "sys_dict";
-        final String NAME = "字典管理";
-        final Long PARENT_ID = 695624494395428864L;
+//        final String CODE = "sys_dict";
+//        final String NAME = "字典管理";
+//        final Long PARENT_ID = 695624494395428864L;
+
+        final String CODE = "pur_purchase_order";
+        final String NAME = "采购订单";
+        final Long PARENT_ID = 702223996619358208L;
 
         jdbcTemplate.execute("delete from sys_role_permission where permission_id IN (select id from sys_permission where code like'"+CODE+"%')");
 

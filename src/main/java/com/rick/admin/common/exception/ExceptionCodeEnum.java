@@ -23,7 +23,8 @@ public enum ExceptionCodeEnum implements ExceptionCode {
     MATERIAL_DOCUMENT_NOT_FOUND_ERROR(504002, "物料凭证「%s」不存在！"),
     MATERIAL_DOCUMENT_IS_CANCELED_ERROR(504003, "物料凭证「%s」已经被取消了，不能重复取消！"),
     MATERIAL_OVER_MAX_MOVEMENT_ERROR(504004, "物料「%s」不能超过最大的库存移动数量！"),
-    COUNT_MATERIAL_DOCUMENT_REF_ERROR(504005, "盘点凭证不能被参考！");
+    COUNT_MATERIAL_DOCUMENT_REF_ERROR(504005, "盘点凭证不能被参考！"),
+    PO_DOCUMENT_NOT_FOUND_ERROR(505001, "采购订单「%s」不存在！");
 
     private int code;
     private String message;

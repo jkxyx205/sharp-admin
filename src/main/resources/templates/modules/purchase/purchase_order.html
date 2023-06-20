@@ -29,53 +29,23 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-body">
-                <form class="form-inline query-form-container readonly" id="form-operator" onsubmit="return false">
-                    <div class="form-group">
-                        <label class="col-form-label mr-2" for="type">场景</label>
-                        <select id="type" name="type" class="form-control" onchange="changeType(this)">
-                            <option value="INBOUND">入库</option>
-                            <option value="OUTBOUND">出库</option>
-                            <option value="RETURN">退货</option>
-                            <option value="CANCEL">取消</option>
-                            <option value="DISPLAY">显示</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-form-label mr-2" for="referenceType">参考凭证</label>
-                        <select id="referenceType" name="referenceType" class="form-control" onchange="changeReferenceType(this)">
-                            <option value="OTHER" hidden>无</option>
-                            <option value="MATERIAL_DOCUMENT" hidden>物料凭证</option>
-                            <option value="PO" hidden>采购订单</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <input class="form-control" id="referenceCode" type="text" name="referenceCode" required>
-                    </div>
-                    <div class="form-group">
-                        <button class="btn btn-primary mr-2" type="button" id="execBtn" onclick="execute(this)">
-                            <i class="fa fa-cog"></i> 确定</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-body">
                 <form class="form-inline query-form-container" id="form-header">
+                    <input type="hidden" id="id" th:value="${po.id}"/>
                     <div class="form-group">
-                        <label class="col-form-label mr-2 required" for="documentDate">凭证日期</label>
-                        <input class="form-control" type="text" id="documentDate" name="documentDate" required th:value="${#calendars.format(#calendars.createNow(), 'yyyy-MM-dd')}">
+                        <label class="col-form-label mr-2 required" for="partnerId">供应商</label>
+                        <sp:dict id="partnerId" name="partnerId" key="core_partner_vendor" th:value="${po.partnerId}" class="form-control" emptyItemText required/>
                     </div>
                     <div class="form-group">
-                        <label class="col-form-label mr-2" for="plantId">库房</label>
-                        <sp:dict id="plantId" name="plantId" key="core_plant" class="form-control" hideAllItem/>
+                        <label class="col-form-label mr-2" for="plantId">入库库房</label>
+                        <sp:dict id="plantId" name="plantId" key="core_plant" th:value="${po.plantId}" class="form-control" hideAllItem/>
                     </div>
                     <div class="form-group">
-                        <label class="col-form-label mr-2" for="operatorId">操作人</label>
-                        <sp:dict id="operatorId" name="operatorId" key="sys_user" class="form-control" emptyItemText th:value="${session.user.id}"/>
+                        <label class="col-form-label mr-2 required" for="deliveryDate">交货日期</label>
+                        <input class="form-control" type="text" id="deliveryDate" name="deliveryDate" required th:value="${po.deliveryDate == null ? #calendars.format(#calendars.createNow(), 'yyyy-MM-dd') : po.deliveryDate}">
                     </div>
                     <div class="form-group">
                         <label class="col-form-label mr-2" for="remark">备注</label>
-                        <input class="form-control" type="text" id="remark" name="remark">
+                        <input class="form-control" type="text" id="remark" th:value="${po.remark}" name="remark">
                     </div>
                 </form>
             </div>
@@ -92,8 +62,10 @@
                                     <th style="width: 40px;">序号</th>
                                     <th><label class="col-form-label col-sm-2 required">物料</label></th>
                                     <th><label class="col-form-label col-sm-2">描述</label></th>
-                                    <th><label class="col-form-label col-sm-2 required">数量</label></th>
+                                    <th><label class="col-form-label col-sm-2 required">采购数量</label></th>
                                     <th><label class="col-form-label col-sm-2">单位</label></th>
+                                    <th><label class="col-form-label col-sm-2">含税单价（元）</label></th>
+                                    <th><label class="col-form-label col-sm-2">含税金额（元）</label></th>
                                     <th><label class="col-form-label col-sm-2">备注</label></th>
                                     <th style="width: 50px;"></th>
                                 </tr>
@@ -104,6 +76,12 @@
                                 <tbody>
                                 </tbody>
                             </table>
+                        </div>
+                        <div class="pull-right mt-4 mr-5">
+                            <label>订单号：</label><span th:text="${po.code}" id="code_text"></span>
+                            <input id="code" type="hidden" name="code" th:value="${po.code == null ? '1' : po.code}">
+                            <label>创建人：</label><span th:text="${session.user.name}"></span> 预计本单应付： <span id="total_amount" style="color: red;">0</span>元
+                            <input type="hidden" name="totalAmount" id="totalAmount">
                         </div>
                     </form>
                 </div>
@@ -124,17 +102,9 @@
     <script th:src="@{/js/jquery.dialogInput.js}"></script>
     <script th:src="@{/js/jquery.table.js}"></script>
     <script th:src="@{/editable-table/editable-table.js}"></script>
-    <script>
-        let formOperator = document.getElementById('form-operator');
-        let $operatorBar = $('#operator-bar')
-        let $referenceCode = $('#referenceCode')
-        let $execBtn= $('#execBtn')
+    <script th:inline="javascript">
         let formHeader = document.getElementById('form-header');
         let formItem = document.getElementById('form-item');
-        let $documentDate = $('#documentDate')
-        let $plantId = $('#plantId')
-        let $operatorId = $('#operatorId')
-        let $remark = $('#remark')
 
         let editableTableIndex = 1
 
@@ -159,145 +129,33 @@
                 required: true,
             },
             {
+                type: "number",
+                name: "unitPrice",
+                required: false,
+            },
+            {
+                type: "label",
+                name: "amount",
+                required: false,
+            },
+            {
                 type: "text",
                 name: "remark",
             }
         ]
 
-        formOperator.addEventListener('submit', function (event) {
-            execute()
-        }, false)
-
-        let selectMapping = {
-            "INBOUND": ["OTHER", "PO"],
-            "OUTBOUND": ["OTHER"],
-            "RETURN": ["MATERIAL_DOCUMENT", "PO"],
-            "CANCEL": ["MATERIAL_DOCUMENT"],
-            "DISPLAY": ["MATERIAL_DOCUMENT"]
-        }
-
-        let referenceTypeDom = document.getElementById('referenceType')
-        let type = document.getElementById('type')
-
-        changeType(document.getElementById('type'))
-
-        function changeType(select) {
-            let selected = false
-            for (let option of referenceTypeDom.options) {
-                option.hidden = true
-                for(let referenceType of selectMapping[select.value]) {
-                    if (option.value === referenceType) {
-                        option.hidden = false
-                        if (!selected) {
-                            option.selected = 'selected'
-                            selected = true
-
-                            if (option.value === 'OTHER') {
-                                $referenceCode.hide()
-                                $execBtn.hide()
-                                $("#form-item :input:not(readonly)").prop("disabled", false)
-                                $("#form-item input[readonly]").prop("disabled", true)
-                            } else {
-                                $referenceCode.show()
-                                $execBtn.show()
-                                $("#form-item :input").prop("disabled", true);
-                            }
-                        }
-                        break
-                    }
-                }
-            }
-
-            if (select.value === 'DISPLAY') {
-                $operatorBar.hide()
-            } else {
-                $operatorBar.show()
-            }
-            reset()
-        }
-
-        function changeReferenceType(select) {
-            if (select.value === 'OTHER') {
-                $referenceCode.hide()
-                $execBtn.hide()
-                $("#form-item :input:not(readonly)").prop("disabled", false)
-                $("#form-item input[readonly]").prop("disabled", true)
-            } else {
-                $referenceCode.show()
-                $execBtn.show()
-                $("#form-item :input").prop("disabled", true);
-            }
-            reset()
-        }
-        
-        function execute() {
-            let formOperatorValidity = formOperator.checkValidity()
-            formOperator.classList.add('was-validated')
-            if (formOperatorValidity) {
-                console.log(referenceTypeDom.value)
-                console.log($referenceCode.val())
-
-                tableReset()
-                // ajax
-                $.get("/inventory/documents", {type: type.value, referenceType:referenceTypeDom.value, referenceCode: $referenceCode.val()},function (res) {
-                    console.log(res)
-                    $documentDate.val(res.documentDate)
-                    $plantId.val(res.plantId)
-                    $operatorId.val(res.operatorId)
-                    $remark.val(res.remark)
-
-                    for (let item of res.itemList) {
-                        $editableTable.editableTable('addEmptyLine')
-
-                        let $tr = $("#table tr:last-child").prev()
-                        $tr.find('td:last-child').append("<input type='hidden' name='referenceItemId'>")
-
-                        $tr.find("input[name]").each(function () {
-                            $(this).val(item[this.name])
-                        })
-
-                        // 其他值
-                        $tr.find('td:nth-child(5) input[type=text]').val(item.unitText)
-                        // 出库入库
-                        if (!(type.value === 'INBOUND' || type.value === 'OUTBOUND')) {
-                            $tr.find('td:nth-child(4)').css('position', 'relative').append("<span style='position: absolute;left: 5px; top: 8px;'>"+(item.movementType === 'OUTBOUND' ? '-' : '+')+"</span>")
-                        }
-                    }
-
-                    if (type.value === 'DISPLAY') {
-                        $("form :input").prop("disabled", true);
-                        $referenceCode.prop("disabled", false);
-                        $execBtn.prop("disabled", false);
-                        $('#table .operator').hide()
-                    } else if (type.value === 'CANCEL') {
-                        if (res.canceled) {
-                            toastr.warning('物料凭证已经被取消了，不能重复取消!')
-                        }
-                        $("form :input").prop("disabled", true);
-                        $('#table .operator').hide()
-                    } else {
-                        $("form.readonly :input").prop("disabled", true);
-                        $("#table tr :input").prop("disabled", true);
-
-                        $('#table tbody tr:not(:last-child) :nth-child(4) :input, #table tbody tr:not(:last-child) :nth-child(6) :input').prop("disabled", false);
-                    }
-                }).fail(function(err) {
-                    console.log(err.responseJSON)
-                })
-            }
-        }
-
         // end
         let dialogInput = $('#dialogInput');
         var currentMaterialDom;
 
-        $('#documentDate').datepicker({
+        $('#deliveryDate').datepicker({
             language: "zh-CN",
             autoclose: true,
             clearBtn: true,
             todayBtn: 'linked',
             todayHighlight: true,
-            format: 'yyyy-mm-dd'
+            format: 'yyyy-mm-dd',
+            startDate: new Date()
         })
 
         $('#table-container').table({fixedHead: true})
@@ -317,6 +175,7 @@
             afterRemoveCallback: function ($parent) {
                 // console.log($parent)
                 rebuildIndex()
+                calcTotalAmount()
                 return true
             }
         })
@@ -345,7 +204,10 @@
                 } else if (columnConfig.type === 'text') {
                         $tr.find('td:nth-child('+childIndex+') input').attr('name', columnConfig.name)
                     }
-                }
+            }
+
+            // 其他额外字段信息
+            $tr.find('td:last-child').append('<input class="form-control" type="hidden" name="id">')
         }
 
         function rebuildIndex() {
@@ -441,10 +303,40 @@
                             event.preventDefault();
                             return;
                         }
+
+                    })
+
+                    $('#table tbody').delegate('td:nth-child('+childIndex+') input[type=text]', 'keyup', function(event){
+                        // 计算
+                        if (childIndex === 4 || childIndex === 6) {
+                            let $tr = $(this).parents("tr");
+                            $tr.find('td:nth-child(7) input[type=text]').val('')
+
+                            let quantity = $tr.find('td:nth-child(4) input[type=text]').val()
+                            let unitPrice = $tr.find('td:nth-child(6) input[type=text]').val()
+                            if (quantity && unitPrice) {
+                                let amount = math.multiply(math.bignumber(quantity), math.bignumber(unitPrice));
+                                $tr.find('td:nth-child(7) input[type=text]').val(amount)
+                            }
+
+                            calcTotalAmount()
+                        }
+
                     })
                 }
             }
         })()
+
+        function calcTotalAmount() {
+            let totalAmount = 0
+            $('#table tbody td:nth-child(7) input[type=text]').each(function () {
+                if ($(this).val()) {
+                    totalAmount = math.add(math.bignumber(totalAmount), math.bignumber($(this).val()));
+                }
+            })
+            $('#total_amount').text(totalAmount)
+            $('#totalAmount').text(totalAmount)
+        }
 
         function valid() {
             var formHeaderValidity = formHeader.checkValidity()
@@ -457,13 +349,8 @@
         function reset() {
             formHeader.classList.remove('was-validated')
             formItem.classList.remove('was-validated')
-            formOperator.classList.remove('was-validated')
 
             tableReset()
-
-            document.getElementById('referenceCode').value = ''
-            $("form.readonly :input").prop("disabled", false);
-            $("form-item #table tr:last-child").prop("disabled", false);
         }
 
         function tableReset() {
@@ -515,33 +402,49 @@
             }
 
             params = $.extend({},
-                params, $('#form-operator').form2json({allowEmptyMultiVal:true}), $('#form-header').form2json({allowEmptyMultiVal:true})); //合并参数
+                params, $('#form-header').form2json({allowEmptyMultiVal:true})); //合并参数
 
             console.log(params)
-            params.code = '1' // 临时code
+
+            params.code = $('#code').val() // 临时code
+
             $.ajax({
-                url: '/inventory',
+                url: '/purchase_order',
                 type: "POST",
                 data: JSON.stringify(params),
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
                 success: function(res){
-                    let msg = res.data
-                    if (!msg) {
-                        msg = '没有产生物料凭证！'
-                    }
-                    toastr.success('提交成功! ' + msg);
-                    reset()
+                    $('#code, #code_text').val(res.code)
+                    $('#id').val(res.id)
+
+                    loadItem(res.itemList)
+
+                    toastr.success('订单提交成功！' + res.code);
                 }
             });
         }
 
-        let urlObject = getUrlObject();
-        if (urlObject.referenceCode) {
-            document.getElementById('type').value = 'DISPLAY'
-            changeType(document.getElementById('type'))
-            $referenceCode.val(urlObject.referenceCode)
-            execute()
+        // loading detail
+        let itemList = /*[[${po.itemList}]]*/
+        loadItem(itemList)
+
+        function loadItem(itemList) {
+            if (itemList) {
+                tableReset()
+                for (let item of itemList) {
+                    $editableTable.editableTable('addEmptyLine')
+                    let $tr = $("#table tr:last-child").prev()
+                    $tr.find("input[name]").each(function () {
+                        $(this).val(item[this.name])
+                    })
+
+                    // 其他值
+                    $tr.find('td:nth-child(5) input[type=text]').val(item.unitText)
+                }
+
+                calcTotalAmount()
+            }
         }
     </script>
 </th:block>

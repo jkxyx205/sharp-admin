@@ -31,6 +31,9 @@ public class DocumentReturnHandler extends AbstractHandler {
     @Resource
     MaterialDAO materialDAO;
 
+    @Resource
+    PurchaseOrderReturnHandler purchaseOrderReturnHandler;
+
     @Override
     public InventoryDocument.TypeEnum type() {
         return InventoryDocument.TypeEnum.RETURN;
@@ -50,13 +53,31 @@ public class DocumentReturnHandler extends AbstractHandler {
         }
 
         InventoryDocument inventoryDocumentInDb = optional.get();
+        InventoryDocument.MovementTypeEnum oppositeMovementType = HandlerHelper.oppositeMovementType(inventoryDocumentInDb.getItemList().get(0).getMovementType());
+        Map<Long, InventoryDocument.Item> idDocumentMap = inventoryDocumentInDb.getItemList().stream().collect(Collectors.toMap(InventoryDocument.Item::getId, d -> d));
+
+        if (inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PO) {
+            inventoryDocument.setReferenceType(InventoryDocument.ReferenceTypeEnum.PO);
+            inventoryDocument.setReferenceCode(inventoryDocumentInDb.getReferenceCode());
+
+            for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
+                InventoryDocument.Item itemInDb = idDocumentMap.get(item.getReferenceItemId());
+                item.setReferenceType(inventoryDocument.getReferenceType());
+                item.setMovementType(oppositeMovementType);
+                item.setRootReferenceCode(inventoryDocumentInDb.getReferenceCode());
+                item.setRootReferenceItemId(ObjectUtils.defaultIfNull(itemInDb.getRootReferenceItemId(), itemInDb.getReferenceItemId()));
+            }
+            purchaseOrderReturnHandler.handle0(inventoryDocument);
+
+            handle1(inventoryDocument, inventoryDocumentInDb, idDocumentMap);
+            return;
+        }
+
 
         inventoryDocument.setRootReferenceCode(StringUtils.defaultString(inventoryDocumentInDb.getRootReferenceCode(), inventoryDocument.getReferenceCode()));
 
         Map<Long, BigDecimal> itemOpenQuantityMap = inventoryDocumentService.openQuantity(HandlerHelper.oppositeMovementType(inventoryDocumentInDb.getItemList().get(0).getMovementType()),
                 inventoryDocumentInDb.getRootReferenceCode());
-
-        Map<Long, InventoryDocument.Item> idDocumentMap = inventoryDocumentInDb.getItemList().stream().collect(Collectors.toMap(InventoryDocument.Item::getId, d -> d));
 
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
             InventoryDocument.Item itemInDb = idDocumentMap.get(item.getReferenceItemId());

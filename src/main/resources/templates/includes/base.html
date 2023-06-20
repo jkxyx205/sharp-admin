@@ -523,16 +523,6 @@
             return '<a href="javascript:;" onclick="openOnNewTab(\''+url+'\', \''+name+'\')">'+name+'</a>'
         }
 
-        function openSaleOutDetail(name, startDate, endDate) {
-            var url = "/report/sale/out/business/detail?name2="+encodeURIComponent(name)+"&startDate="+encodeURIComponent(startDate)+"&endDate="+encodeURIComponent(endDate)+""
-            window.parent.addTab("report-sale-" + new Date().getTime(), '出货量细化', url)
-        }
-
-        function openSaleClientDetail(name) {
-            var url = "/report/sale/client/business/detail?name2="+encodeURIComponent(name)
-            window.parent.addTab("report-sale-" + new Date().getTime(), '客户端未完成细化', url)
-        }
-
         function limitPages(total, displayPage, activePage) {
             var leftOffset = parseInt((displayPage - 1) / 2);
             var leftPage = activePage - 1;
