@@ -19,8 +19,38 @@
             border-top: 1px solid #c8ced3;
         }
 
+        .table-editor .form-control {
+            padding: 0 .5rem;
+            border: none;
+            border-radius: 0;
+            height: 32px;
+        }
+
+        .table-editor.table-sm th {
+            position: relative;
+            vertical-align: middle;
+            padding-left: .5rem;
+        }
+
+        .table-editor.table-sm label {
+            margin-bottom: 0;
+        }
+
+        .table-editor.table-sm td {
+            padding: 0;
+            vertical-align: middle;
+        }
+
+        .table-editor .required label:before, .table-editor label.required:before {
+            left: 0;
+        }
+
+        .table-editor tr td:first-child, .table-editor tr td:last-child {
+            padding: 0 .3rem;
+        }
+
         .table-fixed-container {
-            max-height: calc(100vh - 340px);
+            max-height: calc(100vh - 300px);
         }
     </style>
 </head>
@@ -86,21 +116,21 @@
                 <div id="table-container">
                     <form class="form-item" id="form-item">
                         <div class="table-fixed-container">
-                            <table class="table-thead">
+                            <table class="table-thead table-editor table table-responsive-sm table-bordered table-sm">
                                 <thead>
                                 <tr>
-                                    <th style="width: 40px;">序号</th>
-                                    <th><label class="col-form-label col-sm-2 required">物料</label></th>
-                                    <th><label class="col-form-label col-sm-2">描述</label></th>
-                                    <th><label class="col-form-label col-sm-2 required">数量</label></th>
-                                    <th><label class="col-form-label col-sm-2">单位</label></th>
-                                    <th><label class="col-form-label col-sm-2">备注</label></th>
+                                    <th style="width: 50px">序号</th>
+                                    <th style="width: 100px;"><label class="required">物料</label></th>
+                                    <th><label>描述</label></th>
+                                    <th style="width: 100px;"><label class="required">数量</label></th>
+                                    <th style="width: 100px;"><label>单位</label></th>
+                                    <th><label>备注</label></th>
                                     <th style="width: 50px;"></th>
                                 </tr>
                                 </thead>
                             </table>
 
-                            <table id="table" class="table-tbody">
+                            <table id="table" class="table-tbody table-editor table table-responsive-sm table-bordered table-sm">
                                 <tbody>
                                 </tbody>
                             </table>
@@ -260,7 +290,7 @@
                         $tr.find('td:nth-child(5) input[type=text]').val(item.unitText)
                         // 出库入库
                         if (!(type.value === 'INBOUND' || type.value === 'OUTBOUND')) {
-                            $tr.find('td:nth-child(4)').css('position', 'relative').append("<span style='position: absolute;left: 5px; top: 8px;'>"+(item.movementType === 'OUTBOUND' ? '-' : '+')+"</span>")
+                            $tr.find('td:nth-child(4)').css('position', 'relative').append("<span style='position: absolute;top: 5px;'>"+(item.movementType === 'OUTBOUND' ? '-' : '+')+"</span>")
                         }
                     }
 

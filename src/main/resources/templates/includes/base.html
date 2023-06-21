@@ -23,6 +23,16 @@
     <!--/* Per-page placeholder for additional links */-->
     <th:block th:replace="${links}" />
     <style>
+        .sidebar {
+            /*background: rgb(48, 65, 86);*/
+        }
+        .nav-dropdown-items {
+            /*background: #2b2f3a;*/
+        }
+        .nav-dropdown-items .nav-link {
+            padding-left: 2rem;
+        }
+
         [v-cloak]{
             visibility: hidden !important; /*防止被覆盖*/
             display: none;
@@ -220,8 +230,16 @@
         .scroll-panel {
             width: 100vw;
             height: 100%;
-            padding-top: 1.5rem;
+            padding-top: 1rem;
             overflow-y: auto;
+        }
+
+        .card {
+            margin-bottom: 1rem;
+        }
+
+        .card-body {
+            padding: 1rem;
         }
 
         .card-body-scroll-panel {
@@ -290,7 +308,7 @@
             }
 
             .card-body-scroll-panel {
-                max-height: calc(100vh - 240px);
+                max-height: calc(100vh - 200px);
             }
         }
 
@@ -512,11 +530,15 @@
             return urlObj
         }
 
-        function openOnNewTab(url, name, hash) {
+        function openOnNewTab(tabId, url, name, hash) {
             if (hash)
                 url += '#' + hash
 
-            window.parent.addTab("tab-" + new Date().getTime(), name, url)
+            if (!tabId) {
+                tabId = new Date().getTime()
+            }
+
+            window.parent.addTab("tab-" + tabId, name, url)
         }
 
         function openOnNewTabLink(url, name) {

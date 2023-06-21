@@ -15,6 +15,7 @@ import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Rick.Xu
@@ -101,7 +102,11 @@ public class PurchaseOrder extends BaseCodeEntity {
         String unitText;
 
         public BigDecimal getAmount() {
-            return unitPrice.multiply(unitPrice);
+            if (Objects.nonNull(unitPrice)) {
+                return unitPrice.multiply(quantity);
+            }
+
+            return null;
         }
 
     }

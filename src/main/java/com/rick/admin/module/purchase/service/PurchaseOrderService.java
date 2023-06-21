@@ -1,5 +1,6 @@
 package com.rick.admin.module.purchase.service;
 
+import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
 import com.rick.admin.module.core.service.CodeHelper;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
@@ -66,7 +67,8 @@ public class PurchaseOrderService {
             PurchaseOrder purchaseOrder = purchaseOrderDAO.selectByCode(rootReferenceCode).orElseThrow(() -> new ResourceNotFoundException());
 
             for (PurchaseOrder.Item item : purchaseOrder.getItemList()) {
-                maxReturnQuantityMap.put(item.getId(), item.getQuantity().subtract(ObjectUtils.defaultIfNull(maxReturnQuantityMap.get(item.getId()), BigDecimal.ZERO)));
+                BigDecimal value = item.getQuantity().subtract(ObjectUtils.defaultIfNull(maxReturnQuantityMap.get(item.getId()), BigDecimal.ZERO));
+                maxReturnQuantityMap.put(item.getId(), BigDecimalUtils.lt(value, BigDecimal.ZERO) ? BigDecimal.ZERO : value);
             }
         }
 

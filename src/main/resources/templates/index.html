@@ -51,14 +51,14 @@
     <div class="sidebar">
         <nav class="sidebar-nav">
             <ul class="nav">
-                <li class="nav-item" sec:authorize="hasAuthority('dashboard')">
-                    <a class="nav-link" href="javascript:addTab('dashboard', '仪表盘', '/dashboard')">
-                        <i class="nav-icon icon-speedometer"></i> 仪表盘
-                    </a>
-                </li>
+<!--                <li class="nav-item" sec:authorize="hasAuthority('dashboard')">-->
+<!--                    <a class="nav-link" href="javascript:addTab('dashboard', '仪表盘', '/dashboard')">-->
+<!--                        <i class="nav-icon icon-speedometer"></i> 仪表盘-->
+<!--                    </a>-->
+<!--                </li>-->
                 <li class="nav-item nav-dropdown" sec:authorize="hasAuthority('core_data')">
                     <a class="nav-link nav-dropdown-toggle" href="#">
-                        <i class="nav-icon icon-wallet"></i> 主数据</a>
+                        <i class="nav-icon icon-wallet"></i> 数据</a>
                     <ul class="nav-dropdown-items">
                         <li class="nav-item" sec:authorize="hasAuthority('core_plant')">
                             <a class="nav-link" href="javascript:addTab('plants', '库房', '/reports/695623902415556608')">
@@ -77,34 +77,34 @@
                         </li>
                         <li class="nav-item" sec:authorize="hasAuthority('mm_material')">
                             <a class="nav-link" href="javascript:addTab('mm_material', '物料', '/reports/695981455636959232')">
-                                <i class="nav-icon icon-basket-loaded"></i> 物料
+                                <i class="nav-icon icon-puzzle"></i> 物料
                             </a>
                         </li>
                     </ul>
                 </li>
                 <li class="nav-item nav-dropdown open" sec:authorize="hasAuthority('purchase')">
                     <a class="nav-link nav-dropdown-toggle" href="#">
-                        <i class="nav-icon icon-basket-loaded"></i>采购</a>
+                        <i class="nav-icon icon-basket-loaded" style="margin-right: .7rem;"></i>采购</a>
                     <ul class="nav-dropdown-items">
                         <li class="nav-item" sec:authorize="hasAuthority('pur_purchase_order_add')">
                             <a class="nav-link" href="javascript:addTab('pur_purchase_order_add', '采购订单', '/purchase_order')">
-                                <i class="nav-icon icon-cursor-move"></i> 新增采购订单
+                                <i class="nav-icon icon-plus"></i> 新增采购订单
                             </a>
                         </li>
                         <li class="nav-item" sec:authorize="hasAuthority('pur_purchase_order_read')">
-                            <a class="nav-link" href="javascript:addTab('purchase_order_list', '订单列表', '/reports/702566176051462144')">
-                                <i class="nav-icon icon-calculator"></i> 订单列表
+                            <a class="nav-link" href="javascript:addTab('purchase_order_list', '订单管理', '/reports/702566176051462144')">
+                                <i class="nav-icon icon-list"></i> 订单管理
                             </a>
                         </li>
                     </ul>
                 </li>
                 <li class="nav-item nav-dropdown" sec:authorize="hasAuthority('inventory')">
                     <a class="nav-link nav-dropdown-toggle" href="#">
-                        <i class="nav-icon icon-layers"></i> 库存管理</a>
+                        <i class="nav-icon icon-layers"></i> 库存</a>
                     <ul class="nav-dropdown-items">
                         <li class="nav-item" sec:authorize="hasAuthority('inventory_move')">
                             <a class="nav-link" href="javascript:addTab('inventory_move', '库存移动', '/inventory/move')">
-                                <i class="nav-icon icon-cursor-move"></i> 库存移动
+                                <i class="nav-icon icon-directions"></i> 库存移动
                             </a>
                         </li>
                         <li class="nav-item" sec:authorize="hasAuthority('inventory_count')">
@@ -114,14 +114,14 @@
                         </li>
                         <li class="nav-item" sec:authorize="hasAuthority('inventory_list')">
                             <a class="nav-link" href="javascript:addTab('inventory_list', '物料凭证', '/reports/699659248728047616')">
-                                <i class="nav-icon icon-chart"></i> 物料凭证
+                                <i class="nav-icon icon-list"></i> 物料凭证
                             </a>
                         </li>
                     </ul>
                 </li>
                 <li class="nav-item nav-dropdown" sec:authorize="hasAuthority('sys_management')">
                     <a class="nav-link nav-dropdown-toggle" href="#">
-                        <i class="nav-icon icon-settings"></i> 系统管理</a>
+                        <i class="nav-icon icon-settings"></i> 系统</a>
                     <ul class="nav-dropdown-items">
                         <li class="nav-item" sec:authorize="hasAuthority('sys_user')">
                             <a class="nav-link" href="javascript:addTab('users', '用户管理', '/reports/694714180413960192')">
@@ -130,7 +130,7 @@
                         </li>
                         <li class="nav-item" sec:authorize="hasAuthority('role_management')">
                             <a class="nav-link" href="javascript:addTab('roles', '角色管理', '/roles')">
-                                <i class="nav-icon icon-directions"></i> 角色管理
+                                <i class="nav-icon icon-share"></i> 角色管理
                             </a>
                         </li>
                         <li class="nav-item" sec:authorize="hasAuthority('sys_dict')">
@@ -256,19 +256,19 @@
             //     allowClose: false
             // });
 
-            // nthTabs.addTab({
-            //     id: "pur_purchase_order_add",
-            //     title: '采购订单',
-            //     url: "/purchase_order/add",
-            //     allowClose: false
-            // });
-
             nthTabs.addTab({
-                id: "purchase_order_list",
-                title: '订单列表',
-                url: "/reports/702566176051462144",
+                id: "pur_purchase_order_add",
+                title: '采购订单',
+                url: "/purchase_order",
                 allowClose: false
             });
+
+            // nthTabs.addTab({
+            //     id: "purchase_order_list",
+            //     title: '订单管理',
+            //     url: "/reports/702566176051462144",
+            //     allowClose: false
+            // });
         })
     </script>
 </div>

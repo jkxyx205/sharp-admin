@@ -71,7 +71,7 @@
                             <th style="width: 40px">序号</th>
                             <th th:each="n : ${report.reportColumnList}" th:text="${n.label}" th:data-name="${n.name}" th:class="${n.sortable ? 'sortable text-' + n.align.name().toLowerCase() : 'text-' + n.align.name().toLowerCase() }"
                                 th:style="${n.columnWidth == null ? '': 'width: ' + n.columnWidth + 'px'}" th:if="${!n.hidden}"></th>
-                            <th class="text-center" style="width: 100px" sec:authorize="${hasAuthority(#vars.report.code + '_delete') or hasAuthority(#vars.report.code + '_delete')}" th:if="${report.additionalInfo != null && report.additionalInfo['formId'] != null}">操作</th>
+                            <th class="text-center" style="width: 100px" sec:authorize="${hasAuthority(#vars.report.code + '_edit') or hasAuthority(#vars.report.code + '_delete')}" th:if="${report.additionalInfo != null && report.additionalInfo['formId'] != null}">操作</th>
                         </tr>
                         </thead>
                         <tbody>

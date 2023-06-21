@@ -34,7 +34,7 @@ public class InventoryDocumentTest {
                 .name("物料凭证")
                 .additionalInfo(Params.builder(1).pv("formId", "695978675677433856").build())
                 .reportAdviceName("inventoryDocumentReportAdvice")
-                .querySql("select `id`, `inventory_document_id`, `inventory_document_code`,`type`, `reference_type`, `reference_code`, `reference_item_id`, `root_reference_code`, `movement_type`, `plant_id`, `material_id`, `quantity`, `unit`, `remark`,  `create_by`, `create_time` from inv_document_item where inventory_document_code = :inventory_document_code AND material_id = :material_id AND movement_type = :movement_type AND root_reference_code = :root_reference_code")
+                .querySql("select `id`, `inventory_document_id`, `inventory_document_code`,`type`, `reference_type`, `reference_code`, `reference_item_id`, `root_reference_code`, `movement_type`, `plant_id`, `material_id`, `quantity`, `unit`, `remark`,  `create_by`, `create_time` from inv_document_item where inventory_document_code = :inventory_document_code AND material_id = :material_id AND movement_type = :movement_type AND root_reference_code = :root_reference_code and root_reference_item_id = :root_reference_item_id")
                 .queryFieldList(Arrays.asList(
                         new QueryField("inventory_document_code", "物料凭证", QueryField.Type.TEXT),
 //                        new QueryField("material_id", "物料", QueryField.Type.TEXT),

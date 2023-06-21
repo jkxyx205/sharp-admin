@@ -218,7 +218,7 @@
         let form_id =/*[[${report.additionalInfo != null && report.additionalInfo['formId'] != null ? report.additionalInfo['formId'] : '' } + '']]*/
 
         function showDialog(title, id) {
-            openOnNewTab('purchase_order' + (!id ? '' : '/' + id) + '?readonly=' + (title === '查看'),  '采购订单');
+            openOnNewTab(id, 'purchase_order' + (!id ? '' : '/' + id) + '?readonly=' + (title === '查看'),  '采购订单');
         }
 
         $('#okId').on('click', function () {
@@ -235,7 +235,7 @@
         function deleteRow(id) {
             if (confirm('确定要删除该条记录吗？')) {
                 $.ajax({
-                    url: '/forms/ajax/' + form_id + '/' + id,
+                    url: '/purchase_order/' + id,
                     type: "delete",
                     success: function(){
                         $modal.modal('hide');
