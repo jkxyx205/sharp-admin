@@ -59,11 +59,11 @@ dict:
     - type: partner_type
       map: { "CUSTOMER": "客户", "VENDOR": "供应商" }
     - type: core_partner
-      sql: "select id, name from core_partner order by id asc"
+      sql: "select id, name from core_partner WHERE is_deleted = 0 order by id asc"
     - type: core_partner_vendor
-      sql: "select id, name from core_partner where partner_type = 'VENDOR' order by id asc"
+      sql: "select id, name from core_partner where partner_type = 'VENDOR' AND is_deleted = 0 order by id asc"
     - type: core_plant
-      sql: "select id, name from core_plant order by id asc"
+      sql: "select id, name from core_plant where is_deleted = 0 order by id asc"
     - type: sys_dict_type
       sql: "select distinct type, type from sys_dict order by sort asc"
     - type: unit
