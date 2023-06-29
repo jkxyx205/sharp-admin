@@ -120,7 +120,7 @@
             })
         },
         // language=HTML
-        template: '<div :id="containerId">\n<div :class="(fixedHead || layoutFixed) ? \'table-fixed-container\' : \'card-body-scroll-panel\'">\n    <table class="table table-responsive-sm table-bordered table-striped table-sm table-thead" v-if="fixedHead">\n        <thead>\n            <slot></slot>\n        </thead>\n    </table>\n    <table class="table table-responsive-sm table-bordered table-striped table-sm table-tbody">\n        <thead v-if="!fixedHead">\n            <slot></slot>\n        </thead>\n        <tbody>\n        <tr @click="$emit(\'row-click\', row, $event)" @dblclick="$emit(\'row-dbclick\', row, $event)" v-for="(row, index) in grid.rows" :key="row[rowKey] ? row[rowKey] : Math.floor(Math.random()*1000000)">\n            <td :class="\'text-\'+p.align" v-text2="{ show: p.tooltip, original: row[p.prop] ,text: typeof p.$scopedSlots.default === \'function\' ? p.$scopedSlots.default({\'row\': row})[0].text : (p.type === \'index\' ? (index + 1 + (grid.page - 1) *grid.pageSize) : row[p.prop])}" v-for="p in props"></td>\n        </tr>\n        <tr class="tr-empty non-data" v-if="grid.rows && grid.rows < 1">\n            <td :colspan="props.length" style="text-align: center;"><span class="empty-text">暂无数据</span></td>\n        </tr>\n        </tbody>\n    </table>\n</div>\n<div class="table-footer-bar clearfix">\n    <div class="pull-left" style="margin-bottom: 8px;">\n        <span class="breadcrumb-item active">共{{ grid.records }}条，{{ grid.totalPages }}页</span>\n <select v-if="query.size !==  -1" @change="$emit(\'size-change\', query.size)" v-model="query.size">\n            <option value="15" selected="selected">15条</option>\n            <option value="50">50条</option>\n            <option value="100">100条</option>\n            <option value="200">200条</option>\n        </select>\n        <span v-show="grid.totalPages > 1">，前往<input class="goto" @keyup.enter="$emit(\'page-change\', query.page)" maxlength="6" v-model="query.page">页</span>\n    </div>\n    <nav class="pull-right" v-show="grid.totalPages > 1">\n        <ul class="pagination pagination-sm">\n            <li class="page-item" v-if="grid.page > 1">\n                <a class="page-link" href="javascript:;" @click="$emit(\'page-change\', query.page - 1)">上一页</a>\n            </li>\n            <li class="page-item" :class="{\'active\': i === grid.page}" v-for="i in pageInfo.endPage" v-if="pageInfo.startPage <= i">\n                <a class="page-link" href="javascript:;" @click="$emit(\'page-change\', i)">{{ i }}</a>\n            </li>\n            <li class="page-item" v-if="grid.page < grid.totalPages">\n                <a class="page-link" href="javascript:;" @click="$emit(\'page-change\', query.page + 1)">下一页</a>\n            </li>\n        </ul>\n    </nav>\n</div>\n</div>'
+        template: '<div :id="containerId">\n<div :class="(fixedHead || layoutFixed) ? \'table-fixed-container\' : \'card-body-scroll-panel\'">\n    <table class="table table-responsive-sm table-bordered table-striped table-sm table-thead" v-if="fixedHead">\n        <thead>\n            <slot></slot>\n        </thead>\n    </table>\n    <table class="table table-responsive-sm table-bordered table-striped table-sm table-tbody">\n        <thead v-if="!fixedHead">\n            <slot></slot>\n        </thead>\n        <tbody>\n        <tr @click="$emit(\'row-click\', row, $event)" @dblclick="$emit(\'row-dbclick\', row, $event)" v-for="(row, index) in grid.rows" :key="row[rowKey] ? row[rowKey] : Math.floor(Math.random()*1000000)">\n            <td :class="\'text-\'+p.align" v-text2="{ show: p.tooltip, original: row[p.prop] ,text: typeof p.$scopedSlots.default === \'function\' ? p.$scopedSlots.default({\'row\': row})[0].text : (p.type === \'index\' ? (index + 1 + (grid.page - 1) * grid.pageSize) : (p.type === \'checkbox\' ? \'<input type=checkbox name=\' + row[rowKey] + \'>\' : row[p.prop]))}" v-for="p in props"></td>\n        </tr>\n        <tr class="tr-empty non-data" v-if="grid.rows && grid.rows < 1">\n            <td :colspan="props.length" style="text-align: center;"><span class="empty-text">暂无数据</span></td>\n        </tr>\n        </tbody>\n    </table>\n</div>\n<div class="table-footer-bar clearfix">\n    <div class="pull-left" style="margin-bottom: 8px;">\n        <span class="breadcrumb-item active">共{{ grid.records }}条，{{ grid.totalPages }}页</span>\n <select v-if="query.size !==  -1" @change="$emit(\'size-change\', query.size)" v-model="query.size">\n            <option value="15" selected="selected">15条</option>\n            <option value="50">50条</option>\n            <option value="100">100条</option>\n            <option value="200">200条</option>\n        </select>\n        <span v-show="grid.totalPages > 1">，前往<input class="goto" @keyup.enter="$emit(\'page-change\', query.page)" maxlength="6" v-model="query.page">页</span>\n    </div>\n    <nav class="pull-right" v-show="grid.totalPages > 1">\n        <ul class="pagination pagination-sm">\n            <li class="page-item" v-if="grid.page > 1">\n                <a class="page-link" href="javascript:;" @click="$emit(\'page-change\', query.page - 1)">上一页</a>\n            </li>\n            <li class="page-item" :class="{\'active\': i === grid.page}" v-for="i in pageInfo.endPage" v-if="pageInfo.startPage <= i">\n                <a class="page-link" href="javascript:;" @click="$emit(\'page-change\', i)">{{ i }}</a>\n            </li>\n            <li class="page-item" v-if="grid.page < grid.totalPages">\n                <a class="page-link" href="javascript:;" @click="$emit(\'page-change\', query.page + 1)">下一页</a>\n            </li>\n        </ul>\n    </nav>\n</div>\n</div>'
     })
 
     Vue.component('table-column', {
@@ -169,7 +169,7 @@
             })
         },
         // language=HTML
-        template: '<th :data-name="prop" :style="\'width:\'+width+\'px\'" :class="[ {sortable: sortable}, \'text-\' + align]">{{ label }}</th>'
+        template: '<th :data-name="prop" :style="\'width:\'+width+\'px\'" :class="[ {sortable: sortable}, \'text-\' + align]" v-html="label"></th>'
     })
 
     var AjaxTable = function(element, options) {
@@ -202,19 +202,51 @@
                     this.$nextTick(function () {
                         _this.options.mounted && _this.options.mounted()
                         _this.$element = $('#' + _this.element.id);
-                        this.$saleListTbody = _this.$element.find('table tbody')
-                        this.saleListColumnSize = _this.$element.find('thead th').length
+                        _this.$checkbox = _this.$element.find('table thead :checkbox')
+                        this.$tbody = _this.$element.find('table tbody')
+                        this.columnsLength = _this.$element.find('thead th').length
+
+                        // 全选
+                        _this.$checkbox.on('click', () => {
+                            let $rowCheckbox = this.$tbody.find('td:nth-child(2) > input[type=checkbox]');
+                            $rowCheckbox.prop('checked', _this.$checkbox.prop('checked'))
+                            _this.options.clickCheckbox && _this.options.clickCheckbox(_this.$checkbox.prop('checked'))
+                        })
+
+                        this.$tbody.delegate('td:nth-child(2) > input[type=checkbox]', 'click', function () {
+                            let currentCheck = $(this).prop('checked')
+                            let allCheckboxRelated = true
+                            let nonChecked = true;
+                            let $rowCheckbox = $(this).parents('tbody').find('td:nth-child(2) > input[type=checkbox]');
+                            $rowCheckbox.each(function () {
+                                if(allCheckboxRelated && (!currentCheck || ($(this).prop('checked') !== currentCheck))) {
+                                    allCheckboxRelated = false
+                                }
+
+                                if (nonChecked && $(this).prop('checked')) {
+                                    nonChecked = false
+                                }
+                            })
+
+                            if (allCheckboxRelated || !currentCheck) {
+                                _this.$checkbox.prop('checked', currentCheck)
+                            }
+
+                            _this.options.clickRowCheckbox && _this.options.clickRowCheckbox(currentCheck, nonChecked)
+                        })
                     })
                 },
                 methods: {
                     search: function (params) {
+                        _this.$checkbox && _this.$checkbox.prop('checked', false)
+
                         if (!params || typeof params !== 'object') {
                             params = {}
                         }
 
                         this.query = $.extend({}, this.query, params)
 
-                        var that = this
+                        let that = this
                         // trim
                         this.queryTrim()
                         $.get(_this.options.url, this.query, function (res) {
@@ -250,13 +282,13 @@
                     rowClick: function (row, event) {
                         window[_this.element.id + 'RowClick'] && window[_this.element.id + 'RowClick'](row, event)
                     },
-                    rowDbclick: function(row, event) {
-                        window[_this.element.id + 'RowDbclick'] && window[_this.element.id + 'RowDbclick'](row, event)
+                    rowDbClick: function(row, event) {
+                        window[_this.element.id + 'RowDbClick'] && window[_this.element.id + 'RowDbClick'](row, event)
                     },
                     queryTrim: function () {
-                        var trimQuery = {}
-                        for(var p in this.query) {
-                            var value = this.query[p]
+                        let trimQuery = {}
+                        for(let p in this.query) {
+                            let value = this.query[p]
                             if (typeof value === 'string')
                                 value = value.trim()
 
@@ -303,7 +335,7 @@
                             that.oldParams = that.query
 
                             var summaryIndex = _this.options.summaryIndex
-                            var summaryData = new Array(that.saleListColumnSize)
+                            var summaryData = new Array(that.columnsLength)
                             summaryData[0] = '合计'
                             var summarySize = summaryIndex.length
                             for (var i = 0 ; i < summarySize; i++) {
@@ -315,7 +347,7 @@
                                     summaryData[summaryVal] = formatDecimal(that.data[i])
                                 }
                             }
-                            that.$saleListTbody.append('<tr class="tr-summary non-data" style="border-top: 0;"><td class="text-right bold">' + summaryData.join('</span></td><td class="text-right bold"><span>') + '</td></tr>')
+                            that.$tbody.append('<tr class="tr-summary non-data" style="border-top: 0;"><td class="text-right bold">' + summaryData.join('</span></td><td class="text-right bold"><span>') + '</td></tr>')
                         }
                     }
                 }
@@ -326,6 +358,18 @@
         },
         getQuery: function() {
             return this.$vue.$data.query
+        },
+        getCheckedValue() {
+            let value = []
+            this.$vue.$tbody.find(':checkbox:checked').each(function () {
+                value.push($(this).prop('name'))
+            })
+
+            if (value.length === 0) {
+                return value
+            }
+
+            return this.$vue.$data.grid.rows.filter(row => value.indexOf(row[this.$vue.$children[0].rowKey]) > -1)
         }
     }
 

@@ -51,17 +51,17 @@
     <div class="sidebar">
         <nav class="sidebar-nav">
             <ul class="nav">
-<!--                <li class="nav-item" sec:authorize="hasAuthority('dashboard')">-->
-<!--                    <a class="nav-link" href="javascript:addTab('dashboard', '仪表盘', '/dashboard')">-->
-<!--                        <i class="nav-icon icon-speedometer"></i> 仪表盘-->
-<!--                    </a>-->
-<!--                </li>-->
+                <li class="nav-item" sec:authorize="hasAuthority('dashboard')">
+                    <a class="nav-link" href="javascript:addTab('dashboard', '仪表盘', '/dashboard')">
+                        <i class="nav-icon icon-speedometer"></i> 仪表盘
+                    </a>
+                </li>
                 <li class="nav-item nav-dropdown" sec:authorize="hasAuthority('core_data')">
                     <a class="nav-link nav-dropdown-toggle" href="#">
                         <i class="nav-icon icon-wallet"></i> 数据</a>
                     <ul class="nav-dropdown-items">
                         <li class="nav-item" sec:authorize="hasAuthority('core_plant')">
-                            <a class="nav-link" href="javascript:addTab('plants', '库房', '/reports/695623902415556608')">
+                            <a class="nav-link" href="javascript:addTab('plants', '库房', '/reports/695623902415556608?mode=multiple')">
                                 <i class="nav-icon icon-home"></i> 库房
                             </a>
                         </li>
@@ -76,7 +76,7 @@
                             </a>
                         </li>
                         <li class="nav-item" sec:authorize="hasAuthority('mm_material')">
-                            <a class="nav-link" href="javascript:addTab('mm_material', '物料', '/reports/695981455636959232')">
+                            <a class="nav-link" href="javascript:addTab('mm_material', '物料', '/reports/695981455636959232?mode=multiple')">
                                 <i class="nav-icon icon-puzzle"></i> 物料
                             </a>
                         </li>
@@ -221,12 +221,12 @@
         $(function () {
             $('[data-toggle="tooltip"]').tooltip()
 
-            // nthTabs.addTab({
-            //     id: "dashboard",
-            //     title: '仪表盘',
-            //     url: "/dashboard",
-            //     allowClose: false
-            // });
+            nthTabs.addTab({
+                id: "dashboard",
+                title: '仪表盘',
+                url: "/dashboard",
+                allowClose: false
+            });
 
             // nthTabs.addTab({
             //     id: "inventory_move",
@@ -256,12 +256,12 @@
             //     allowClose: false
             // });
 
-            nthTabs.addTab({
-                id: "pur_purchase_order_add",
-                title: '采购订单',
-                url: "/purchase_order",
-                allowClose: false
-            });
+            // nthTabs.addTab({
+            //     id: "pur_purchase_order_add",
+            //     title: '采购订单',
+            //     url: "/purchase_order",
+            //     allowClose: false
+            // });
 
             // nthTabs.addTab({
             //     id: "purchase_order_list",

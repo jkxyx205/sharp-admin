@@ -19,7 +19,6 @@
         }
 
         /*[(${(report.additionalInfo != null && report.additionalInfo['css'] != null ) ? report.additionalInfo['css'] : ''})]*/
-
     </style>
 </head>
 <body class="app">
@@ -65,7 +64,7 @@
         <div class="card">
             <div class="card-body" style="padding-bottom: 0">
                 <div id="report-list">
-                    <ajax-table :grid="grid" :display-page="displayPage" class="report-list-table" row-key="ID" @refresh="refresh"
+                    <ajax-table :grid="grid" :display-page="displayPage" class="report-list-table" row-key="id" @refresh="refresh"
                                 @page-change="pageChange"
                                 @sort-column="sortColumn"
                                 @size-change="sizeChange">
@@ -73,6 +72,13 @@
                                 type="index"
                                 label="序号"
                                 width="40">
+                        </table-column>
+                        <table-column
+                                type="checkbox"
+                                class="text-center"
+                                label="<input type=checkbox>"
+                                align="center"
+                                width="40" th:if="${'multiple' eq params['mode']}">
                         </table-column>
                         <table-column th:each="n : ${report.reportColumnList}" th:if="${!n.hidden}" th:attr="prop=${n.name}, label=${n.label}, ':sortable'=${n.sortable}, ':tooltip'=${n.tooltip}, width=${n.columnWidth == null? 'auto': n. columnWidth}, align=${n.align.name().toLowerCase()}">
                             <template slot-scope="scope" th:if="${n.type.name() eq 'NUMERIC'}">
@@ -112,8 +118,6 @@
                         </div>
                     </div>
                 </div>
-
-
             </div>
         </div>
 
@@ -210,6 +214,12 @@
                             return 10
                         }
                         return 5
+                    },
+                    clickCheckbox: function (value) {
+                        console.log(value, '....clickCheckbox')
+                    },
+                    clickRowCheckbox: function (value, nonChecked) {
+                        console.log(value, nonChecked, '....clickRowCheckbox')
                     }
                 }
 
@@ -276,6 +286,22 @@
                 });
             }
         }
+
+        // 获取多选的值
+        function getCheckedValue() {
+            let value = $listTable.ajaxTable('getCheckedValue')
+            console.log(value)
+        }
+
+        // 处理多选业务逻辑
+        $('.table-footer-bar .pull-right').before("<div id=\"batch-cpn-bar\" style=\"margin-left: 16px; float: left; margin-bottom: 8px;\">\n" +
+            "                        <div class=\"btn-toolbar\" role=\"toolbar\">\n" +
+            "                            <div class=\"btn-group\" role=\"group\">\n" +
+            "                                <button class=\"btn btn-light\" style=\"padding: .075rem .45rem\" type=\"button\" onclick=\"getCheckedValue()\"><i class=\"fa fa-trash-o fa-lg\"></i></button>\n" +
+            "                            </div>\n" +
+            "                        </div>\n" +
+            "                    </div>")
+
         /*[(${(report.additionalInfo != null && report.additionalInfo['js'] != null ) ? report.additionalInfo['js'] : ''})]*/
     </script>
 </th:block>

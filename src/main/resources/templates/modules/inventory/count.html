@@ -3,6 +3,7 @@
       xmlns:sp="" lang="zh">
 <head th:replace="includes/base :: common_header(~{},~{::link},~{::style})">
     <link rel="stylesheet" th:href="@{/css/tab-common.css}">
+    <link rel="stylesheet" th:href="@{/css/edit-table.css}">
     <link rel="stylesheet" th:href="@{/plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css}">
     <style>
         .form-control:disabled, .form-control[readonly] {
@@ -17,36 +18,6 @@
             padding: .2rem 1.25rem;
             background: #fff;
             border-top: 1px solid #c8ced3;
-        }
-
-        .table-editor .form-control {
-            padding: 0 .5rem;
-            border: none;
-            border-radius: 0;
-            height: 32px;
-        }
-
-        .table-editor.table-sm th {
-            position: relative;
-            vertical-align: middle;
-            padding-left: .5rem;
-        }
-
-        .table-editor.table-sm label {
-            margin-bottom: 0;
-        }
-
-        .table-editor.table-sm td {
-            padding: 0;
-            vertical-align: middle;
-        }
-
-        .table-editor .required label:before, .table-editor label.required:before {
-            left: 0;
-        }
-
-        .table-editor tr td:first-child, .table-editor tr td:last-child {
-            padding: 0 .3rem;
         }
 
         .table-fixed-container {
@@ -109,6 +80,7 @@
             </div>
         </div>
         <div id="dialogInput" style="display: none"></div>
+        <div id="dialogInputSingle" style="display: none"></div>
         <div class="operator-bar text-center" id="operator-bar">
             <button class="btn btn-primary" type="button" name="send" onclick="send()">
                 <i class="fa fa-send"></i> 提交</button>
@@ -157,6 +129,8 @@
 
         // end
         let dialogInput = $('#dialogInput');
+        let dialogInputSingle = $('#dialogInputSingle');
+
         var currentMaterialDom;
 
         $('#documentDate').datepicker({
@@ -239,7 +213,7 @@
             }
         }
 
-        $('#dialogInput').dialogInput({
+        $('#dialogInputSingle').dialogInput({
             title: '选择物料',
             reportId: '697147523487240192',
             labelDisplay: function (row) {
@@ -264,6 +238,31 @@
                 $(currentMaterialDom).parents('tr').find('td:nth-child(5) input[type=hidden]').val(row.base_unit)
 
                 $(currentMaterialDom).siblings().val(row.id)
+            }
+        })
+
+        $('#dialogInput').dialogInput({
+            title: '选择物料',
+            reportId: '697147523487240192',
+            mode: 'multiple', // 多选
+            labelDisplay: function (row) {
+                return row.name + ' ' + (!row.characteristic ? '' : row.characteristic)
+            },
+            selected: function (rows) {
+                for (let row of rows) {
+                    console.log(row)
+                    $editableTable.editableTable('addEmptyLine')
+                    let $tr = $("#table tr:last-child").prev()
+                    $tr.find("input[name]").each(function () {
+                        $(this).val(row[this.name])
+                    })
+
+                    $tr.find('td:nth-child(2) input[type=text]').val(row.code)
+                    $tr.find('td:nth-child(2) input[type=text]').siblings().val(row.id)
+                    $tr.find('td:nth-child(3) input[type=text]').val(this.labelDisplay(row))
+                    $tr.find('td:nth-child(5) input[type=text]').val(row.base_unit_name)
+                    $tr.find('td:nth-child(5) input[type=hidden]').val(row.base_unit)
+                }
             }
         })
 
@@ -293,8 +292,12 @@
                     $('#table tbody').delegate('td:nth-child('+childIndex+') input[type=text]', 'click keydown focus', function(event){
                         // if ((event.keyCode && event.keyCode === 13) || !event.keyCode) {
                         if ((event.keyCode && event.keyCode !== 9) || !event.keyCode) {
-                            dialogInput.click();
-                            currentMaterialDom = this
+                            if ($(this).val()) {
+                                dialogInputSingle.click();
+                                currentMaterialDom = this
+                            } else {
+                                dialogInput.click();
+                            }
                         }
 
                         if (event.keyCode !== 9 ) {

@@ -54,14 +54,17 @@ head.appendChild(style)
                 this.$OkBtn = $('#' + this.okId)
 
                 this.$OkBtn.on('click', () => {
-                    let row = window.frames[this.iframeId].document.getElementById('qid').row
-                    this._dialogRowDbClick(row);
+                    let rows = window.frames[this.iframeId].document.getElementById('qid').row
+                    // 如果是多选
+                    if (this.options.mode === 'multiple') {
+                        rows = window.frames[this.iframeId].$listTable.ajaxTable('getCheckedValue')
+                    }
+                    this._dialogRowDbClick(rows);
                 })
 
                 // bind control
                 this.$element.append('<label type="text" class="form-control">'+this.options.placeholder+'</label>\n' +
                     '                    <input type="hidden" name="'+this.options.name+'" class="form-control">')
-
 
                 this.$element.on('click', () => {
                     this._showReportDialog(this.options.title)
@@ -75,8 +78,13 @@ head.appendChild(style)
 
                 // init value
                 if (this.options.value) {
-                    $.get('/reports/' + this.options.reportId + "/" +this.options.value, (res) => {
-                        this.iframe.label.text(this.options.labelDisplay(res))
+                    let isSingle = this.options.mode === 'single'
+                    if (!isSingle && this.options.value.length === 0) {
+                        return
+                    }
+
+                    $.get('/reports/' + this.options.reportId + "/" + (isSingle ? this.options.value : 'more/' + this.options.value.join(",")), (res) => {
+                        this._fillValue(res)
                     })
                 }
             }
@@ -84,21 +92,30 @@ head.appendChild(style)
         _showReportDialog:function (title) {
             $('#dialog-title').text(title)
 
-            this.iframe.src = '/reports/' + this.options.reportId
+            this.iframe.src = '/reports/' + this.options.reportId + "?mode=" + this.options.mode
 
             this.$modal.modal({
                 show: true,
                 backdrop: 'static'
             })
         },
-        _dialogRowDbClick: function (row) {
-            if (row && row.id) {
+        _dialogRowDbClick: function (rows) {
+            if (rows && (this.options.mode === 'single' || rows.length > 0)) {
                 this.$modal.modal('hide')
-                this.iframe.input.val(row.id)
-                this.iframe.label.text(this.options.labelDisplay(row))
-                this.options.selected && this.options.selected(row)
+                this._fillValue(rows)
+                this.options.selected && this.options.selected(rows)
             } else {
                 toastr.error('请先选择一条记录后再点击确定');
+            }
+        },
+        _fillValue: function (rows) {
+            if (this.options.mode === 'single') {
+                let row = Array.isArray(rows) ? rows[0] : rows
+                this.iframe.input.val(row.id)
+                this.iframe.label.text(this.options.labelDisplay(row))
+            } else {
+                this.iframe.input.val(rows.map(r => r.id).join(","))
+                this.iframe.label.text(this.options.labelDisplay(rows))
             }
         }
     }
@@ -136,7 +153,8 @@ head.appendChild(style)
 
     //设置默认属性
     $.fn.dialogInput.defaults = {
-        placeholder: '请选择'
+        placeholder: '请选择',
+        mode: 'single' //  默认单选； 多选 multiple
     };
 
 })(jQuery);

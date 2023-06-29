@@ -1,0 +1,33 @@
+.table-editor .form-control {
+    padding: 0 .5rem;
+    border: none;
+    border-radius: 0;
+    height: 32px;
+}
+
+.table-editor.table-sm th {
+    position: relative;
+    vertical-align: middle;
+    padding-left: .5rem;
+}
+
+.table-editor.table-sm label {
+    margin-bottom: 0;
+}
+
+.table-editor.table-sm td {
+    padding: 0;
+    vertical-align: middle;
+}
+
+.table-editor .required label:before, .table-editor label.required:before {
+    left: 0;
+}
+
+.table-editor tr td:first-child, .table-editor tr td:last-child {
+    padding: 0 .3rem;
+}
+
+.table-editor input:focus {
+    background: #fcf0a8;
+}

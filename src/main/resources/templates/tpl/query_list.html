@@ -18,7 +18,7 @@
         }
 
         @media screen and (min-width: 576px) {
-            .card-body-scroll-panel {
+            .card-body-scroll-panel, .table-fixed-container {
                 max-height: calc(100vh - 152px);
             }
         }
@@ -79,11 +79,24 @@
             <div class="card-body" style="padding-bottom: 0">
                 <div th:id="${reportDomId}">
                     <ajax-table :grid="grid" :display-page="displayPage" class="report-list-table" row-key="id" @refresh="refresh"
+                                :fixed-head="true"
                                 @page-change="pageChange"
                                 @sort-column="sortColumn"
                                 @size-change="sizeChange"
-                                @row-click = "rowClick"
-                                @row-dbclick = "rowDbclick">
+                                @row-click="rowClick"
+                                @row-dbclick="rowDbClick">
+                        <table-column
+                                type="index"
+                                label="序号"
+                                width="40">
+                        </table-column>
+                        <table-column
+                                type="checkbox"
+                                class="text-center"
+                                label="<input type=checkbox>"
+                                align="center"
+                                width="40" th:if="${'multiple' eq params['mode']}">
+                        </table-column>
                         <table-column th:each="n : ${report.reportColumnList}" th:if="${!n.hidden}" th:attr="prop=${n.name}, label=${n.label}, ':sortable'=${n.sortable}, ':tooltip'=${n.tooltip}, width=${n.columnWidth == null? 'auto': n. columnWidth}, align=${n.align.name().toLowerCase()}">
                         </table-column>
                     </ajax-table>
@@ -128,6 +141,8 @@
         let urlObject = getUrlObject();
 
         /*<![CDATA[*/
+        let isMultiple = [[${'multiple' eq params['mode']}]]
+
         var fz = [[${report.queryFieldList}]]
         var multipleSelect = fz.filter(f => f.type == 'MULTIPLE_SELECT')
         multipleSelect.forEach(f => {
@@ -194,17 +209,30 @@
         listRequest({})
 
         window[reportDomId + 'RowClick'] = function(row, event) {
-            $(event.target.parentElement).siblings().removeClass()
-            event.target.parentElement.className = 'active'
+            $(event.target).parents('tr')
+                .addClass('active')
+                .siblings().removeClass()
+
             document.getElementById('qid').row = row
         }
 
-        window[reportDomId + 'RowDbclick'] = function(row, event) {
+        window[reportDomId + 'RowDbClick'] = function(row, event) {
             $(event.target.parentElement).siblings().removeClass()
             event.target.parentElement.className = 'active'
 
             window.parent['dialogRowDbClick'] && window.parent['dialogRowDbClick'](row)
         }
+
+        $(document).on('keyup', function (e) {
+            let theEvent = window.event || e;
+            let code = theEvent.keyCode || theEvent.which || theEvent.charCode;
+
+            if (code === 13) {
+                window.parent['dialogRowDbClick']()
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        })
     </script>
 </th:block>
 </body>

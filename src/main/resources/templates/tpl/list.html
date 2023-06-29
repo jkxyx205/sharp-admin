@@ -69,6 +69,7 @@
                         <thead>
                         <tr>
                             <th style="width: 40px">序号</th>
+                            <th class="text-center" th:if="${'multiple' eq params['mode']}" style="width: 40px"><input id="table-select-all-checkbox" type="checkbox"/></th>
                             <th th:each="n : ${report.reportColumnList}" th:text="${n.label}" th:data-name="${n.name}" th:class="${n.sortable ? 'sortable text-' + n.align.name().toLowerCase() : 'text-' + n.align.name().toLowerCase() }"
                                 th:style="${n.columnWidth == null ? '': 'width: ' + n.columnWidth + 'px'}" th:if="${!n.hidden}"></th>
                             <th class="text-center" style="width: 100px" sec:authorize="${hasAuthority(#vars.report.code + '_edit') or hasAuthority(#vars.report.code + '_delete')}" th:if="${report.additionalInfo != null && report.additionalInfo['formId'] != null}">操作</th>
@@ -77,6 +78,7 @@
                         <tbody>
                         <tr th:each="m : ${grid.rows}">
                             <td th:text="${mStat.index + 1 + (grid.page - 1) * grid.pageSize}"></td>
+                            <td class="text-center" th:if="${'multiple' eq params['mode']}"><input type="checkbox" th:name="${m[0]}"/></td>
                             <td th:each="v : ${grid.rows[mStat.index]}" th:class="${'text-' + report.reportColumnList.get(vStat.index).align.name().toLowerCase()}" th:if="${!report.reportColumnList.get(vStat.index).hidden}">
                                 <a href="javascript:;" th:if="${vStat.index == 1}" th:text="${report.reportColumnList.get(vStat.index).type.name() eq 'NUMERIC' ? #numbers.formatInteger(v, 0, 'COMMA') : (report.reportColumnList.get(vStat.index).type.name() eq 'DECIMAL' ? #numbers.formatDecimal(v,1,'COMMA',2,'POINT') : v) }" th:onclick="showDialog('查看', [[${m[0]}]])"></a>
                                 <span th:if="${vStat.index > 1}" th:text="${report.reportColumnList.get(vStat.index).type.name() eq 'NUMERIC' ? #numbers.formatInteger(v, 0, 'COMMA') : (report.reportColumnList.get(vStat.index).type.name() eq 'DECIMAL' ? #numbers.formatDecimal(v,1,'COMMA',2,'POINT') : v) }"></span>
@@ -89,11 +91,12 @@
                         </tr>
                         <tr th:if="${summary ne null}">
                             <td style="font-weight: bold;">合计</td>
+                            <td th:if="${'multiple' eq params['mode']}"></td>
                             <td class="text-right bold" th:each="n : ${report.reportColumnList}" th:text="${#numbers.formatDecimal(summary.get(n.name),1,'COMMA',2,'POINT')}" th:if="${!n.hidden}"></td>
                             <td></td>
                         </tr>
                         <tr class="tr-empty non-data" th:if="${grid.records < 1}">
-                            <td th:colspan="${report.visibleColumnSize + 2}" style="text-align: center;"><span class="empty-text">暂无数据</span></td>
+                            <td th:colspan="${report.visibleColumnSize + 2 + ('multiple' eq params['mode'] ? 1 : 0)}" style="text-align: center;"><span class="empty-text">暂无数据</span></td>
                         </tr>
                         </tbody>
                     </table>
@@ -108,6 +111,14 @@
                             <option value="200" th:selected="${grid.pageSize == 200}">200条</option>
                         </select>
                         <span th:if="${grid.totalPages > 1}">，前往<input class="goto" style="width: 68px;" th:onkeyup="'gotoPage(this, ' + ${grid.page} + ')'" maxlength="6" th:value="${grid.page}">页</span>
+                    </div>
+                    <div id="batch-cpn-bar" style="margin-left: 16px; float: left; margin-bottom: 8px;" th:if="${'multiple' eq params['mode']}">
+                        <div class="btn-toolbar" role="toolbar">
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-light" style="padding: .075rem .45rem" type="button" onclick="batchDelete()" disabled><i class="fa fa-trash-o fa-lg"></i></button>
+<!--                                <button class="btn btn-light" style="padding: .075rem .45rem" type="button"><i class="fa fa-trash-o fa-lg"></i></button>-->
+                            </div>
+                        </div>
                     </div>
                     <nav style="float: right" th:if="${grid.totalPages > 1}">
                         <ul class="pagination pagination-sm">
@@ -257,6 +268,63 @@
                 });
             }
         }
+
+        function batchDelete() {
+            let deleteIds = []
+            $('table > tbody td:nth-child(2) > input[type=checkbox]:checked').each(function () {
+                console.log($(this).prop("name"), '...')
+                deleteIds.push($(this).prop("name"))
+            })
+            if (!deleteIds.length) {
+                alert('请选择要删除的行！')
+                return
+            }
+
+            if (confirm('确定要删除记录吗？')) {
+                $.ajax({
+                    url: '/forms/ajax/' + form_id + '?ids=' + deleteIds,
+                    type: "delete",
+                    success: function(){
+                        $modal.modal('hide');
+                        toastr.success("删除成功")
+                        setTimeout(() => {
+                            // $('[name=reset]').click()
+                            window.location.reload()
+                        }, 1000)
+                    }
+                });
+            }
+        }
+
+        let $tableSelectAllCheckbox = $('#table-select-all-checkbox')
+        let $rowCheckbox = $('table > tbody td:nth-child(2) > input[type=checkbox]');
+        let $batchCpnBar = $('#batch-cpn-bar');
+
+        $tableSelectAllCheckbox.on('click', function () {
+            $rowCheckbox.prop('checked', $(this).prop('checked'))
+            $batchCpnBar.find('button').prop("disabled", !$(this).prop('checked'))
+        })
+
+        $rowCheckbox.on('click', function () {
+            let currentCheck = $(this).prop('checked')
+            let allCheckboxRelated = true
+            let nonChecked = true;
+            $rowCheckbox.each(function () {
+                if(allCheckboxRelated && (!currentCheck || ($(this).prop('checked') !== currentCheck))) {
+                    allCheckboxRelated = false
+                }
+
+                if (nonChecked && $(this).prop('checked')) {
+                    nonChecked = false
+                }
+            })
+
+            if (allCheckboxRelated || !currentCheck) {
+                $tableSelectAllCheckbox.prop('checked', currentCheck)
+            }
+
+            $batchCpnBar.find('button').prop("disabled", nonChecked)
+        })
 
         /*[(${(report.additionalInfo != null && report.additionalInfo['js'] != null ) ? report.additionalInfo['js'] : ''})]*/
     </script>

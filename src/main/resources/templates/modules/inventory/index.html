@@ -3,6 +3,7 @@
       xmlns:sp="" lang="zh">
 <head th:replace="includes/base :: common_header(~{},~{::link},~{::style})">
     <link rel="stylesheet" th:href="@{/css/tab-common.css}">
+    <link rel="stylesheet" th:href="@{/css/edit-table.css}">
     <link rel="stylesheet" th:href="@{/plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css}">
     <style>
         .form-control:disabled, .form-control[readonly] {
@@ -17,36 +18,6 @@
             padding: .2rem 1.25rem;
             background: #fff;
             border-top: 1px solid #c8ced3;
-        }
-
-        .table-editor .form-control {
-            padding: 0 .5rem;
-            border: none;
-            border-radius: 0;
-            height: 32px;
-        }
-
-        .table-editor.table-sm th {
-            position: relative;
-            vertical-align: middle;
-            padding-left: .5rem;
-        }
-
-        .table-editor.table-sm label {
-            margin-bottom: 0;
-        }
-
-        .table-editor.table-sm td {
-            padding: 0;
-            vertical-align: middle;
-        }
-
-        .table-editor .required label:before, .table-editor label.required:before {
-            left: 0;
-        }
-
-        .table-editor tr td:first-child, .table-editor tr td:last-child {
-            padding: 0 .3rem;
         }
 
         .table-fixed-container {
