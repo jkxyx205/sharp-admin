@@ -55,6 +55,7 @@ public class PartnerTest {
                 .tplName("modules/partner")
                 .name("合作伙伴")
                 .repositoryName("partnerDAO")
+                .formAdviceName("partnerFormService")
                 .storageStrategy(Form.StorageStrategyEnum.CREATE_TABLE)
                 .build());
         // 关联关系
