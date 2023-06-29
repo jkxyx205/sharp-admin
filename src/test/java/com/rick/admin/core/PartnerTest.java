@@ -72,7 +72,7 @@ public class PartnerTest {
         textRequiredValidatorList.add(new Length(32));
 
         // code
-        CustomizeRegex codeRegex = new CustomizeRegex("^[0-9a-zA-Z_/%-]{1,}$", "CODE只能包含数字、字母、下划线、中划线");
+        CustomizeRegex codeRegex = new CustomizeRegex("^[0-9a-zA-Z_\\/%\\-]{1,}$", "CODE只能包含数字、字母、下划线、中划线");
         List<Validator> codeRegexValidatorList = Lists.newArrayList(textRequiredValidatorList);
         codeRegexValidatorList.add(codeRegex);
 
