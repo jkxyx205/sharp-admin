@@ -60,19 +60,37 @@ public class PurchaseOrderService {
      */
     public Map<Long, BigDecimal> openQuantity(InventoryDocument.MovementTypeEnum movementType, String rootReferenceCode) {
         String sql = "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where `root_reference_code` = :rootReferenceCode group by root_reference_item_id";
-        Map<Long, BigDecimal> maxReturnQuantityMap = sharpService.queryForKeyValue(sql, Params.builder(1).pv("rootReferenceCode", rootReferenceCode).build());
+        Map<Long, BigDecimal> histroyGoodsReceiptQuantityMap = sharpService.queryForKeyValue(sql, Params.builder(1).pv("rootReferenceCode", rootReferenceCode).build());
 
         if (movementType == InventoryDocument.MovementTypeEnum.INBOUND) {
             // 同向
             PurchaseOrder purchaseOrder = purchaseOrderDAO.selectByCode(rootReferenceCode).orElseThrow(() -> new ResourceNotFoundException());
 
             for (PurchaseOrder.Item item : purchaseOrder.getItemList()) {
-                BigDecimal value = item.getQuantity().subtract(ObjectUtils.defaultIfNull(maxReturnQuantityMap.get(item.getId()), BigDecimal.ZERO));
-                maxReturnQuantityMap.put(item.getId(), BigDecimalUtils.lt(value, BigDecimal.ZERO) ? BigDecimal.ZERO : value);
+                BigDecimal value = item.getQuantity().subtract(ObjectUtils.defaultIfNull(histroyGoodsReceiptQuantityMap.get(item.getId()), BigDecimal.ZERO));
+                histroyGoodsReceiptQuantityMap.put(item.getId(), BigDecimalUtils.lt(value, BigDecimal.ZERO) ? BigDecimal.ZERO : value);
             }
         }
 
-        return maxReturnQuantityMap;
+        return histroyGoodsReceiptQuantityMap;
+    }
+
+    /**
+     * 历史收货数量
+     * @param rootReferenceCode
+     * @return
+     */
+    public Map<Long, BigDecimal> historyGoodsReceiptQuantity(String rootReferenceCode) {
+        String sql = "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where `root_reference_code` = :rootReferenceCode group by root_reference_item_id";
+        Map<Long, BigDecimal> histroyGoodsReceiptQuantityMap = sharpService.queryForKeyValue(sql, Params.builder(1).pv("rootReferenceCode", rootReferenceCode).build());
+
+        PurchaseOrder purchaseOrder = purchaseOrderDAO.selectByCode(rootReferenceCode).orElseThrow(() -> new ResourceNotFoundException());
+
+        for (PurchaseOrder.Item item : purchaseOrder.getItemList()) {
+            histroyGoodsReceiptQuantityMap.put(item.getId(), ObjectUtils.defaultIfNull(histroyGoodsReceiptQuantityMap.get(item.getId()), BigDecimal.ZERO));
+        }
+
+        return histroyGoodsReceiptQuantityMap;
     }
 
 }

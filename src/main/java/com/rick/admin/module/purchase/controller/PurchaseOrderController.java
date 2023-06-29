@@ -2,8 +2,8 @@ package com.rick.admin.module.purchase.controller;
 
 import com.google.common.collect.Lists;
 import com.rick.admin.auth.common.UserContextHolder;
+import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
-import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.entity.Material;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
@@ -80,12 +80,12 @@ public class PurchaseOrderController {
             // 收货记录
             List<GoodsReceiptItem> goodsReceiptItemList = Lists.newArrayListWithExpectedSize(purchaseOrder.getItemList().size());
 
-            Map<Long, BigDecimal> itemOpenQuantityMap = purchaseOrderService.openQuantity(InventoryDocument.MovementTypeEnum.INBOUND, purchaseOrder.getCode());
+            Map<Long, BigDecimal> historyGoodsReceiptQuantityMap = purchaseOrderService.historyGoodsReceiptQuantity(purchaseOrder.getCode());
 
             for (PurchaseOrder.Item item : purchaseOrder.getItemList()) {
                 GoodsReceiptItem goodsReceiptItem = new GoodsReceiptItem();
                 BeanUtils.copyProperties(item, goodsReceiptItem);
-                goodsReceiptItem.openQuantity = itemOpenQuantityMap.get(item.getId());
+                goodsReceiptItem.goodsReceiptQuantity = historyGoodsReceiptQuantityMap.get(item.getId());
                 goodsReceiptItemList.add(goodsReceiptItem);
             }
             model.addAttribute("goodsReceiptItemList", goodsReceiptItemList);
@@ -129,12 +129,15 @@ public class PurchaseOrderController {
 
         private BigDecimal openQuantity;
 
+        private BigDecimal goodsReceiptQuantity;
+
         public BigDecimal getGoodsReceiptQuantity() {
-            return getQuantity().subtract(ObjectUtils.defaultIfNull(openQuantity, BigDecimal.ZERO));
+            return goodsReceiptQuantity;
         }
 
         public BigDecimal getOpenQuantity() {
-            return openQuantity;
+            BigDecimal value = getQuantity().subtract(ObjectUtils.defaultIfNull(goodsReceiptQuantity, BigDecimal.ZERO));
+            return BigDecimalUtils.lt(value, BigDecimal.ZERO) ? BigDecimal.ZERO : value;
         }
 
     }
