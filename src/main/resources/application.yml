@@ -48,6 +48,10 @@ logging:
   file:
     path: /Users/rick/Space/tmp/admin/log
 
+sharp:
+  database:
+    entity-base-package: com.rick.admin.module.**.entity
+
 dict:
   items:
     - type: sys_user
