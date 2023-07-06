@@ -56,6 +56,7 @@ public class PlantTest {
                 .tplName("tpl/form")
                 .name("库房")
                 .repositoryName("plantDAO")
+                .formAdviceName("plantFormService")
                 .storageStrategy(Form.StorageStrategyEnum.CREATE_TABLE)
                 .build());
         // 关联关系
