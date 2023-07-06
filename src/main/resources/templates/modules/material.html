@@ -9,6 +9,12 @@
         .attachment_delete_btn {
             position: absolute;
             top: 6px;
+            margin-left: 32px;
+        }
+
+        .attachment_download_btn {
+            position: absolute;
+            top: 6px;
         }
 
     </style>
@@ -57,7 +63,7 @@
                                 <ul class="attachment_ul list-group list-group-flush mt-3">
                                     <th:block th:if="${p.value ne null}">
                                         <li class="list-group-item" th:each="f : ${p.value}">
-                                            <a th:text="${f.full_name}" th:href="${'/documents/download/' + f.id}" target="_blank"></a><button type="button" class="btn btn-link attachment_delete_btn" th:onclick="deleteAttachment([[${p.name}]], [[${f.id}]], this)">删除</button>
+                                            <a th:text="${f.fullName}" th:href="${f.url}" target="_blank"></a><a class="btn btn-link attachment_download_btn" th:href="${'/documents/download/' + f.id}">下载</a><button type="button" class="btn btn-link attachment_delete_btn" th:onclick="deleteAttachment([[${p.name}]], [[${f.id}]], this)">删除</button>
                                         </li>
                                     </th:block>
                                 </ul>
@@ -237,7 +243,7 @@
 
                     data.data.forEach(function (attachment) {
                         $('#' + fileElementId).siblings('ul').append("<li class=\"list-group-item\">\n" +
-                            "<a href=\"/documents/download/"+attachment.id+"\" target=\"_blank\">"+attachment.full_name+"</a><button type=\"button\" class=\"btn btn-link attachment_delete_btn\" onclick=\"deleteAttachment('"+fileElementId+"', "+attachment.id+", this)\">删除</button>\n" +
+                            "<a href=\""+attachment.url+"\" target=\"_blank\">"+attachment.fullName+"</a><a class=\"btn btn-link attachment_download_btn\" href=\"/documents/download/"+attachment.id+"\" target=\"_blank\">下载</a><button type=\"button\" class=\"btn btn-link attachment_delete_btn\" onclick=\"deleteAttachment('"+fileElementId+"', "+attachment.id+", this)\">删除</button>\n" +
                             "</li>")
                     })
 
@@ -263,7 +269,6 @@
         }
 
         $(obj).parent().remove()
-
     }
 
 </script>
