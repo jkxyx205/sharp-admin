@@ -1,19 +1,18 @@
 package com.rick.admin.module.material.service;
 
 import com.rick.admin.module.inventory.dao.StockDAO;
+import com.rick.admin.module.material.entity.Material;
 import com.rick.formflow.form.service.FormAdvice;
 import com.rick.formflow.form.service.bo.FormBO;
 import com.rick.meta.dict.service.DictService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.expression.Numbers;
 
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author Rick.Xu
@@ -41,6 +40,13 @@ public class MaterialFormAdvice implements FormAdvice {
         } else {
             values.put("serialManagement", true);
         }
+
+        HashMap<String, String> mrpMap = (HashMap<String, String>) values.get("mrp");
+        String safetyStockQuantity = mrpMap.get("safetyStockQuantity");
+        String maximumStockQuantity = mrpMap.get("maximumStockQuantity");
+        values.put("mrp", new Material.Mrp(StringUtils.isNotEmpty(safetyStockQuantity) ? new BigDecimal(safetyStockQuantity) : null,
+                StringUtils.isNotEmpty(maximumStockQuantity) ? new BigDecimal(maximumStockQuantity) : null));
+
     }
 
     @Override

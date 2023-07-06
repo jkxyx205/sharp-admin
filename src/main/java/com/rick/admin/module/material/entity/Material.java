@@ -2,6 +2,7 @@ package com.rick.admin.module.material.entity;
 
 import com.rick.db.dto.BaseCodeEntity;
 import com.rick.db.plugin.dao.annotation.Column;
+import com.rick.db.plugin.dao.annotation.Embedded;
 import com.rick.db.plugin.dao.annotation.Table;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -57,10 +58,23 @@ public class Material extends BaseCodeEntity {
     @Column(comment = "特征值", columnDefinition = "text", value = "characteristic")
     private List<List<String>> characteristicList;
 
+    @Embedded
+    private Mrp mrp;
+
     @Column(comment = "附件", columnDefinition = "text", value = "attachment", nullable = false)
     private List<Map<String, Object>> attachmentList;
 
     public String getCharacteristicText() {
         return CollectionUtils.isNotEmpty(getCharacteristicList()) ? getCharacteristicList().stream().map(list -> list.get(1).toString()).collect(Collectors.joining("/")) : "";
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Mrp {
+
+        BigDecimal safetyStockQuantity;
+
+        BigDecimal maximumStockQuantity;
     }
 }

@@ -58,9 +58,9 @@ public class MaterialTest {
                 .repositoryName("materialDAO")
                 .storageStrategy(Form.StorageStrategyEnum.CREATE_TABLE)
                 .additionalInfo(Params.builder(1)
-                        .pv("label-col", 4)
+                        .pv("label-col", 3)
 //                        .pv("pane-list", Arrays.asList("一般数据", "量纲", "特征值", "附件", "其他"))
-                        .pv("pane-list", Arrays.asList("一般数据", "量纲", "特征值", "附件",
+                        .pv("pane-list", Arrays.asList("一般数据", "量纲", "特征值","需求计划", "附件",
                                 Params.builder(2).pv("label", "其他").pv("hideIfAdd", true).build()))
                         .build())
                 .build());
@@ -236,11 +236,25 @@ public class MaterialTest {
                         .build())
                 .build();
 
+        CpnConfigurer safetyStockQuantityCpn = CpnConfigurer.builder()
+                .cpnType(CpnTypeEnum.NUMBER_TEXT)
+                .name("mrp.safetyStockQuantity")
+                .label("安全库存")
+                .additionalInfo(Params.builder(1).pv("pane-index", "4").build())
+                .build();
+
+        CpnConfigurer maximumStockQuantityCpn = CpnConfigurer.builder()
+                .cpnType(CpnTypeEnum.NUMBER_TEXT)
+                .name("mrp.maximumStockQuantity")
+                .label("最大库存")
+                .additionalInfo(Params.builder(1).pv("pane-index", "4").build())
+                .build();
+
         CpnConfigurer attachmentCpn = CpnConfigurer.builder()
                 .cpnType(CpnTypeEnum.FILE)
                 .name("attachment")
                 .label("附件")
-                .additionalInfo(Params.builder(1).pv("pane-index", "4").build())
+                .additionalInfo(Params.builder(1).pv("pane-index", "5").build())
                 .build();
 
         // 其他信息
@@ -248,14 +262,14 @@ public class MaterialTest {
                 .cpnType(CpnTypeEnum.LABEL)
                 .name("stockQuantity")
                 .label("库存")
-                .additionalInfo(Params.builder(1).pv("pane-index", "5").build())
+                .additionalInfo(Params.builder(1).pv("pane-index", "6").build())
                 .build();
 
         CpnConfigurer stockQuantityPriceCpn = CpnConfigurer.builder()
                 .cpnType(CpnTypeEnum.LABEL)
                 .name("stockQuantityPrice")
                 .label("库存金额")
-                .additionalInfo(Params.builder(1).pv("pane-index", "5").build())
+                .additionalInfo(Params.builder(1).pv("pane-index", "6").build())
                 .build();
 
         CpnConfigurer createNameCpn = CpnConfigurer.builder()
@@ -263,7 +277,7 @@ public class MaterialTest {
                 .name("createBy")
                 .datasource("sys_user")
                 .label("创建人")
-                .additionalInfo(Params.builder(1).pv("pane-index", "5").build())
+                .additionalInfo(Params.builder(1).pv("pane-index", "6").build())
                 .build();
 
         CpnConfigurer createTimeCpn = CpnConfigurer.builder()
@@ -271,7 +285,7 @@ public class MaterialTest {
                 .name("createTime")
                 .label("创建时间")
                 .cpnValueConverterName("dateTimeToStringConverter")
-                .additionalInfo(Params.builder(1).pv("pane-index", "5").build())
+                .additionalInfo(Params.builder(1).pv("pane-index", "6").build())
                 .build();
 
         CpnConfigurer updateNameCpn = CpnConfigurer.builder()
@@ -279,7 +293,7 @@ public class MaterialTest {
                 .name("updateBy")
                 .label("更新人")
                 .datasource("sys_user")
-                .additionalInfo(Params.builder(1).pv("pane-index", "5").build())
+                .additionalInfo(Params.builder(1).pv("pane-index", "6").build())
                 .build();
 
         CpnConfigurer updateTimeCpn = CpnConfigurer.builder()
@@ -287,12 +301,12 @@ public class MaterialTest {
                 .name("updateTime")
                 .label("更新时间")
                 .cpnValueConverterName("dateTimeToStringConverter")
-                .additionalInfo(Params.builder(1).pv("pane-index", "5").build())
+                .additionalInfo(Params.builder(1).pv("pane-index", "6").build())
                 .build();
 
 
         List<CpnConfigurer> cpnConfigurerList = Lists.newArrayList(codeCpn, materialTypeCpn, nameCpn, categoryCpn, baseUnitCpn, standardPriceCpn, batchManagementCpn, serialManagementCpn,
-                remarkCpn, grossWeightCpn, netWeightCpn, weightUnitCpn, volumeCpn, volumeUnitCpn, sizeCpn, characteristicCpn, attachmentCpn,
+                remarkCpn, grossWeightCpn, netWeightCpn, weightUnitCpn, volumeCpn, volumeUnitCpn, sizeCpn, characteristicCpn, safetyStockQuantityCpn, maximumStockQuantityCpn, attachmentCpn,
                 stockQuantityCpn, stockQuantityPriceCpn, createNameCpn, createTimeCpn, updateNameCpn, updateTimeCpn);
         return cpnConfigurerList;
     }

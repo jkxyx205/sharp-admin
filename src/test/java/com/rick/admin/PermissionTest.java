@@ -29,13 +29,12 @@ public class PermissionTest {
 
     @Test
     public void testAddPermission0() {
-//        permissionDAO.insertOrUpdate(Permission.builder()
-//                .code("purchase_order")
-//                .name("采购")
-//                .pid(0L)
-//                .permissionOrder(0)
-//                .build());
-
+        permissionDAO.insertOrUpdate(Permission.builder()
+                .code("stock_warning")
+                .name("库存预警")
+                .pid(697500384922439680L)
+                .permissionOrder(3)
+                .build());
     }
 
 
@@ -68,6 +67,7 @@ public class PermissionTest {
         final String CODE = "pur_purchase_order";
         final String NAME = "采购订单";
         final Long PARENT_ID = 702223996619358208L;
+        final int PERMISSION_ORDER = 3;
 
         jdbcTemplate.execute("delete from sys_role_permission where permission_id IN (select id from sys_permission where code like'"+CODE+"%')");
 
@@ -77,7 +77,7 @@ public class PermissionTest {
                 .code(CODE)
                 .name(NAME)
                 .pid(PARENT_ID)
-                .permissionOrder(3)
+                .permissionOrder(PERMISSION_ORDER)
                 .build();
 
         permissionDAO.insertOrUpdate(root);
