@@ -253,11 +253,11 @@
             let safetyStockQuantity = $(this).find("td:nth-child(7)").text().trim();
             let maximumStockQuantity = $(this).find("td:nth-child(8)").text().trim();
 
-            if (safetyStockQuantity && stockQuantity < safetyStockQuantity) {
+            if (safetyStockQuantity && parseFloat(stockQuantity) < parseFloat(safetyStockQuantity)) {
                 $(this).find("td:nth-child(7)").css('background', '#e77470')
             }
 
-            if (maximumStockQuantity && stockQuantity > maximumStockQuantity) {
+            if (maximumStockQuantity && parseFloat(stockQuantity) > parseFloat(maximumStockQuantity)) {
                 $(this).find("td:nth-child(8)").css('background', '#e77470')
             }
         })
