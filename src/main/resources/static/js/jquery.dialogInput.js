@@ -36,6 +36,9 @@ head.appendChild(style)
             var _this = this
             _this._bindDom()
         },
+        getValue: function () {
+            return this.$element.find('input[type=hidden]').val()
+        },
         _bindDom: function () {
             if (!this.domBind) {
                 // bind dialog
@@ -63,7 +66,7 @@ head.appendChild(style)
                 })
 
                 // bind control
-                this.$element.append('<label type="text" class="form-control">'+this.options.placeholder+'</label>\n' +
+                this.$element.append('<input type="text" class="form-control" style="background-color: #ffffff;" placeholder="'+this.options.placeholder+'" '+(this.options.required === true ? 'required' : '')+'>\n' +
                     '                    <input type="hidden" name="'+this.options.name+'" class="form-control">')
 
                 this.$element.on('click', () => {
@@ -71,8 +74,13 @@ head.appendChild(style)
                 })
 
                 this.iframe = document.getElementById(this.iframeId)
-                this.iframe.input = this.$element.find('input')
-                this.iframe.label = this.$element.find('label')
+                this.iframe.input = this.$element.find('input[type=hidden]')
+                this.iframe.label = this.$element.find('input[type=text]')
+
+                this.iframe.label.on('keydown', function (event) {
+                    event.preventDefault();
+                    return;
+                })
 
                 this.domBind = true
 
@@ -112,10 +120,10 @@ head.appendChild(style)
             if (this.options.mode === 'single') {
                 let row = Array.isArray(rows) ? rows[0] : rows
                 this.iframe.input.val(row.id)
-                this.iframe.label.text(this.options.labelDisplay(row))
+                this.iframe.label.val(this.options.labelDisplay(row))
             } else {
                 this.iframe.input.val(rows.map(r => r.id).join(","))
-                this.iframe.label.text(this.options.labelDisplay(rows))
+                this.iframe.label.val(this.options.labelDisplay(rows))
             }
         }
     }
@@ -154,6 +162,7 @@ head.appendChild(style)
     //设置默认属性
     $.fn.dialogInput.defaults = {
         placeholder: '请选择',
+        required: false,
         mode: 'single' //  默认单选； 多选 multiple
     };
 
