@@ -51,11 +51,11 @@
     <div class="sidebar">
         <nav class="sidebar-nav">
             <ul class="nav">
-                <li class="nav-item" sec:authorize="hasAuthority('dashboard')">
-                    <a class="nav-link" href="javascript:addTab('dashboard', '仪表盘', '/dashboard')">
-                        <i class="nav-icon icon-speedometer"></i> 仪表盘
-                    </a>
-                </li>
+<!--                <li class="nav-item" sec:authorize="hasAuthority('dashboard')">-->
+<!--                    <a class="nav-link" href="javascript:addTab('dashboard', '仪表盘', '/dashboard')">-->
+<!--                        <i class="nav-icon icon-speedometer"></i> 仪表盘-->
+<!--                    </a>-->
+<!--                </li>-->
                 <li class="nav-item nav-dropdown" sec:authorize="hasAuthority('core_data')">
                     <a class="nav-link nav-dropdown-toggle" href="#">
                         <i class="nav-icon icon-wallet"></i> 数据</a>
@@ -82,7 +82,7 @@
                         </li>
                     </ul>
                 </li>
-                <li class="nav-item nav-dropdown open" sec:authorize="hasAuthority('purchase')">
+                <li class="nav-item nav-dropdown" sec:authorize="hasAuthority('purchase')">
                     <a class="nav-link nav-dropdown-toggle" href="#">
                         <i class="nav-icon icon-basket-loaded" style="margin-right: .7rem;"></i>采购</a>
                     <ul class="nav-dropdown-items">
@@ -119,7 +119,23 @@
                         </li>
                         <li class="nav-item" sec:authorize="hasAuthority('stock_warning')">
                             <a class="nav-link" href="javascript:addTab('stock_warning', '库存预警', '/reports/708404920146989056')">
-                                <i class="nav-icon icon-list"></i> 库存预警
+                                <i class="nav-icon icon-eyeglass"></i> 库存预警
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item nav-dropdown open" sec:authorize="hasAuthority('produce')">
+                    <a class="nav-link nav-dropdown-toggle" href="#">
+                        <i class="nav-icon icon-settings"></i> 生产</a>
+                    <ul class="nav-dropdown-items">
+                        <li class="nav-item" sec:authorize="hasAuthority('produce_bom')">
+                            <a class="nav-link" href="javascript:addTab('bom', '物料清单', '/produce/bom')">
+                                <i class="nav-icon icon-puzzle"></i> 物料清单
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasAuthority('produce_create')">
+                            <a class="nav-link" href="javascript:addTab('bom', '物料清单', '/produce/bom')">
+                                <i class="nav-icon icon-clock"></i> 生产计划
                             </a>
                         </li>
                     </ul>
@@ -275,10 +291,17 @@
             //     allowClose: false
             // });
 
+            // nthTabs.addTab({
+            //     id: "stock_warning",
+            //     title: '库存预警',
+            //     url: "/reports/708404920146989056",
+            //     allowClose: false
+            // });
+
             nthTabs.addTab({
-                id: "stock_warning",
-                title: '库存预警',
-                url: "/reports/708404920146989056",
+                id: "bom",
+                title: '物料清单',
+                url: "/produce/bom",
                 allowClose: false
             });
         })

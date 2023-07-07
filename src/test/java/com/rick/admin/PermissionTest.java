@@ -30,11 +30,22 @@ public class PermissionTest {
     @Test
     public void testAddPermission0() {
         permissionDAO.insertOrUpdate(Permission.builder()
-                .code("stock_warning")
-                .name("库存预警")
-                .pid(697500384922439680L)
-                .permissionOrder(3)
+                .code("produce_bom")
+                .name("物料清单")
+                .pid(708744048906604544L)
+                .permissionOrder(0)
                 .build());
+
+
+        permissionDAO.insertOrUpdate(Permission.builder()
+                .code("produce_create")
+                .name("生产计划")
+                .pid(708744048906604544L)
+                .permissionOrder(1)
+                .build());
+
+
+
     }
 
 
