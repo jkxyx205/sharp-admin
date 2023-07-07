@@ -217,8 +217,9 @@
         }
 
         window[reportDomId + 'RowDbClick'] = function(row, event) {
-            $(event.target.parentElement).siblings().removeClass()
-            event.target.parentElement.className = 'active'
+            $(event.target).parents('tr')
+                .addClass('active')
+                .siblings().removeClass()
 
             window.parent['dialogRowDbClick'] && window.parent['dialogRowDbClick'](row)
         }
