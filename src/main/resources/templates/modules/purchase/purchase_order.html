@@ -263,13 +263,13 @@
                         .attr('title', '必须数字')
                         .attr('name', columnConfig.name);
                 } else if (columnConfig.type === 'text-label') {
-                    $tr.find('td:nth-child('+childIndex+') input').attr('disabled', true).attr('readonly', true)
+                    $tr.find('td:nth-child('+childIndex+') input').attr('disabled', true).attr('readonly', true).attr("name", columnConfig.name + "Text")
                     $tr.find('td:nth-child('+childIndex+')').append('<input class="form-control" type="hidden" name="'+columnConfig.name+'">')
                 } else if (columnConfig.type === 'label') {
                     $tr.find('td:nth-child('+childIndex+') input').attr('disabled', true).attr('readonly', true).attr('name', columnConfig.name)
                 } else if (columnConfig.type === 'text') {
-                        $tr.find('td:nth-child('+childIndex+') input').attr('name', columnConfig.name)
-                    }
+                    $tr.find('td:nth-child(' + childIndex + ') input').attr('name', columnConfig.name)
+                }
             }
 
             // 其他额外字段信息
@@ -491,7 +491,6 @@
                     toastr.success('订单提交成功！' + res.code);
 
                     let frameLength = window.parent.frames.length
-
                     for (let i = 0; i < frameLength; i++) {
                         // 刷新订单列表
                         let frame = window.parent.frames[i]
@@ -517,9 +516,6 @@
                     $tr.find("input[name]").each(function () {
                         $(this).val(item[this.name])
                     })
-
-                    // 其他值
-                    $tr.find('td:nth-child(5) input[type=text]').val(item.unitText)
                 }
 
                 calcTotalAmount()

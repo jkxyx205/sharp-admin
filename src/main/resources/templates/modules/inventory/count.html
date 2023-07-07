@@ -253,9 +253,6 @@
                     console.log(row)
                     $editableTable.editableTable('addEmptyLine')
                     let $tr = $("#table tr:last-child").prev()
-                    $tr.find("input[name]").each(function () {
-                        $(this).val(row[this.name])
-                    })
 
                     $tr.find('td:nth-child(2) input[type=text]').val(row.code)
                     $tr.find('td:nth-child(2) input[type=text]').siblings().val(row.id)
@@ -292,7 +289,7 @@
                     $('#table tbody').delegate('td:nth-child('+childIndex+') input[type=text]', 'click keydown focus', function(event){
                         // if ((event.keyCode && event.keyCode === 13) || !event.keyCode) {
                         if ((event.keyCode && event.keyCode !== 9) || !event.keyCode) {
-                            if ($(this).val()) {
+                            if ($(this).parents("tr").next().length) {
                                 dialogInputSingle.click();
                                 currentMaterialDom = this
                             } else {
