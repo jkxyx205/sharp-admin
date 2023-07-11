@@ -21,7 +21,7 @@
 }
 
 .table-editor .required label:before, .table-editor label.required:before {
-    left: 0;
+    left: -8px;
 }
 
 .table-editor tr td:first-child, .table-editor tr td:last-child {

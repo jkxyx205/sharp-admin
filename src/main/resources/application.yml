@@ -84,6 +84,8 @@ dict:
       map: { "INBOUND": "入库", "OUTBOUND": "出库", "RETURN": "退货", "CANCEL":"取消", "COUNT": "盘点"}
     - type: reference_type
       map: { "OTHER": "无","MATERIAL_DOCUMENT": "物料凭证", "PO": "采购订单"}
+    - type: produce_order_status
+      map: { "PLANNING": "计划中","PROCESSING": "完成领料", "DONE": "生产完成"}
 
 
 fileupload:

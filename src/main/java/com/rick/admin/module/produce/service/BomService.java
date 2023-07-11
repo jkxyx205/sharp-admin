@@ -13,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -33,6 +34,12 @@ public class BomService {
 
     public Bom saveOrUpdate(Bom bom) {
         bomDAO.insertOrUpdate(bom);
+
+        // 更新物料价格
+        List<Object[]> paramList = bom.getItemList().stream().filter(item -> Objects.nonNull(item.getUnitPrice()))
+                .map(item -> new Object[]{item.getUnitPrice(), item.getMaterialId()}).collect(Collectors.toList());
+        materialDAO.updatePrice(paramList);
+
         return bom;
     }
 
@@ -50,6 +57,7 @@ public class BomService {
             item.setMaterialCode(material.getCode());
             item.setMaterialText(material.getName() + " " + material.getCharacteristicText());
             item.setUnitText(dictService.getDictByTypeAndName("unit", item.getUnit()).get().getLabel());
+            item.setUnitPrice(material.getStandardPrice());
         }
 
         return bom;

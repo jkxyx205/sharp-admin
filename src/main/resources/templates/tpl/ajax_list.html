@@ -91,7 +91,7 @@
                                 {{openDetailLink('查看', scope.row.id, scope.row.<th:block th:text="${n.name}"></th:block>)}}
                             </template>
                         </table-column>
-                        <table-column label="操作" align="center" th:if="${report.additionalInfo != null && report.additionalInfo['formId'] != null}" sec:authorize="${hasAuthority(#vars.report.code + '_delete') or hasAuthority(#vars.report.code + '_delete')}">
+                        <table-column label="操作" align="center" th:if="${report.additionalInfo != null && report.additionalInfo['formId'] != null}" sec:authorize="${hasAuthority(#vars.report.code + '_edit') or hasAuthority(#vars.report.code + '_delete')}">
                             <template slot-scope="scope">
                                 {{ openDetailLink('编辑', scope.row.id, '编辑') }}
                                 {{ deleteLink(scope.row.id) }}

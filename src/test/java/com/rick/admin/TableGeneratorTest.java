@@ -1,6 +1,6 @@
 package com.rick.admin;
 
-import com.rick.admin.module.produce.entity.Bom;
+import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.db.plugin.dao.core.TableGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,9 @@ public class TableGeneratorTest {
 //        tableGenerator.createTable(Stock.class);
 //        tableGenerator.createTable(PurchaseOrder.class);
 //        tableGenerator.createTable(PurchaseOrder.Item.class);
-        tableGenerator.createTable(Bom.class);
-        tableGenerator.createTable(Bom.Item.class);
+//        tableGenerator.createTable(Bom.class);
+//        tableGenerator.createTable(Bom.Item.class);
+        tableGenerator.createTable(ProduceOrder.class);
+        tableGenerator.createTable(ProduceOrder.Item.class);
     }
 }

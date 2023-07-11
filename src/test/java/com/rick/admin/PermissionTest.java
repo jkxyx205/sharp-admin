@@ -29,21 +29,20 @@ public class PermissionTest {
 
     @Test
     public void testAddPermission0() {
-        permissionDAO.insertOrUpdate(Permission.builder()
-                .code("produce_bom")
-                .name("物料清单")
-                .pid(708744048906604544L)
-                .permissionOrder(0)
-                .build());
+//        permissionDAO.insertOrUpdate(Permission.builder()
+//                .code("produce_order_list")
+//                .name("生产单管理")
+//                .pid(708744048906604544L)
+//                .permissionOrder(2)
+//                .build());
 
 
         permissionDAO.insertOrUpdate(Permission.builder()
-                .code("produce_create")
-                .name("生产计划")
+                .code("produce_order_stock")
+                .name("生产库存")
                 .pid(708744048906604544L)
-                .permissionOrder(1)
+                .permissionOrder(3)
                 .build());
-
 
 
     }
@@ -75,10 +74,15 @@ public class PermissionTest {
 //        final String NAME = "字典管理";
 //        final Long PARENT_ID = 695624494395428864L;
 
-        final String CODE = "pur_purchase_order";
-        final String NAME = "采购订单";
-        final Long PARENT_ID = 702223996619358208L;
-        final int PERMISSION_ORDER = 3;
+//        final String CODE = "pur_purchase_order";
+//        final String NAME = "采购订单";
+//        final Long PARENT_ID = 702223996619358208L;
+//        final int PERMISSION_ORDER = 3;
+
+        final String CODE = "produce_order";
+        final String NAME = "生产单";
+        final Long PARENT_ID = 708744048906604544L;
+        final int PERMISSION_ORDER = 2;
 
         jdbcTemplate.execute("delete from sys_role_permission where permission_id IN (select id from sys_permission where code like'"+CODE+"%')");
 

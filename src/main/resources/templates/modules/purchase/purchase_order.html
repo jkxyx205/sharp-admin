@@ -322,6 +322,7 @@
 
                 $(currentMaterialDom).parents('tr').find('td:nth-child(5) input[type=text]').val(row.base_unit_name)
                 $(currentMaterialDom).parents('tr').find('td:nth-child(5) input[type=hidden]').val(row.base_unit)
+                $(currentMaterialDom).parents('tr').find('td:nth-child(6) input').val(row.unitPrice)
 
                 $(currentMaterialDom).siblings().val(row.id)
             }

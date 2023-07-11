@@ -47,6 +47,7 @@
                             <option value="OTHER" hidden>无</option>
                             <option value="MATERIAL_DOCUMENT" hidden>物料凭证</option>
                             <option value="PO" hidden>采购订单</option>
+                            <option value="PDO" hidden>生产单</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -171,7 +172,7 @@
 
         let selectMapping = {
             "INBOUND": ["OTHER", "PO"],
-            "OUTBOUND": ["OTHER"],
+            "OUTBOUND": ["OTHER", "PDO"],
             "RETURN": ["MATERIAL_DOCUMENT", "PO"],
             "CANCEL": ["MATERIAL_DOCUMENT"],
             "DISPLAY": ["MATERIAL_DOCUMENT"]

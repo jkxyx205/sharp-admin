@@ -252,11 +252,19 @@
             text-overflow: ellipsis;
         }
 
+        label.required {
+            position: relative;
+        }
+
         .required label:before, label.required:before {
             content: '*';
             position: absolute;
             left: 6px;
             color: #f86c6b;
+        }
+
+        .form-inline .required label:before, .form-inline label.required:before {
+            left: -8px;
         }
 
         .tip-text  {
@@ -293,6 +301,7 @@
         }
 
         .form-line .col-form-label {
+            position: relative;
             padding-left: 15px;
         }
 
@@ -408,7 +417,11 @@
                     } else if (xhr.status === 404) {
                         toastr.error('请求资源不存在！');
                     } else if (xhr.status === 500) {
-                        toastr.error('服务器发生异常');
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            toastr.error(xhr.responseJSON.message);
+                        } else {
+                            toastr.error('服务器发生异常!');
+                        }
                     } else {
                         toastr.error(xhr.responseJSON.message);
                     }

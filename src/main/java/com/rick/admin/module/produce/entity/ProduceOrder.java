@@ -1,5 +1,7 @@
 package com.rick.admin.module.produce.entity;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.rick.db.dto.BaseCodeEntity;
 import com.rick.db.dto.BaseEntity;
 import com.rick.db.plugin.dao.annotation.Column;
 import com.rick.db.plugin.dao.annotation.OneToMany;
@@ -12,11 +14,10 @@ import lombok.experimental.SuperBuilder;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Rick.Xu
- * @date 2023/6/30 15:38
+ * @date 2023/7/11 11:28
  */
 @Getter
 @Setter
@@ -24,16 +25,15 @@ import java.util.Objects;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
-@Table(value = "produce_bom", comment = "物料BOM表")
-public class Bom extends BaseEntity {
+@Table(value = "produce_order", comment = "生产单")
+public class ProduceOrder extends BaseCodeEntity {
 
-    @Column(comment = "物料")
-    Long materialId;
+    StatusEnum status;
+
+    @OneToMany(subTable = "produce_order_item", reversePropertyName = "produceOrderId", cascadeInsertOrUpdate = true, joinValue = "produce_order_id")
+    List<Item> itemList;
 
     String remark;
-
-    @OneToMany(subTable = "produce_bom_detail", reversePropertyName = "bomId", cascadeInsertOrUpdate = true, joinValue = "bom_id")
-    List<Item> itemList;
 
     @Getter
     @Setter
@@ -41,24 +41,29 @@ public class Bom extends BaseEntity {
     @AllArgsConstructor
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @SuperBuilder
-    @Table(value = "produce_bom_detail", comment = "物料BOM表详情")
+    @Table(value = "produce_order_item", comment = "生产单行项目")
     public static class Item extends BaseEntity {
 
         @NotNull
         @Column(comment = "物料")
         Long materialId;
 
+        @NotNull
+        @Column(comment = "数量")
         BigDecimal quantity;
 
+        @NotNull
+        @Column(comment = "单位")
         String unit;
 
+
+        @Column(comment = "备注")
         String remark;
 
-//        @Column(comment = "含税单价")
-        @Transient
-        BigDecimal unitPrice;
+        Long produceOrderId;
 
-        Long bomId;
+        @Column(updatable = false)
+        String produceOrderCode;
 
         @Transient
         String materialCode;
@@ -68,15 +73,24 @@ public class Bom extends BaseEntity {
 
         @Transient
         String unitText;
-
-        public BigDecimal getAmount() {
-            if (Objects.nonNull(unitPrice)) {
-                return unitPrice.multiply(quantity);
-            }
-
-            return null;
-        }
-
     }
 
+    @AllArgsConstructor
+    @Getter
+    public enum StatusEnum {
+        PLANNING("计划中"),
+        PROCESSING("完成领料"),
+        DONE("生产完成");
+
+        @JsonValue
+        public String getCode() {
+            return this.name();
+        }
+
+        private final String label;
+
+        public static ProduceOrder.StatusEnum valueOfCode(String code) {
+            return valueOf(code);
+        }
+    }
 }

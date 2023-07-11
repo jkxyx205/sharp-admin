@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sp=""
       lang="zh">
 <head th:replace="includes/base :: common_header(~{},~{::link},~{::style})">
     <link rel="stylesheet" th:href="@{/css/tab-common.css}">
@@ -31,14 +31,22 @@
         <div class="card">
             <div class="card-body">
                 <form class="form-inline query-form-container" id="form-header">
-                    <input type="hidden" id="id"/>
+                    <input type="hidden" id="id" th:value="${po.id}"/>
                     <div class="form-group">
-                        <label class="col-form-label mr-2 required">成品物料</label>
-                        <div id="foot_material_cpn"></div>
+                        <label class="col-form-label mr-2">生产单号</label>
+                        <input class="form-control" type="text" id="code" name="code" readonly th:value="${po.code}">
                     </div>
                     <div class="form-group">
                         <label class="col-form-label mr-2" for="remark">备注</label>
-                        <input class="form-control" type="text" id="remark" name="remark">
+                        <input class="form-control" type="text" id="remark" name="remark" th:value="${po.remark}">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label mr-2">状态</label>
+                        <sp:dict id="status" name="status" key="produce_order_status" class="form-control" th:value="${po.status}" hideAllItem/>
+<!--                        <select class="form-control" name="status">-->
+<!--                            <option value="PROCESSING" th:selected="${'PROCESSING' eq po.status.toString()}">进行中</option>-->
+<!--                            <option value="DONE" th:selected="${'DONE' eq po.status.toString()}">已完成</option>-->
+<!--                        </select>-->
                     </div>
                 </form>
             </div>
@@ -53,12 +61,10 @@
                                 <thead>
                                 <tr>
                                     <th style="width: 50px">序号</th>
-                                    <th style="width: 100px;"><label class="required">零部件物料</label></th>
+                                    <th style="width: 100px;"><label class="required">成品物料</label></th>
                                     <th><label>描述</label></th>
-                                    <th style="width: 100px;"><label class="required">单机用量</label></th>
+                                    <th style="width: 100px;"><label class="required">生产数量</label></th>
                                     <th style="width: 100px;"><label>单位</label></th>
-                                    <th style="width: 100px;"><label>含税单价（元）</label></th>
-                                    <th style="width: 100px;"><label>含税金额（元）</label></th>
                                     <th><label>备注</label></th>
                                     <th style="width: 50px;"></th>
                                 </tr>
@@ -69,10 +75,6 @@
                                 <tbody>
                                 </tbody>
                             </table>
-                        </div>
-                        <div class="pull-right mt-2 mr-5 footer">
-                            <label>合计含税：</label><span class="bold" id="total_amount" style="color: #f86c6b;">0</span>元
-                            <input type="hidden" name="totalAmount" id="totalAmount">
                         </div>
                     </form>
                 </div>
@@ -94,26 +96,7 @@
     <script th:src="@{/js/jquery.dialogInput.js}"></script>
     <script th:src="@{/js/jquery.table.js}"></script>
     <script th:src="@{/editable-table/editable-table.js}"></script>
-    <script>
-        $('#foot_material_cpn').dialogInput({
-            title: '选择物料',
-            name: 'materialId',
-            reportId: '697147523487240192',
-            required: true,
-            labelDisplay: function (row) {
-                return row.name + ' ' + (!row.characteristic ? '' : row.characteristic)
-            },
-            selected: function (row) {
-                console.log(row)
-                $.get('/produce/bom/materials/' + row.id, function (res) {
-                    $('#id').val(res.id)
-                    $('#remark').val(res.remark)
-                    loadItem(res.itemList)
-                })
-
-            }
-        }).find('input[type=text]').css('width', '400px')
-
+    <script th:inline="javascript">
         let formHeader = document.getElementById('form-header');
         let formItem = document.getElementById('form-item');
 
@@ -138,16 +121,6 @@
                 type: "text-label",
                 name: "unit",
                 required: true,
-            },
-            {
-                type: "number",
-                name: "unitPrice",
-                required: false,
-            },
-            {
-                type: "label",
-                name: "amount",
-                required: false,
             },
             {
                 type: "text",
@@ -179,7 +152,6 @@
             afterRemoveCallback: function ($parent) {
                 // console.log($parent)
                 rebuildIndex()
-                calcTotalAmount()
                 return true
             }
         })
@@ -261,7 +233,6 @@
 
                 $(currentMaterialDom).parents('tr').find('td:nth-child(5) input[type=text]').val(row.base_unit_name)
                 $(currentMaterialDom).parents('tr').find('td:nth-child(5) input[type=hidden]').val(row.base_unit)
-                $(currentMaterialDom).parents('tr').find('td:nth-child(6) input').val(row.unitPrice)
 
                 $(currentMaterialDom).siblings().val(row.id)
             }
@@ -285,7 +256,6 @@
                     $tr.find('td:nth-child(3) input[type=text]').val(this.labelDisplay(row))
                     $tr.find('td:nth-child(5) input[type=text]').val(row.base_unit_name)
                     $tr.find('td:nth-child(5) input[type=hidden]').val(row.base_unit)
-                    $tr.find('td:nth-child(6) input').val(row.unitPrice)
                 }
             }
         })
@@ -336,24 +306,6 @@
                             event.preventDefault();
                             return;
                         }
-                    })
-
-                    $('#table tbody').delegate('td:nth-child('+childIndex+') input[type=text]', 'keyup', function(event){
-                        // 计算
-                        if (childIndex === 4 || childIndex === 6) {
-                            let $tr = $(this).parents("tr");
-                            $tr.find('td:nth-child(7) input[type=text]').val('')
-
-                            let quantity = $tr.find('td:nth-child(4) input[type=text]').val()
-                            let unitPrice = $tr.find('td:nth-child(6) input[type=text]').val()
-                            if (quantity && unitPrice) {
-                                let amount = math.multiply(math.bignumber(quantity), math.bignumber(unitPrice));
-                                $tr.find('td:nth-child(7) input[type=text]').val(amount)
-                            }
-
-                            calcTotalAmount()
-                        }
-
                     })
                 }
             }
@@ -431,29 +383,33 @@
             console.log(params)
 
             $.ajax({
-                url: '/produce/bom',
+                url: '/produce_orders',
                 type: "POST",
                 data: JSON.stringify(params),
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
                 success: function(res){
                     $('#id').val(res.id)
+                    $('#code').val(res.code)
                     loadItem(res.itemList)
-                    toastr.success('物料清单保存成功');
+                    toastr.success('生产单保存成功');
+
+                    let frameLength = window.parent.frames.length
+                    for (let i = 0; i < frameLength; i++) {
+                        // 刷新生产单
+                        let frame = window.parent.frames[i]
+                        if (frame.location.pathname === '/reports/710221635797413888') {
+                            frame.location.reload()
+                            return
+                        }
+                    }
                 }
             });
         }
 
-        function calcTotalAmount() {
-            let totalAmount = 0
-            $('#table tbody td:nth-child(7) input[type=text]').each(function () {
-                if ($(this).val()) {
-                    totalAmount = math.add(math.bignumber(totalAmount), math.bignumber($(this).val()));
-                }
-            })
-            $('#total_amount').text(totalAmount)
-            $('#totalAmount').text(totalAmount)
-        }
+
+        let itemList = /*[[${po.itemList}]]*/
+        loadItem(itemList)
 
         function loadItem(itemList) {
             reset();
@@ -468,7 +424,6 @@
                 }
             }
 
-            calcTotalAmount()
         }
     </script>
 </th:block>

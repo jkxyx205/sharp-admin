@@ -55,7 +55,7 @@ public class Material extends BaseCodeEntity {
 
     String size;
 
-    @Column(comment = "特征值", columnDefinition = "text", value = "characteristic")
+    @Column(comment = "规格", columnDefinition = "text", value = "characteristic")
     private List<List<String>> characteristicList;
 
     @Embedded

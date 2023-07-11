@@ -133,9 +133,19 @@
                                 <i class="nav-icon icon-puzzle"></i> 物料清单
                             </a>
                         </li>
-                        <li class="nav-item" sec:authorize="hasAuthority('produce_create')">
-                            <a class="nav-link" href="javascript:addTab('bom', '物料清单', '/produce/bom')">
-                                <i class="nav-icon icon-clock"></i> 生产计划
+                        <li class="nav-item" sec:authorize="hasAuthority('produce_order_add')">
+                            <a class="nav-link" href="javascript:addTab('produce_order_add', '生产单', '/produce_orders/new')">
+                                <i class="nav-icon icon-clock"></i> 新增生产单
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasAuthority('produce_order_read')">
+                            <a class="nav-link" href="javascript:addTab('produce_order_list', '生产单管理', '/reports/710221635797413888')">
+                                <i class="nav-icon icon-clock"></i> 生产单管理
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasAuthority('produce_order_stock')">
+                            <a class="nav-link" href="javascript:addTab('produce_order_stock', '生产库存', '/reports/710331838161227776')">
+                                <i class="nav-icon icon-clock"></i> 生产库存
                             </a>
                         </li>
                     </ul>
@@ -298,10 +308,24 @@
             //     allowClose: false
             // });
 
+            // nthTabs.addTab({
+            //     id: "bom",
+            //     title: '物料清单',
+            //     url: "/produce/bom",
+            //     allowClose: false
+            // });
+
+            // nthTabs.addTab({
+            //     id: "produce_orders",
+            //     title: '生产单',
+            //     url: "/produce_orders/new",
+            //     allowClose: false
+            // });
+
             nthTabs.addTab({
-                id: "bom",
-                title: '物料清单',
-                url: "/produce/bom",
+                id: "produce_orders",
+                title: '生产单',
+                url: "/produce_orders/new",
                 allowClose: false
             });
         })

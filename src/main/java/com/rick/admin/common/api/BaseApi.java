@@ -8,8 +8,8 @@ import com.rick.db.dto.BaseEntity;
 import com.rick.db.dto.Grid;
 import com.rick.db.dto.SimpleEntity;
 import com.rick.db.plugin.GridUtils;
-import com.rick.db.plugin.dao.annotation.Table;
 import com.rick.db.plugin.dao.core.EntityDAOImpl;
+import com.rick.db.plugin.dao.core.EntityDAOManager;
 import com.rick.db.service.SharpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -84,6 +84,6 @@ public class BaseApi<T extends BaseEntity, ID> {
     }
 
     protected String comment() {
-        return entityDAO.getEntityClass().getAnnotation(Table.class).comment();
+        return EntityDAOManager.getTableMeta(entityDAO.getEntityClass()).getTable().comment();
     }
 }

@@ -14,8 +14,6 @@ import lombok.experimental.FieldDefaults;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -38,8 +36,7 @@ public class PurchaseOrderService {
      * 新增或修改
      * @param order
      */
-    @ResponseBody
-    public void saveOrUpdate(@RequestBody PurchaseOrder order) {
+    public void saveOrUpdate(PurchaseOrder order) {
         if (order.getId() == null) {
             order.setCode(CodeHelper.generateCode("PO"));
         }
