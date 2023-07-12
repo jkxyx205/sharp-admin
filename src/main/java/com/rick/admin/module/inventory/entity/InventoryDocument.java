@@ -183,7 +183,8 @@ public class InventoryDocument extends BaseCodeEntity {
     public enum ReferenceTypeEnum {
         OTHER("无"),
         MATERIAL_DOCUMENT("物料凭证"),
-        PO("采购订单");
+        PO("采购订单"),
+        PDO("生产单");
 
         @JsonValue
         public String getCode() {

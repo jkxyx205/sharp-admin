@@ -19,6 +19,10 @@ public class BigDecimalUtils {
         return b1.compareTo(b2) == -1;
     }
 
+    public boolean le(BigDecimal b1, BigDecimal b2) {
+        return b1.compareTo(b2) <= 0 ;
+    }
+
     public boolean gt(BigDecimal b1, BigDecimal b2) {
         return b1.compareTo(b2) == 1;
     }

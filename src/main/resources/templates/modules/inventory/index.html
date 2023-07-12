@@ -68,8 +68,8 @@
                         <input class="form-control" type="text" id="documentDate" name="documentDate" required th:value="${#calendars.format(#calendars.createNow(), 'yyyy-MM-dd')}">
                     </div>
                     <div class="form-group">
-                        <label class="col-form-label mr-2" for="plantId">库房</label>
-                        <sp:dict id="plantId" name="plantId" key="core_plant" class="form-control" hideAllItem/>
+                        <label class="col-form-label mr-2 required" for="plantId">库房</label>
+                        <sp:dict id="plantId" name="plantId" key="core_plant" class="form-control" required hideAllItem/>
                     </div>
                     <div class="form-group">
                         <label class="col-form-label mr-2" for="operatorId">操作人</label>
@@ -173,7 +173,7 @@
         let selectMapping = {
             "INBOUND": ["OTHER", "PO"],
             "OUTBOUND": ["OTHER", "PDO"],
-            "RETURN": ["MATERIAL_DOCUMENT", "PO"],
+            "RETURN": ["MATERIAL_DOCUMENT", "PO", "PDO"],
             "CANCEL": ["MATERIAL_DOCUMENT"],
             "DISPLAY": ["MATERIAL_DOCUMENT"]
         }
@@ -238,13 +238,16 @@
             if (formOperatorValidity) {
                 console.log(referenceTypeDom.value)
                 console.log($referenceCode.val())
-
+                $referenceCode.val($referenceCode.val().trim())
                 tableReset()
                 // ajax
                 $.get("/inventory/documents", {type: type.value, referenceType:referenceTypeDom.value, referenceCode: $referenceCode.val()},function (res) {
                     console.log(res)
                     $documentDate.val(res.documentDate)
-                    $plantId.val(res.plantId)
+                    if (res.plantId) {
+                        $plantId.val(res.plantId)
+                    }
+
                     $operatorId.val(res.operatorId)
                     $remark.val(res.remark)
 

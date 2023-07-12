@@ -34,6 +34,9 @@ public class DocumentReturnHandler extends AbstractHandler {
     @Resource
     PurchaseOrderReturnHandler purchaseOrderReturnHandler;
 
+    @Resource
+    ProduceOrderReturnHandler produceOrderReturnHandler;
+
     @Override
     public InventoryDocument.TypeEnum type() {
         return InventoryDocument.TypeEnum.RETURN;
@@ -56,8 +59,8 @@ public class DocumentReturnHandler extends AbstractHandler {
         InventoryDocument.MovementTypeEnum oppositeMovementType = HandlerHelper.oppositeMovementType(inventoryDocumentInDb.getItemList().get(0).getMovementType());
         Map<Long, InventoryDocument.Item> idDocumentMap = inventoryDocumentInDb.getItemList().stream().collect(Collectors.toMap(InventoryDocument.Item::getId, d -> d));
 
-        if (inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PO) {
-            inventoryDocument.setReferenceType(InventoryDocument.ReferenceTypeEnum.PO);
+        if (inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PO ||
+                inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PDO) {
             inventoryDocument.setReferenceCode(inventoryDocumentInDb.getReferenceCode());
 
             for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
@@ -67,12 +70,17 @@ public class DocumentReturnHandler extends AbstractHandler {
                 item.setRootReferenceCode(inventoryDocumentInDb.getReferenceCode());
                 item.setRootReferenceItemId(ObjectUtils.defaultIfNull(itemInDb.getRootReferenceItemId(), itemInDb.getReferenceItemId()));
             }
-            purchaseOrderReturnHandler.handle0(inventoryDocument);
 
+            if (inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PO) {
+                inventoryDocument.setReferenceType(InventoryDocument.ReferenceTypeEnum.PO);
+                purchaseOrderReturnHandler.handle0(inventoryDocument);
+            } else if (inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PDO) {
+                produceOrderReturnHandler.handle0(inventoryDocument);
+                inventoryDocument.setReferenceType(InventoryDocument.ReferenceTypeEnum.PDO);
+            }
             handle1(inventoryDocument, inventoryDocumentInDb, idDocumentMap);
             return;
         }
-
 
         inventoryDocument.setRootReferenceCode(StringUtils.defaultString(inventoryDocumentInDb.getRootReferenceCode(), inventoryDocument.getReferenceCode()));
 

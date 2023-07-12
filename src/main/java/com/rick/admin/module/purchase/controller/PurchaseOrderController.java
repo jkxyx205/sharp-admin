@@ -127,8 +127,6 @@ public class PurchaseOrderController {
 
     class GoodsReceiptItem extends PurchaseOrder.Item {
 
-        private BigDecimal openQuantity;
-
         private BigDecimal goodsReceiptQuantity;
 
         public BigDecimal getGoodsReceiptQuantity() {
