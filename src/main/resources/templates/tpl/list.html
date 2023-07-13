@@ -291,19 +291,19 @@
         }
 
         function batchDelete() {
-            let deleteIds = []
+            let selectedIds = []
             $('table > tbody td:nth-child(2) > input[type=checkbox]:checked').each(function () {
                 console.log($(this).prop("name"), '...')
-                deleteIds.push($(this).prop("name"))
+                selectedIds.push($(this).prop("name"))
             })
-            if (!deleteIds.length) {
+            if (!selectedIds.length) {
                 alert('请选择要删除的行！')
                 return
             }
 
             if (confirm('确定要删除记录吗？')) {
                 $.ajax({
-                    url: '/forms/ajax/' + form_id + '?ids=' + deleteIds,
+                    url: '/forms/ajax/' + form_id + '?ids=' + selectedIds,
                     type: "delete",
                     success: function(){
                         $modal.modal('hide');

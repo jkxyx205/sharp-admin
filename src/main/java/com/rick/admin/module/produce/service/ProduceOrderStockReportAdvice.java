@@ -23,6 +23,27 @@ public class ProduceOrderStockReportAdvice implements ReportAdvice {
         }
 
         //report.getAdditionalInfo().put("css", "div {color: red;}");
-        report.getAdditionalInfo().put("js", "$('table tr td:nth-child(9) span:contains(-)').css('color', '#ffffff').parents('tr').css('background', 'rgb(231, 116, 112)').css('color', '#ffffff')");
+        // language=JS
+        String js = "$('table tr td:nth-child(10) span:contains(-)').css('color', '#ffffff').parents('tr').css('background', 'rgb(231, 116, 112)').css('color', '#ffffff')\n" +
+                "$('#batch-cpn-bar .btn-group').html('').append('<button class=\"btn btn-light\" style=\"padding: .075rem .45rem\" type=\"button\" onclick=\"addPurchase()\" disabled>立即采购...</button>')\n" +
+                "function addPurchase() {\n" +
+                "    let materialIds = []\n" +
+                "    let quantity = []\n" +
+                "    $('table > tbody td:nth-child(2) > input[type=checkbox]:checked').each(function () {\n" +
+                "        console.log($(this).prop(\"name\"), '...')\n" +
+                "        materialIds.push($(this).prop(\"name\"))\n" +
+                "        quantity.push(Math.abs($(this).parents('tr').find(\"td:last-child\").text()))\n" +
+                "    })\n" +
+                "    \n" +
+                "    if (!materialIds.length) {\n" +
+                "        alert('请选择要采购的物料！')\n" +
+                "        return\n" +
+                "    }\n" +
+                "\n" +
+                "    console.log(materialIds)\n" +
+                "    openOnNewTab('purchase_order', '/produce_orders/purchase_order?materialIds=' + materialIds.join(',') + '&quantity=' + quantity.join(',')" +
+                ",  '采购订单');\n" +
+                "}";
+        report.getAdditionalInfo().put("js", js);
     }
 }
