@@ -38,13 +38,11 @@ public class PermissionTest {
 
 
         permissionDAO.insertOrUpdate(Permission.builder()
-                .code("produce_order_stock")
-                .name("生产库存")
+                .code("stock_age")
+                .name("库龄分析")
                 .pid(708744048906604544L)
-                .permissionOrder(3)
+                .permissionOrder(4)
                 .build());
-
-
     }
 
 

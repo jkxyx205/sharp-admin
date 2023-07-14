@@ -122,6 +122,11 @@
                                 <i class="nav-icon icon-eyeglass"></i> 库存预警
                             </a>
                         </li>
+                        <li class="nav-item" sec:authorize="hasAuthority('stock_age')">
+                            <a class="nav-link" href="javascript:addTab('stock_age', '库龄分析', '/reports/711313332417597440')">
+                                <i class="nav-icon icon-eyeglass"></i> 库龄分析
+                            </a>
+                        </li>
                     </ul>
                 </li>
                 <li class="nav-item nav-dropdown open" sec:authorize="hasAuthority('produce')">
