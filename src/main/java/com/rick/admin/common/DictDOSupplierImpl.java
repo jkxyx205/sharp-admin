@@ -26,7 +26,6 @@ public class DictDOSupplierImpl implements DictDOSupplier {
     public List<Dict> get() {
         // category
         List<Dict> dictList = Lists.newArrayListWithExpectedSize(categoryService.getIdCategoryPathMap().size());
-        dictList.add(new Dict(CATEGORY_PATH, "0", "无", 0));
 
         for (Map.Entry<Long, String> entry : categoryService.getIdCategoryPathMap().entrySet()) {
             dictList.add(new Dict(CATEGORY_PATH, String.valueOf(entry.getKey()), entry.getValue(), 1));
