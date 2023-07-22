@@ -33,15 +33,13 @@ public class CategoryService implements InitializingBean {
     Map<Long, String> idCategoryPathMap = new HashMap<>();
 
     public String getPathById(Long id) {
-        if (id == 0) {
-            return null;
-        }
-
         return idCategoryPathMap.get(id);
     }
 
     public void rebuild() {
         idCategoryPathMap.clear();
+        idCategoryPathMap.put(0L, "无");
+
         List<Category> categoryList = categoryDAO.selectAll();
 
         Map<Long, Category> idNameMap = categoryList.stream().collect(Collectors.toMap(Category::getId, c -> c));
