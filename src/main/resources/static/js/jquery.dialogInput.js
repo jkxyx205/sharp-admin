@@ -39,6 +39,9 @@ head.appendChild(style)
         getValue: function () {
             return this.$element.find('input[type=hidden]').val()
         },
+        setParams: function (params) {
+            this.options.params = params
+        },
         _bindDom: function () {
             if (!this.domBind) {
                 // bind dialog
@@ -100,7 +103,7 @@ head.appendChild(style)
         _showReportDialog:function (title) {
             $('#dialog-title').text(title)
 
-            this.iframe.src = '/reports/' + this.options.reportId + "?mode=" + this.options.mode
+            this.iframe.src = '/reports/' + this.options.reportId + "?mode=" + this.options.mode + (this.options.params ? "&" + this.options.params : '')
 
             this.$modal.modal({
                 show: true,

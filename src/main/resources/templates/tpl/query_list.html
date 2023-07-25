@@ -140,6 +140,8 @@
 
         let urlObject = getUrlObject();
 
+        $('.query-form-container').autofill(urlObject).pageTable()
+
         /*<![CDATA[*/
         let isMultiple = [[${'multiple' eq params['mode']}]]
 
@@ -206,7 +208,7 @@
             }
         }
 
-        listRequest({})
+        listRequest(/*[[${params}]]*/)
 
         window[reportDomId + 'RowClick'] = function(row, event) {
             $(event.target).parents('tr')

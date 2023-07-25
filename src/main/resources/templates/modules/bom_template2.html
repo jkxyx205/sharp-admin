@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      lang="zh">
+<head th:replace="includes/base :: common_header(~{},~{::link},~{::style})">
+    <link rel="stylesheet" th:href="@{/css/tab-common.css}">
+    <link rel="stylesheet" th:href="@{/css/edit-table.css}">
+    <link rel="stylesheet" th:href="@{/plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css}">
+    <style>
+        .form-control:disabled, .form-control[readonly] {
+            /*background: #fff;*/
+        }
+
+        .operator-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: .2rem 1.25rem;
+            background: #fff;
+            border-top: 1px solid #c8ced3;
+        }
+
+        .table-fixed-container {
+            max-height: calc(100vh - 300px);
+        }
+    </style>
+</head>
+<body class="app">
+<th:block th:replace="includes/base :: common_content(~{::div})">
+    <div class="container-fluid" id="vue-form">
+        <div class="card">
+            <div class="card-body">
+                <form class="form-inline query-form-container" id="form-header">
+                    <input type="hidden" id="id"/>
+                    <div class="form-group">
+                        <label class="col-form-label mr-2 required">成品物料</label>
+                        <div id="foot_material_cpn" v-model="form.id"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label mr-2" for="remark">备注</label>
+                        <input class="form-control" type="text" v-model="form.bom.remark" id="remark" name="remark">
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row" v-show="form.id" v-cloak>
+            <div class="col-6" v-for="c in form.componentList">
+                <div class="card">
+                    <div class="card-header" v-text="c.description + '（' + c.quantity + c.unitText + '）'"></div>
+                    <div class="card-body">
+                        <div id="table-container">
+                            <form class="form-item" id="form-item">
+                                <div class="table-fixed-container">
+                                    <table class="table-thead table-editor table table-responsive-sm table-bordered table-sm">
+                                        <thead>
+                                        <tr>
+                                            <th style="width: 100px;"><label class="required">零部件物料</label></th>
+                                            <th><label>描述</label></th>
+                                            <th style="width: 80px;"><label class="required">单机用量</label></th>
+                                            <th style="width: 80px;"><label>单位</label></th>
+                                            <th><label>备注</label></th>
+                                        </tr>
+                                        </thead>
+                                    </table>
+
+                                    <table id="table" class="table-tbody table-editor table table-responsive-sm table-bordered table-sm">
+                                        <tbody>
+                                            <tr v-for="d in c.componentDetailList"><td style="padding: 0;"><input class="form-control material" type="text" value="" autocomplete="off" name="materialCode" v-model="d.bomItem.materialCode" :component_detail_id="d.id" :component_id="d.componentId" :category_id="d.categoryId" required="required" :placeholder="d.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="d.bomItem.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialText" v-model="d.bomItem.materialText"></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="d.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="d.bomItem.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="d.bomItem.unit"></td><td><input class="form-control" type="text" v-model="d.bomItem.remark" autocomplete="off" name="remark"></td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="dialogInputSingle" style="display: none"></div>
+        <div class="operator-bar text-center" id="operator-bar" v-show="form.id" v-cloak>
+            <button class="btn btn-primary" type="button" name="send" @click="send">
+                <i class="fa fa-save"></i> 保存</button>
+        </div>
+    </div>
+</th:block>
+<th:block th:replace="includes/base :: common_js(~{::script})">
+    <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js}"></script>
+    <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.zh-CN.min.js}"></script>
+    <script type="text/javascript" th:src="@{/plugins/jquery.form2json.js}"></script>
+
+    <script th:src="@{/js/jquery.dialogInput.js}"></script>
+    <script th:src="@{/js/jquery.table.js}"></script>
+    <script th:src="@{/editable-table/editable-table.js}"></script>
+    <script>
+        let formHeader = document.getElementById('form-header');
+        let formItem = document.getElementById('form-item');
+
+        let dialogInputSingle = $('#dialogInputSingle');
+
+        let currentMaterialDom;
+
+
+        $('#table-container').table({fixedHead: true})
+
+        $('#dialogInputSingle').dialogInput({
+            title: '选择物料',
+            reportId: '697147523487240192',
+            labelDisplay: function (row) {
+                return row.name + ' ' + (!row.characteristic ? '' : row.characteristic)
+            },
+            selected: function (row) {
+                console.log(row)
+                if ("createEvent" in document) {
+                    var evt = document.createEvent("HTMLEvents");
+                    evt.initEvent("input", false, true);
+                    currentMaterialDom.dispatchEvent(evt);
+                }
+                else
+                    currentMaterialDom.fireEvent("input");
+
+
+                setCaretPosition(currentMaterialDom, currentMaterialDom.value.length)
+
+                let form_data = vue.form
+                for (let c of form_data.componentList) {
+                    for (d of c.componentDetailList) {
+                        if (d.componentId === currentMaterialDom.getAttribute('component_id') && d.categoryId === currentMaterialDom.getAttribute('category_id')) {
+                            d.bomItem.materialId = row.id
+                            d.bomItem.materialCode = row.code
+                            d.bomItem.materialText = this.labelDisplay(row)
+                            d.bomItem.unit = row.base_unit
+                            d.bomItem.unitText = row.base_unit_name
+                            d.bomItem.componentDetailId = currentMaterialDom.getAttribute('component_detail_id')
+                            break
+                        }
+                    }
+                }
+
+                vue.form = form_data
+            }
+        })
+
+        function setCaretPosition(ctrl, pos) {
+            // Modern browsers
+            if (ctrl.setSelectionRange) {
+                ctrl.focus();
+                ctrl.setSelectionRange(pos, pos);
+
+                // IE8 and below
+            } else if (ctrl.createTextRange) {
+                var range = ctrl.createTextRange();
+                range.collapse(true);
+                range.moveEnd('character', pos);
+                range.moveStart('character', pos);
+                range.select();
+            }
+        }
+
+        function valid() {
+            var formHeaderValidity = formHeader.checkValidity()
+            var formItemValidity = formItem.checkValidity()
+            formHeader.classList.add('was-validated')
+            formItem.classList.add('was-validated')
+            return formHeaderValidity && formItemValidity;
+        }
+
+        let vue = new Vue({
+            el: '#vue-form',
+            data: {
+                form: {
+                    bom: {}
+                }
+            },
+            mounted: function () {
+                $('#foot_material_cpn').dialogInput({
+                    title: '选择物料',
+                    name: 'materialId',
+                    reportId: '697147523487240192',
+                    params: "categoryId=715220808628178944",
+                    required: true,
+                    labelDisplay: function (row) {
+                        return row.name + ' ' + (!row.characteristic ? '' : row.characteristic)
+                    },
+                    selected: function (row) {
+                        console.log(row)
+                        $.get('/produce/bom/materials/' + row.id, function (res) {
+                            res.materialId = row.id
+                            vue.$data.form = res
+                        })
+
+                    }
+                }).find('input[type=text]').css('width', '400px')
+            },
+            methods: {
+                showMaterialDialog: function (e) {
+                    dialogInputSingle.dialogInput('setParams', 'categoryId=' + e.target.getAttribute('category_id'))
+                    dialogInputSingle.click();
+                    currentMaterialDom = e.target
+                },
+                send() {
+                    let itemList = []
+                    for (let c of this.form.componentList) {
+                        for (d of c.componentDetailList) {
+                            d.bomItem.quantity = d.quantity
+                            d.bomItem.createBy = null;
+                            d.bomItem.createTime = null;
+                            d.bomItem.updateBy = null;
+                            d.bomItem.updateTime = null;
+                            itemList.push(d.bomItem);
+                        }
+                    }
+
+                    let params = {
+                        id: this.form.bom.id,
+                        materialId: this.form.materialId,
+                        remark: this.form.bom.remark,
+                        bomTemplateId: this.form.id,
+                        itemList
+                    }
+
+                    console.log(params)
+
+                    $.ajax({
+                        url: '/produce/bom',
+                        type: "POST",
+                        data: JSON.stringify(params),
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        success: function(res){
+                            res.materialId = res.bom.materialId
+                            vue.form = res
+                            toastr.success('物料清单保存成功');
+                        }
+                    });
+                }
+            }
+        })
+    </script>
+</th:block>
+</body>
+</html>

@@ -9,6 +9,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
@@ -27,11 +29,17 @@ import java.util.Objects;
 @Table(value = "produce_bom", comment = "物料BOM表")
 public class Bom extends BaseEntity {
 
+    @NotNull
     @Column(comment = "物料")
     Long materialId;
 
+    @Column(comment = "BOM 模版")
+    Long bomTemplateId;
+
     String remark;
 
+    @Valid
+    @NotEmpty
     @OneToMany(subTable = "produce_bom_detail", reversePropertyName = "bomId", cascadeInsertOrUpdate = true, joinValue = "bom_id")
     List<Item> itemList;
 
@@ -48,17 +56,21 @@ public class Bom extends BaseEntity {
         @Column(comment = "物料")
         Long materialId;
 
+        @NotNull
         BigDecimal quantity;
 
+        @NotNull
         String unit;
 
         String remark;
 
+        Long componentDetailId;
+
+        Long bomId;
+
 //        @Column(comment = "含税单价")
         @Transient
         BigDecimal unitPrice;
-
-        Long bomId;
 
         @Transient
         String materialCode;

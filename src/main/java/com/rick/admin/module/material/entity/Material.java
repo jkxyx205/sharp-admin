@@ -64,6 +64,9 @@ public class Material extends BaseCodeEntity {
     @Column(comment = "附件", columnDefinition = "text", value = "attachment", nullable = false)
     private List<Map<String, Object>> attachmentList;
 
+    @Column(comment = "BOM 模版")
+    Long bomTemplateId;
+
     public String getCharacteristicText() {
         return CollectionUtils.isNotEmpty(getCharacteristicList()) ? getCharacteristicList().stream().map(list -> list.get(1).toString()).collect(Collectors.joining("/")) : "";
     }
