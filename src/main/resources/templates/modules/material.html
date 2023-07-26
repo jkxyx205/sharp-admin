@@ -141,6 +141,12 @@
 </div>
 </body>
 <script th:inline="javascript">
+    var isCopy = ($('#dialog-title').text() === '复制');
+    if (isCopy) {
+        $('.dialog-form #code').val('').attr('disabled', false)
+        $('.nav-item:last-child').hide()
+    }
+
     /*<![CDATA[*/
     $(document).ready(function () {
         var readonly = [[${query.readonly}]]
@@ -203,9 +209,16 @@
 
         console.log(formData)
 
+        let url = "/forms/ajax/" + "[(${formBO.actionUrl})]"
+        let type = "[(${formBO.method})]"
+        if (isCopy) {
+            url =  "/forms/ajax/" + form_id
+            type = 'POST'
+        }
+
         $.ajax({
-            url: "/forms/ajax/" + "[(${formBO.actionUrl})]",
-            type: "[(${formBO.method})]",
+            url,
+            type,
             data: JSON.stringify(formData),
             dataType: "json",
             contentType: "application/json; charset=utf-8",

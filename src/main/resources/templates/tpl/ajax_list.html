@@ -95,6 +95,7 @@
                             <template slot-scope="scope">
                                 {{ openDetailLink('编辑', scope.row.id, '编辑') }}
                                 {{ deleteLink(scope.row.id) }}
+                                <th:block th:if="${report.additionalInfo != null && report.additionalInfo['js-operator-column'] != null}" th:utext="${report.additionalInfo['js-operator-column']}"></th:block>
                             </template>
                         </table-column>
                     </ajax-table>

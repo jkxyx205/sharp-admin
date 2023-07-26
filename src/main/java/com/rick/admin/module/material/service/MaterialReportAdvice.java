@@ -50,5 +50,17 @@ public class MaterialReportAdvice implements ReportAdvice {
 //        report.getAdditionalInfo().put("css", "#report-list div.card-body-scroll-panel > table > thead > th:nth-child(10) { color: red;}");
 //        report.getAdditionalInfo().put("css", "div {color: red;}");
 //        report.getAdditionalInfo().put("js", "alert(123)");
+
+        // language=javascript
+//        String js = "setTimeout(function () {\n" +
+//                "    $('table tr:not(.non-data) td:last-child').each(function () {\n" +
+//                "        let id = $(this).parent().data(\"id\")\n" +
+//                "     " +
+//                "   $(this).append('<a href=\"javascript:;\" onclick=\"showDialog(\\'复制\\', \\''+id+'\\')\">复制</a>')\n" +
+//                "    })\n" +
+//                "}, 500)";
+//
+//        report.getAdditionalInfo().put("js", js);
+          report.getAdditionalInfo().put("js-operator-column", "{{ openDetailLink('复制', scope.row.id, '复制') }}");
     }
 }
