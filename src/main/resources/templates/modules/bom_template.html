@@ -67,7 +67,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr v-for="d in c.componentDetailList"><td style="padding: 0;"><input class="form-control material" type="text" :disabled="d.type === 'MATERIAL'" :readonly="d.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="d.bomItem.materialCode" :component_detail_id="d.id" :component_id="d.componentId" :type_instance_id="d.typeInstanceId" required="required" :placeholder="d.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="d.bomItem.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialText" v-model="d.bomItem.materialText"></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="d.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="d.bomItem.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="d.bomItem.unit"></td><td><input class="form-control" type="text" style="padding: 0;" v-model="d.bomItem.remark" autocomplete="off" name="remark"></td></tr>
+                                            <tr v-for="d in c.componentDetailList"><td style="padding: 0;"><input class="form-control material" type="text" :disabled="d.type === 'MATERIAL'" :readonly="d.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="d.bomItem.materialCode" :component_detail_id="d.id" :component_id="d.componentId" :type_instance_id="d.typeInstanceId" required="required" :placeholder="d.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="d.bomItem.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialText" v-model="d.bomItem.materialText"></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="d.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="d.bomItem.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="d.bomItem.unit"></td><td style="padding: 0;"><input class="form-control" type="text" v-model="d.bomItem.remark" autocomplete="off" name="remark"></td></tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -202,10 +202,6 @@
                             }
 
                             d.bomItem.quantity = d.quantity
-                            d.bomItem.createBy = null;
-                            d.bomItem.createTime = null;
-                            d.bomItem.updateBy = null;
-                            d.bomItem.updateTime = null;
                             itemList.push(d.bomItem);
                         }
                     }
