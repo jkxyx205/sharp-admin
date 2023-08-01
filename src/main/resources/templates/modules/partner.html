@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sp="">
 <head>
     <style>
         .form-check {
@@ -10,15 +10,25 @@
             position: absolute;
             top: 6px;
         }
+
+        #pane-3 .table-fixed-container {
+            max-height: 400px;
+        }
     </style>
+
+    <link rel="stylesheet" th:href="@{/css/edit-table.css}">
 </head>
 <body>
 <div class="container">
+    <sp:dict class="hidden" id="core_material_category"  key="core_material_category" emptyItemText/>
+    <div id="dialogInput" style="display: none"></div>
+
     <form class="needs-validation dialog-form" th:classappend="${query.readonly == 'true' ? 'readonly' : ''}" id="695708313425285120" name="core_partner" novalidate>
         <div class="nav-tabs-boxed">
             <ul class="nav nav-tabs" role="tablist">
                 <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#pane-1" role="tab" aria-controls="home" aria-selected="true">基本信息</a></li>
                 <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pane-2" role="tab" aria-controls="profile" aria-selected="false">公司信息</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pane-3" role="tab" aria-controls="source_list" aria-selected="false">货源清单</a></li>
             </ul>
             <div class="tab-content">
                 <div class="tab-pane active" id="pane-1" role="tabpanel">
@@ -136,16 +146,161 @@
                         </div>
                     </div>
                 </div>
+                <div role="tabpanel" id="pane-3" class="tab-pane">
+                    <div id="table-container"></div>
+                </div>
             </div>
         </div>
     </form>
 </div>
 </body>
+<script th:src="@{/editable-table/editable-table.js}"></script>
+<script th:src="@{/js/jquery.table.js}"></script>
+<script th:src="@{/js/editable-table-plus.js}"></script>
+
+<script th:src="@{/js/jquery.dialogInput.js}"></script>
+
 <script th:inline="javascript">
+    var readonly = [[${query.readonly}]] === 'true'
+    var propertyMap = [[${formBO.propertyMap}]]
+
+    var value = []
+    if (propertyMap.sourceList) {
+        value = propertyMap.sourceList.value
+    }
+
+    var customizeType = {
+        'material': {
+            formatTr: function ($td, columnConfig) {
+                $td.find('input')
+                    .attr('name', 'materialCode')
+                    .attr('readonly', false)
+
+                $td.append('<input class="form-control" type="hidden" name="'+columnConfig.name+'">')
+
+                $td.delegate('input[type=text]', 'click keydown focus', function(event){
+                    // if ((event.keyCode && event.keyCode === 13) || !event.keyCode) {
+                    if ((event.keyCode && event.keyCode !== 9) || !event.keyCode) {
+                        $dialogInput.click();
+                        currentMaterialDom = this
+                    }
+
+                    if (event.keyCode !== 9 ) {
+                        event.preventDefault();
+                        return;
+                    }
+                })
+            }
+        }
+
+    }
+    var $editableTable = $('#table-container').editableTablePlus({
+        customizeType,
+        showRowNumber: true, // 是否显示行号
+        readonly: readonly, // 只读
+        allowEmpty: true, // 表格允许为空
+        columnConfigs: [
+            {
+                type: "material",
+                name: "materialId",
+                title: "物料",
+                width: 100,
+                align: 'left',
+                required: false
+            },
+            {
+                type: "text",
+                name: "materialText",
+                title: "规格",
+                disabled: true
+            },
+            {
+                type: "select",
+                name: "materialCategoryId",
+                align: 'left',
+                title: "分类",
+                required: true,
+                // disabled: true,
+                datasource: $('#core_material_category option').map((i,option) => {
+                    return {
+                        "name": option.value,
+                        "value": option.innerText
+                    }
+                }),
+                onchange: function ($tr, value) {
+                    // alert(value)
+                    $tr.find(':input[name=materialId]').val('')
+                    $tr.find(':input[name=materialCode]').val('')
+                    $tr.find(':input[name=materialText]').val('')
+                }
+                // datasource: [
+                //     {
+                //         name: "",
+                //         value: ""
+                //     },
+                //     {
+                //         name: "990",
+                //         value: "轮毂"
+                //     },
+                //     {
+                //         name: "999",
+                //         value: "端盖"
+                //     },
+                //     {
+                //         name: "9999",
+                //         value: "转子"
+                //     }
+                // ]
+            }
+        ],
+        value
+    })
+
+    var $dialogInput = $('#dialogInput').dialogInput({
+        title: '选择物料',
+        reportId: '697147523487240192',
+        labelDisplay: function (row) {
+            return row.name + ' ' + (!row.characteristic ? '' : row.characteristic)
+        },
+        selected: function (row) {
+            console.log(row)
+            if ("createEvent" in document) {
+                var evt = document.createEvent("HTMLEvents");
+                evt.initEvent("input", false, true);
+                currentMaterialDom.dispatchEvent(evt);
+            }
+            else
+                currentMaterialDom.fireEvent("input");
+
+            currentMaterialDom.value = row.code
+            $(currentMaterialDom).siblings().val(row.id)
+
+            $(currentMaterialDom).parent().next().find('input[type=text]').val(this.labelDisplay(row))
+            $(currentMaterialDom).parents('tr').find(':input[name=materialCategoryId]').val(row.category_id)
+
+            setCaretPosition(currentMaterialDom, currentMaterialDom.value.length)
+        }
+    })
+
+    function setCaretPosition(ctrl, pos) {
+        // Modern browsers
+        if (ctrl.setSelectionRange) {
+            ctrl.focus();
+            ctrl.setSelectionRange(pos, pos);
+
+            // IE8 and below
+        } else if (ctrl.createTextRange) {
+            var range = ctrl.createTextRange();
+            range.collapse(true);
+            range.moveEnd('character', pos);
+            range.moveStart('character', pos);
+            range.select();
+        }
+    }
+
     /*<![CDATA[*/
     $(document).ready(function () {
-        var readonly = [[${query.readonly}]]
-        if (readonly === 'true') {
+        if (readonly) {
             $("form.readonly :input").prop("disabled", true);
             $('table .operator').hide()
             $('#okId').hide()
@@ -155,12 +310,6 @@
     })
 
     var p = [[${formBO.propertyList}]]
-    var tables = p.filter(c => c.configurer.cpnType == 'TABLE')
-    tables.forEach(c => {
-        $('.' + c.name).editableTable({
-            columns: c.configurer.additionalInfo.columns.length
-        })
-    })
 
     var dates = p.filter(c => c.configurer.cpnType == 'DATE')
     dates.forEach(c => {
@@ -198,9 +347,7 @@
             multiValSelector: '[type=checkbox]'
         });
 
-        tables.forEach(c => {
-            formData[c.name] = $('.' + c.name).editableTable('getValue')
-        })
+        formData.sourceList = $editableTable.editableTablePlus('getValue')
 
         console.log(formData)
 

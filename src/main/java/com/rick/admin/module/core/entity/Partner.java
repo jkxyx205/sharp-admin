@@ -1,12 +1,16 @@
 package com.rick.admin.module.core.entity;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.rick.admin.module.purchase.entity.MaterialSource;
 import com.rick.db.dto.BaseCodeEntity;
 import com.rick.db.plugin.dao.annotation.Column;
+import com.rick.db.plugin.dao.annotation.OneToMany;
 import com.rick.db.plugin.dao.annotation.Table;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
+
+import java.util.List;
 
 /**
  * @author Rick.Xu
@@ -47,6 +51,9 @@ public class Partner extends BaseCodeEntity {
 
     @Column(comment = "公司地址", columnDefinition = "varchar(128)")
     String address;
+
+    @OneToMany(subTable = "pur_source_list", cascadeInsertOrUpdate = true, joinValue = "partner_id", reversePropertyName="partnerId")
+    List<MaterialSource> sourceList;
 
     @AllArgsConstructor
     @Getter
