@@ -1,5 +1,6 @@
 package com.rick.admin.module.purchase.entity;
 
+import com.rick.admin.module.material.service.MaterialDescription;
 import com.rick.db.dto.BaseCodeEntity;
 import com.rick.db.dto.BaseEntity;
 import com.rick.db.plugin.dao.annotation.Column;
@@ -64,7 +65,7 @@ public class PurchaseOrder extends BaseCodeEntity {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @SuperBuilder
     @Table(value = "pur_purchase_order_item", comment = "采购订单行项目")
-    public static class Item extends BaseEntity {
+    public static class Item extends BaseEntity implements MaterialDescription {
 
         @NotNull
         @Column(comment = "物料")

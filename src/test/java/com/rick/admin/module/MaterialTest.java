@@ -360,7 +360,7 @@ public class MaterialTest {
                 .code("mm_material_search")
                 .tplName("tpl/query_list")
                 .name("物料查询")
-                .querySql("SELECT cast(mm_material.id as char(20)) id, mm_material.code, mm_material.name, characteristic, material_type, mm_material.category_id, base_unit, base_unit as base_unit_name, standard_price unitPrice FROM mm_material WHERE mm_material.code = :code AND (mm_material.name like :keywords or characteristic like :keywords or mm_material.code like :keywords) AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0 AND id = :id AND id IN (:ids)")
+                .querySql("SELECT cast(mm_material.id as char(20)) id, mm_material.code, mm_material.name, characteristic, material_type, mm_material.category_id, mm_material.category_id as categoryText, base_unit, base_unit as base_unit_name, standard_price unitPrice FROM mm_material WHERE mm_material.code = :code AND (mm_material.name like :keywords or characteristic like :keywords or mm_material.code like :keywords) AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0 AND id = :id AND id IN (:ids)")
                 .queryFieldList(Arrays.asList(
 //                        new QueryField("code", "编号", QueryField.Type.TEXT),
                         new QueryField("keywords", "关键字", QueryField.Type.TEXT),
@@ -372,6 +372,7 @@ public class MaterialTest {
                 .reportColumnList(Arrays.asList(
                         new HiddenReportColumn("id"),
                         new HiddenReportColumn("unitPrice"),
+                        new HiddenReportColumn("category_id"),
                         new ReportColumn("code", "编号").setColumnWidth(80),
                         new ReportColumn("name", "名称").setTooltip(true),
                         new ReportColumn("characteristic", "规格", false, null, Arrays.asList("characteristicConverter")).setTooltip(true),
@@ -379,7 +380,7 @@ public class MaterialTest {
                         new HiddenReportColumn("base_unit"),
                         new ReportColumn("base_unit_name", "基本单位", false, "unit", Arrays.asList("dictConverter")).setColumnWidth(80),
 //                        new ReportColumn("material_type", "类型", false, "material_type", Arrays.asList("dictConverter")),
-                        new ReportColumn("category_id", "分类", false, "core_material_category", Arrays.asList("dictConverter"))
+                        new ReportColumn("categoryText", "分类", false, "core_material_category", Arrays.asList("dictConverter"))
                 ))
                 .pageable(false)
                 .sidx("id")

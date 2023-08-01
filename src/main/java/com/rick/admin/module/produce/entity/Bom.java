@@ -1,5 +1,6 @@
 package com.rick.admin.module.produce.entity;
 
+import com.rick.admin.module.material.service.MaterialDescription;
 import com.rick.db.dto.BaseEntity;
 import com.rick.db.plugin.dao.annotation.Column;
 import com.rick.db.plugin.dao.annotation.OneToMany;
@@ -50,7 +51,7 @@ public class Bom extends BaseEntity {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @SuperBuilder
     @Table(value = "produce_bom_detail", comment = "物料BOM表详情")
-    public static class Item extends BaseEntity {
+    public static class Item extends BaseEntity implements MaterialDescription {
 
         @NotNull
         @Column(comment = "物料")

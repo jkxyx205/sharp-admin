@@ -5,7 +5,7 @@ import com.rick.admin.auth.common.UserContextHolder;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
 import com.rick.admin.module.material.dao.MaterialDAO;
-import com.rick.admin.module.material.entity.Material;
+import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
 import com.rick.admin.module.purchase.service.PurchaseOrderService;
@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author Rick.Xu
@@ -44,6 +43,8 @@ public class PurchaseOrderController {
     final MaterialDAO materialDAO;
 
     final DictService dictService;
+
+    final MaterialService materialService;
 
     @PostMapping
     @ResponseBody
@@ -67,16 +68,9 @@ public class PurchaseOrderController {
         PurchaseOrder purchaseOrder;
         if (id != null) {
             purchaseOrder = purchaseOrderDAO.selectById(id).orElseThrow(() -> new ResourceNotFoundException());
-            Map<Long, Material> idMaterialMap = materialDAO.selectByIdsAsMap(purchaseOrder.getItemList().stream().map(PurchaseOrder.Item::getMaterialId).collect(Collectors.toSet()));
-
-            for (PurchaseOrder.Item item : purchaseOrder.getItemList()) {
-                Material material = idMaterialMap.get(item.getMaterialId());
-                item.setMaterialCode(material.getCode());
-                item.setMaterialText(material.getName() + " " + material.getCharacteristicText());
-                item.setUnitText(dictService.getDictByTypeAndName("unit", item.getUnit()).get().getLabel());
-            }
-
+            materialService.fillMaterialDescription(purchaseOrder.getItemList());
             model.addAttribute("po", purchaseOrder);
+
             // 收货记录
             List<GoodsReceiptItem> goodsReceiptItemList = Lists.newArrayListWithExpectedSize(purchaseOrder.getItemList().size());
 

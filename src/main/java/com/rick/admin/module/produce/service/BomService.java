@@ -2,6 +2,7 @@ package com.rick.admin.module.produce.service;
 
 import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.entity.Material;
+import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.produce.entity.Bom;
 import com.rick.admin.module.produce.entity.BomTemplate;
 import com.rick.common.http.exception.BizException;
@@ -38,6 +39,8 @@ public class BomService {
     MaterialDAO materialDAO;
 
     DictService dictService;
+
+    MaterialService materialService;
 
     @Resource
     private EntityCodeDAO<BomTemplate, Long> bomTemplateDAO;
@@ -97,6 +100,7 @@ public class BomService {
                                 .build();
 
                         fillMaterialExtraData(item, material);
+                        materialService.fillMaterialDescription(bom.getItemList());
                     }
                     componentDetail.setBomItem(item);
                 }
@@ -116,13 +120,7 @@ public class BomService {
         }
 
         Bom bom = bomList.get(0);
-        Map<Long, Material> idMaterialMap = materialDAO.selectByIdsAsMap(bom.getItemList().stream().map(Bom.Item::getMaterialId).collect(Collectors.toSet()));
-
-        for (Bom.Item item : bom.getItemList()) {
-            Material material = idMaterialMap.get(item.getMaterialId());
-            fillMaterialExtraData(item, material);
-        }
-
+        materialService.fillMaterialDescription(bom.getItemList());
         return bom;
     }
 

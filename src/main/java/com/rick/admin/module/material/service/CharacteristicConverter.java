@@ -6,6 +6,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -14,9 +15,14 @@ import java.util.stream.Collectors;
  */
 @Component
 public class CharacteristicConverter implements ValueConverter<String> {
+
     @Override
     public String convert(Object context, String value) {
         // [["颜色","红色"],["大小","小"]]
+        if (Objects.isNull(value)) {
+            return null;
+        }
+
         List<List> characteristicList = JsonUtils.toList(value, List.class);
         if (CollectionUtils.isEmpty(characteristicList)) {
             return null;

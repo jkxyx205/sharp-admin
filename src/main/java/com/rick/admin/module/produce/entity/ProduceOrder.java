@@ -1,6 +1,7 @@
 package com.rick.admin.module.produce.entity;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.rick.admin.module.material.service.MaterialDescription;
 import com.rick.db.dto.BaseCodeEntity;
 import com.rick.db.dto.BaseEntity;
 import com.rick.db.plugin.dao.annotation.Column;
@@ -42,7 +43,7 @@ public class ProduceOrder extends BaseCodeEntity {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @SuperBuilder
     @Table(value = "produce_order_item", comment = "生产单行项目")
-    public static class Item extends BaseEntity {
+    public static class Item extends BaseEntity implements MaterialDescription {
 
         @NotNull
         @Column(comment = "物料")

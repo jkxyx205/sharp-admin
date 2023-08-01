@@ -5,6 +5,7 @@ import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
 import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.entity.Material;
+import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.admin.module.produce.service.ProduceOrderService;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
@@ -51,6 +52,8 @@ public class ProduceOrderController {
 
     SharpService sharpService;
 
+    MaterialService materialService;
+
     @GetMapping("code/{code}")
     public String gotoDetailPageByCode(@PathVariable String code, Model model) {
         return gotoDetailPageById(produceOrderDAO.selectIdByCode(code).orElseThrow(() -> new ResourceNotFoundException()), model);
@@ -78,13 +81,7 @@ public class ProduceOrderController {
             ProduceOrder produceOrder = produceOrderDAO.selectById(id).orElseThrow(() -> new ResourceNotFoundException());
 
             Map<Long, Material> idMaterialMap = materialDAO.selectByIdsAsMap(produceOrder.getItemList().stream().map(ProduceOrder.Item::getMaterialId).collect(Collectors.toSet()));
-
-            for (ProduceOrder.Item item : produceOrder.getItemList()) {
-                Material material = idMaterialMap.get(item.getMaterialId());
-                item.setMaterialCode(material.getCode());
-                item.setMaterialText(material.getName() + " " + material.getCharacteristicText());
-                item.setUnitText(dictService.getDictByTypeAndName("unit", item.getUnit()).get().getLabel());
-            }
+            materialService.fillMaterialDescription(produceOrder.getItemList());
 
             model.addAttribute("po", produceOrder);
 

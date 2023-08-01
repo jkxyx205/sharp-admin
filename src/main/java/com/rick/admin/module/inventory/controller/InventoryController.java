@@ -9,8 +9,7 @@ import com.rick.admin.module.inventory.service.HandlerHelper;
 import com.rick.admin.module.inventory.service.HandlerManager;
 import com.rick.admin.module.inventory.service.InventoryDocumentService;
 import com.rick.admin.module.material.dao.MaterialDAO;
-import com.rick.admin.module.material.entity.Material;
-import com.rick.admin.module.produce.entity.ProduceOrder;
+import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.produce.service.ProduceOrderService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
@@ -18,7 +17,6 @@ import com.rick.admin.module.purchase.service.PurchaseOrderService;
 import com.rick.common.http.exception.BizException;
 import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
-import com.rick.db.plugin.dao.core.EntityCodeDAO;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
 import com.rick.meta.dict.service.DictService;
@@ -35,7 +33,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * @author Rick.Xu
@@ -61,11 +58,11 @@ public class InventoryController {
 
     final PurchaseOrderService purchaseOrderService;
 
-    final EntityCodeDAO<ProduceOrder, Long> produceOrderDAO;
-
     final SharpService sharpService;
 
     final ProduceOrderService produceOrderService;
+
+    final MaterialService materialService;
 
     @GetMapping("move")
     public String gotoInventoryPage() {
@@ -107,19 +104,14 @@ public class InventoryController {
                         inventoryDocument.getRootReferenceCode());
             }
 
-            Map<Long, Material> idMaterialMap = materialDAO.selectByIdsAsMap(inventoryDocument.getItemList().stream().map(InventoryDocument.Item::getMaterialId).collect(Collectors.toSet()));
-
             for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
-                Material material = idMaterialMap.get(item.getMaterialId());
-                item.setMaterialCode(material.getCode());
-                item.setMaterialText(material.getName() + " " + material.getCharacteristicText());
-                item.setUnitText(dictService.getDictByTypeAndName("unit", item.getUnit()).get().getLabel());
                 item.setReferenceItemId(item.getId());
                 if (type == InventoryDocument.TypeEnum.RETURN) {
                     item.setQuantity(itemOpenQuantityMap.get(item.getRootReferenceItemId()));
                 }
-
             }
+
+            materialService.fillMaterialDescription(inventoryDocument.getItemList());
             return inventoryDocument;
         } else if (referenceType == InventoryDocument.ReferenceTypeEnum.PO) {
             return getDocumentFromPurchaseOrder(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.OUTBOUND : InventoryDocument.MovementTypeEnum.INBOUND, type, referenceType, referenceCode);
@@ -163,11 +155,10 @@ public class InventoryController {
         }
 
         Map<Long, BigDecimal> itemOpenQuantityMap = purchaseOrderService.openQuantity(movementType, referenceCode);
-        Map<Long, Material> idMaterialMap = materialDAO.selectByIdsAsMap(purchaseOrder.getItemList().stream().map(PurchaseOrder.Item::getMaterialId).collect(Collectors.toSet()));
-
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
-            fillFieldValue(itemOpenQuantityMap, idMaterialMap, item);
+            item.setQuantity(ObjectUtils.defaultIfNull(itemOpenQuantityMap.get(item.getRootReferenceItemId()), BigDecimal.ZERO));
         }
+        materialService.fillMaterialDescription(inventoryDocument.getItemList());
 
         return inventoryDocument;
     }
@@ -197,7 +188,6 @@ public class InventoryController {
         inventoryDocument.setItemList(itemList);
 
         Map<Long, BigDecimal> itemOpenQuantityMap = produceOrderService.openQuantity(movementType, referenceCode);
-        Map<Long, Material> idMaterialMap = materialDAO.selectByIdsAsMap(inventoryDocument.getItemList().stream().map(InventoryDocument.Item::getMaterialId).collect(Collectors.toSet()));
 
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
             item.setType(type);
@@ -205,20 +195,14 @@ public class InventoryController {
             item.setReferenceCode(referenceCode);
             item.setRootReferenceCode(referenceCode);
             item.setMovementType(InventoryDocument.MovementTypeEnum.OUTBOUND);
-
-            fillFieldValue(itemOpenQuantityMap, idMaterialMap, item);
+            item.setQuantity(ObjectUtils.defaultIfNull(itemOpenQuantityMap.get(item.getRootReferenceItemId()), BigDecimal.ZERO));
         }
+
+        materialService.fillMaterialDescription(inventoryDocument.getItemList());
 
         return inventoryDocument;
     }
 
-    private void fillFieldValue(Map<Long, BigDecimal> itemOpenQuantityMap, Map<Long, Material> idMaterialMap, InventoryDocument.Item item) {
-        Material material = idMaterialMap.get(item.getMaterialId());
-        item.setMaterialCode(material.getCode());
-        item.setMaterialText(material.getName() + " " + material.getCharacteristicText());
-        item.setUnitText(dictService.getDictByTypeAndName("unit", item.getUnit()).get().getLabel());
-        item.setQuantity(ObjectUtils.defaultIfNull(itemOpenQuantityMap.get(item.getRootReferenceItemId()), BigDecimal.ZERO));
-    }
 
     @GetMapping("count")
     public String gotoInventoryCountPage() {

@@ -3,6 +3,7 @@ package com.rick.admin.module.inventory.entity;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.rick.admin.module.material.service.MaterialDescription;
 import com.rick.db.dto.BaseCodeEntity;
 import com.rick.db.dto.BaseEntity;
 import com.rick.db.plugin.dao.annotation.Column;
@@ -76,7 +77,7 @@ public class InventoryDocument extends BaseCodeEntity {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @SuperBuilder
     @Table(value = "inv_document_item", comment = "物料凭证行项目")
-    public static class Item extends BaseEntity {
+    public static class Item extends BaseEntity implements MaterialDescription {
 
         @Column(comment = "场景")
         TypeEnum type;
