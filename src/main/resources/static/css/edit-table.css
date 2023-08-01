@@ -24,7 +24,7 @@
     left: -8px;
 }
 
-.table-editor tr td:first-child, .table-editor tr td:last-child {
+.table-editor tr td.row-number, .table-editor tr td.operator {
     padding: 0 .3rem;
 }
 

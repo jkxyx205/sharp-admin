@@ -17,7 +17,7 @@ head.appendChild(style)
             '    <div class="modal-dialog modal-primary modal-dialog-auto" role="document">\n' +
             '        <div class="modal-content">\n' +
             '            <div class="modal-header">\n' +
-            '                <h5 class="modal-title" id="dialog-title"></h5>\n' +
+            '                <h5 class="modal-title" id="{{title}}"></h5>\n' +
             '                <button class="close" type="button" data-dismiss="modal" aria-label="Close">\n' +
             '                    <span aria-hidden="true">×</span>\n' +
             '                </button>\n' +
@@ -26,7 +26,7 @@ head.appendChild(style)
             '                <iframe id="{{iframeId}}" name="{{iframeId}}" src="" width="100%" style="border: 0; padding: 0; margin: 0; height: calc(100% - 6px);"></iframe>\n' +
             '            </div>\n' +
             '            <div class="modal-footer">\n' +
-            '                <button class="btn btn-primary ok-show" id="{{okId}}"><i class="fa fa-cog"></i> 确定</button>\n' +
+            '                <button class="btn btn-primary ok-show dialog-input-ok-btn" id="{{okId}}"><i class="fa fa-cog"></i> 确定</button>\n' +
             '                <button class="btn btn-secondary" type="button" data-dismiss="modal"><i class="fa fa-remove"></i> 关闭</button>\n' +
             '            </div>\n' +
             '        </div>\n' +
@@ -48,10 +48,12 @@ head.appendChild(style)
                 this.modalId = "dialog_id_" + new Date().getTime();
                 this.okId = this.modalId + "_okBtn"
                 this.iframeId = this.modalId + "_iframeId"
+                this.title = this.modalId + "_title"
 
-                var dialogTpl = DialogInput.prototype.tpl.replace('{{title}}', this.options.title)
+                var dialogTpl = DialogInput.prototype.tpl
                     .replace('{{id}}', this.modalId)
                     .replace('{{okId}}', this.okId)
+                    .replace('{{title}}', this.title)
                     .replaceAll('{{iframeId}}', this.iframeId)
 
                 $('body').append(dialogTpl)
@@ -101,7 +103,7 @@ head.appendChild(style)
             }
         },
         _showReportDialog:function (title) {
-            $('#dialog-title').text(title)
+            $('#' + this.title).text(title)
 
             this.iframe.src = '/reports/' + this.options.reportId + "?mode=" + this.options.mode + (this.options.params ? "&" + this.options.params : '')
 
@@ -173,5 +175,5 @@ head.appendChild(style)
 
 function dialogRowDbClick(row) {
     // $('.dialogInput').dialogInput('_dialogRowDbClick', row)
-    $('.modal.show .btn.ok-show').click()
+    $('.modal.show .btn.dialog-input-ok-btn').eq(-1).click()
 }
