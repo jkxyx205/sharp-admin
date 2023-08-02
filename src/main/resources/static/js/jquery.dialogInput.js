@@ -1,5 +1,5 @@
 ;var style = document.createElement("style")
-style.appendChild(document.createTextNode("@media (min-width: 576px) {.dialog-input .modal-dialog {max-width: 620px!important;} .dialog-input .modal-dialog .modal-body {padding: 0!important;height: 540px;}}"))
+style.appendChild(document.createTextNode("@media (min-width: 576px) {.dialog-input .modal-dialog {max-width: 720px!important;} .dialog-input .modal-dialog .modal-body {padding: 0!important;height: 540px;}}"))
 var head = document.getElementsByTagName("head")[0]
 head.appendChild(style)
 

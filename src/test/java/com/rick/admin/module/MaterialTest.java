@@ -377,10 +377,10 @@ public class MaterialTest {
                         new ReportColumn("name", "名称").setTooltip(true),
                         new ReportColumn("characteristic", "规格", false, null, Arrays.asList("characteristicConverter")).setTooltip(true),
 //                        new ReportColumn("base_unit", "基本单位", false, "unit", Arrays.asList("dictConverter")),
-                        new HiddenReportColumn("base_unit"),
-                        new ReportColumn("base_unit_name", "基本单位", false, "unit", Arrays.asList("dictConverter")).setColumnWidth(80),
+                        new HiddenReportColumn("base_unit")
+//                        new ReportColumn("base_unit_name", "基本单位", false, "unit", Arrays.asList("dictConverter")).setColumnWidth(80),
 //                        new ReportColumn("material_type", "类型", false, "material_type", Arrays.asList("dictConverter")),
-                        new ReportColumn("categoryText", "分类", false, "core_material_category", Arrays.asList("dictConverter"))
+//                        new ReportColumn("categoryText", "分类", false, "core_material_category", Arrays.asList("dictConverter"))
                 ))
                 .pageable(false)
                 .sidx("id")
