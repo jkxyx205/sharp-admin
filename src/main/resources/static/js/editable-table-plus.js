@@ -78,12 +78,12 @@
             this.readonly(this.options.readonly)
 
             // 注册事件
-            if (this.options.rowFocus) {
-                this.$table.delegate('tr', 'focus', (e) => {
+            if (this.options.rowClick) {
+                this.$table.delegate('tr', 'click', (e) => {
                     let $tr = $(e.target).parents('tr')
                     if (this.focusRow !== $tr[0]) {
                         // 多次点击 保证只触发一次请求
-                        this.options.rowFocus($tr, this._getValue($tr))
+                        this.options.rowClick($tr, this._getValue($tr))
                         this.focusRow = $tr[0]
                     }
                 })
@@ -144,7 +144,23 @@
                 $tr.show()
 
                 $tr.find(":input[name]").each(function () {
-                    $(this).val(rowValue[this.name])
+                    if ($(this).attr('type') === 'switch') {
+                        $(this).prop('checked', eval(rowValue[this.name]))
+                    } if ($(this).attr('type') === 'checkbox') {
+                        if ($(this).data('type') === 'multi_checkbox') {
+                            if (rowValue[this.name] && rowValue[this.name].length > 0) {
+                                for (let id of rowValue[this.name]) {
+                                    $("input[name="+this.name+"][value=" + id + "]").prop('checked', true);
+                                }
+                            }
+                        } else {
+                            $(this).prop('checked', eval(rowValue[this.name]))
+                        }
+                    } else if ($(this).attr('type') === 'radio') {
+                        $("input[name="+this.name+"][value=" + rowValue[this.name.substring(0, this.name.lastIndexOf('-'))] + "]").prop('checked', true);
+                    } else {
+                        $(this).val(rowValue[this.name])
+                    }
                 })
             }
         },
@@ -153,7 +169,24 @@
             $tr.find(':input').each(function () {
                 let name = $(this).attr('name')
                 if (name) {
-                    value[name] = $(this).val()
+                    if ($(this).attr('type') === 'switch') {
+                        value[name] = $(this).prop('checked')
+                    } else if ($(this).attr('type') === 'checkbox') {
+                        if ($(this).data('type') === 'multi_checkbox') {
+                            if (value[name] == undefined) {
+                                value[name] = []
+                            }
+                            if ($(this).is(":checked")) {
+                                value[name].push($(this).val())
+                            }
+                        } else {
+                            value[name] = $(this).prop('checked')
+                        }
+                    } else if ($(this).attr('type') === 'radio') {
+                        value[name.substring(0, name.lastIndexOf('-'))] = $('input[name="'+name+'"]:checked').val()
+                    } else {
+                        value[name] = $(this).val()
+                    }
                 }
             })
 
@@ -168,10 +201,12 @@
                 $input.attr('name', columnConfig.name)
                     .css('text-align', columnConfig.align ?  columnConfig.align : 'left')
 
+                if (columnConfig.disabled) {
+                    $input.attr('disabled', true).attr('readonly', true)
+                }
+
                 if (columnConfig.type === 'text') {
-                    if (columnConfig.disabled) {
-                        $input.attr('disabled', true).attr('readonly', true)
-                    }
+
                 } else if (columnConfig.type === 'number') {
                     $input
                         .attr('type', 'number')
@@ -186,17 +221,59 @@
                 } else if(columnConfig.type === 'text_label') {
                     $input.attr('disabled', true).attr('readonly', true).attr("name", columnConfig.name + "Text")
                     $tr.find('td:nth-child('+childIndex+')').append('<input class="form-control" type="hidden" name="'+columnConfig.name+'">')
+                } else if(columnConfig.type === 'checkbox') {
+                    if (columnConfig.datasource) {
+                        columnConfig.type = 'multi_checkbox' // 多选
+                        let checkboxs = []
+                        for(let v of columnConfig.datasource) {
+                            let id = v.name + $tr.index()
+                            checkboxs.push('<input type="checkbox" data-type="multi_checkbox" name="'+columnConfig.name+'" value="'+v.name+'" id="'+id+'"><label for="'+id+'">'+v.value+'</label>')
+                        }
+                        let $checkboxs = $(checkboxs.join(''))
+
+                        $td.html($checkboxs).css('text-align', columnConfig.align ?  columnConfig.align : 'left')
+
+                        if (columnConfig.onchange) {
+                            $checkboxs.siblings('input').on('change', function () {
+                                columnConfig.onchange($tr, this.value)
+                            })
+                        }
+                    } else {
+                        // 单个checkbox
+                        $input.attr('type', 'checkbox').attr('class', '').parents().css('text-align', columnConfig.align ?  columnConfig.align : 'left')
+                    }
+                } else if(columnConfig.type === 'switch') {
+                    let $switch = $('<label style="position: relative; top: 3px;" class="switch switch-pill switch-primary">\n' +
+                        '                      <input class="switch-input" type="checkbox" name="'+columnConfig.name+'">\n' +
+                        '                      <span class="switch-slider"></span>\n' +
+                        '                    </label>')
+                    $td.html($switch).css('text-align', columnConfig.align ?  columnConfig.align : 'left')
                 } else if (columnConfig.type === 'select') {
                     let options = []
                     for(let v of columnConfig.datasource) {
                         options.push('<option value="'+v.name+'">'+v.value+'</option>')
                     }
-                    let $select = $('<select class="form-control"'+(columnConfig.disabled ? ' disabled' : '')+' name="'+columnConfig.name+'">'+options.join()+'</select>')
+                    let $select = $('<select class="form-control"'+(columnConfig.disabled ? ' disabled' : '')+' name="'+columnConfig.name+'">'+options.join('')+'</select>')
 
-                    $tr.find('td:nth-child(' + childIndex + ')').html($select);
+                    $td.html($select);
                     if (columnConfig.onchange) {
-                        $select.on('change', function () {
-                            columnConfig.onchange($tr, this.value)
+                        $select.on('change', function (e) {
+                            columnConfig.onchange($tr, this.value, e)
+                        })
+                    }
+                } else if (columnConfig.type === 'radio') {
+                    let radios = []
+                    for(let v of columnConfig.datasource) {
+                        let id = v.name + $tr.index()
+                        radios.push('<input type="radio" name="'+(columnConfig.name + '-' + $tr.index())+'" value="'+v.name+'" id="'+id+'"><label for="'+id+'">'+v.value+'</label>')
+                    }
+                    let $radios = $(radios.join(''))
+
+                    $td.html($radios);
+
+                    if (columnConfig.onchange) {
+                        $radios.siblings('input').on('change', function (e) {
+                            columnConfig.onchange($tr, this.value, e)
                         })
                     }
                 } else if (columnConfig.type === 'decimal') {
@@ -215,6 +292,15 @@
                     })
                 } else if(columnConfig.type === 'hidden') {
                     $tr.append('<input type="hidden" name="'+columnConfig.name+'">')
+                } else if(columnConfig.type === 'date') {
+                    $td.find('input').datepicker({
+                        language: "zh-CN",
+                        autoclose: true,
+                        clearBtn: true,
+                        todayBtn: 'linked',
+                        todayHighlight: true,
+                        format: 'yyyy-mm-dd'
+                    })
                 } else {
                     this.options.customizeType && this.options.customizeType[columnConfig.type] && this.options.customizeType[columnConfig.type].formatTr($td, columnConfig)
                 }
