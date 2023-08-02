@@ -181,6 +181,7 @@
                     name: "unit",
                     title: "单位",
                     width: 100,
+                    disabled: true,
                     required: false,
                 },
                 {
@@ -207,7 +208,10 @@
                     name: "remark",
                 }
             ],
-            value
+            value, // 初始化值
+            rowFocus: function ($tr, row) {
+                console.log(row)
+            }
         })
 
         // end
