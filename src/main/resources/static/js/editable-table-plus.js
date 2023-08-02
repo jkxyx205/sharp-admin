@@ -76,18 +76,23 @@
             }
 
             this.readonly(this.options.readonly)
+
+            // 注册事件
+            if (this.options.rowFocus) {
+                this.$table.delegate('tr', 'focus', (e) => {
+                    let $tr = $(e.target).parents('tr')
+                    if (this.focusRow !== $tr[0]) {
+                        // 多次点击 保证只触发一次请求
+                        this.options.rowFocus($tr, this._getValue($tr))
+                        this.focusRow = $tr[0]
+                    }
+                })
+            }
         },
         getValue: function() {
             let valueList = []
-            this.$table.find('tbody tr:not(:last-child)').each(function () {
-                let value = {}
-                $(this).find(':input').each(function () {
-                    let name = $(this).attr('name')
-                    if (name) {
-                        value[name] = $(this).val()
-                    }
-                })
-                valueList.push(value)
+            this.$table.find('tbody tr:not(:last-child)').each((index, elem) => {
+                valueList.push(this._getValue($(elem)))
             })
 
             return valueList
@@ -142,6 +147,17 @@
                     $(this).val(rowValue[this.name])
                 })
             }
+        },
+        _getValue: function ($tr) {
+            let value = {}
+            $tr.find(':input').each(function () {
+                let name = $(this).attr('name')
+                if (name) {
+                    value[name] = $(this).val()
+                }
+            })
+
+            return value
         },
         _formatTr: function($tr) {
             for (let i = 0; i < this.options.columnConfigs.length; i++) {
