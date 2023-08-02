@@ -379,7 +379,7 @@ public class MaterialTest {
 //                        new ReportColumn("base_unit", "基本单位", false, "unit", Arrays.asList("dictConverter")),
                         new HiddenReportColumn("base_unit"),
                         // String name, String label, Boolean sortable, String context, List<String> valueConverterNameList, Integer columnWidth, AlignEnum align, Boolean hidden, Boolean tooltip, TypeEnum type
-                        new ReportColumn("base_unit_name", "基本单位", false, "unit", Arrays.asList("dictConverter")).setColumnWidth(80).setHidden(true)
+                        new HiddenReportColumn("base_unit_name", "unit", Arrays.asList("dictConverter"))
 //                        new ReportColumn("material_type", "类型", false, "material_type", Arrays.asList("dictConverter")),
 //                        new ReportColumn("categoryText", "分类", false, "core_material_category", Arrays.asList("dictConverter"))
                 ))
