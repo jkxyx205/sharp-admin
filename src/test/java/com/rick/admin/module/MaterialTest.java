@@ -135,8 +135,8 @@ public class MaterialTest {
         CpnConfigurer standardPriceCpn = CpnConfigurer.builder()
                 .cpnType(CpnTypeEnum.NUMBER_TEXT)
                 .name("standardPrice")
-                .label("标准价格(元)")
-                .placeholder("基本单位价格")
+                .label("含税单价(元)")
+                .placeholder("")
                 .additionalInfo(Params.builder(1).pv("pane-index", "1").build())
                 .build();
 

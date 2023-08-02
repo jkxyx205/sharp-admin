@@ -79,6 +79,7 @@ public class PurchaseOrder extends BaseCodeEntity {
         @Column(comment = "单位")
         String unit;
 
+        @NotNull
         @Column(comment = "含税单价")
         BigDecimal unitPrice;
 

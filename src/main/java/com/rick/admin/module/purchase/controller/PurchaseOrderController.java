@@ -19,12 +19,15 @@ import lombok.experimental.FieldDefaults;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author Rick.Xu
@@ -48,8 +51,15 @@ public class PurchaseOrderController {
 
     @PostMapping
     @ResponseBody
+    @Transactional
     public PurchaseOrder saveOrUpdate(@RequestBody PurchaseOrder purchaseOrder) {
         purchaseOrderService.saveOrUpdate(purchaseOrder);
+
+        // 更新物料的价格
+        List<Object[]> paramList = purchaseOrder.getItemList().stream().filter(item -> Objects.nonNull(item.getUnitPrice()))
+        .map(item -> new Object[]{item.getUnitPrice(), item.getMaterialId()}).collect(Collectors.toList());
+        materialDAO.updatePrice(paramList);
+
         return purchaseOrder;
     }
 
