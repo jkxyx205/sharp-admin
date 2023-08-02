@@ -28,7 +28,6 @@ public class MaterialSource extends BaseEntity implements MaterialDescription {
 
     Long materialId;
 
-    @NotNull
     Long materialCategoryId;
 
     @Transient

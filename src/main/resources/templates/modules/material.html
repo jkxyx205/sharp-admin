@@ -148,8 +148,8 @@
     }
 
     /*<![CDATA[*/
+    var readonly = [[${query.readonly}]]
     $(document).ready(function () {
-        var readonly = [[${query.readonly}]]
         if (readonly === 'true') {
             $("form.readonly :input").prop("disabled", true);
             $('table .operator').hide()
@@ -163,6 +163,7 @@
     var tables = p.filter(c => c.configurer.cpnType == 'TABLE')
     tables.forEach(c => {
         $('.' + c.name).editableTable({
+            readonly,
             columns: c.configurer.additionalInfo.columns.length
         })
     })
@@ -209,8 +210,8 @@
 
         console.log(formData)
 
-        let url = "/forms/ajax/" + "[(${formBO.actionUrl})]"
-        let type = "[(${formBO.method})]"
+        var url = "/forms/ajax/" + "[(${formBO.actionUrl})]"
+        var type = "[(${formBO.method})]"
         if (isCopy) {
             url =  "/forms/ajax/" + form_id
             type = 'POST'

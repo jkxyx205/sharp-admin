@@ -15,4 +15,6 @@ public interface MaterialDescription {
     default void setUnitText(String unitText) {}
 
     default void setUnit(String unit) {}
+
+    default void setMaterialCategoryId(Long categoryId) {};
 }

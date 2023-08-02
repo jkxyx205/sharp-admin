@@ -31,6 +31,7 @@ public abstract class AbstractHandler implements MovementHandler {
         inventoryDocument.setCanceled(false);
 
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
+            item.setId(null);
             item.setType(inventoryDocument.getType());
             item.setReferenceType(inventoryDocument.getReferenceType());
             item.setReferenceCode(inventoryDocument.getReferenceCode());

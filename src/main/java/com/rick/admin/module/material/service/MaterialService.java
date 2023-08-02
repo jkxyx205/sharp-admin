@@ -45,6 +45,7 @@ public class MaterialService {
                     item.setMaterialText(material.getName() + " " + material.getCharacteristicText());
                     item.setUnit(material.getBaseUnit());
                     item.setUnitText(dictService.getDictByTypeAndName("unit", material.getBaseUnit()).get().getLabel());
+                    item.setMaterialCategoryId(material.getCategoryId());
                 }
             });
         }

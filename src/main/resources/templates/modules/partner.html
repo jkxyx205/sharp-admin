@@ -22,7 +22,7 @@
 <div class="container">
     <sp:dict class="hidden" id="core_material_category"  key="core_material_category" emptyItemText/>
     <div id="dialogInput" style="display: none"></div>
-
+    <div id="multipleDialogInput" style="display: none"></div>
     <form class="needs-validation dialog-form" th:classappend="${query.readonly == 'true' ? 'readonly' : ''}" id="695708313425285120" name="core_partner" novalidate>
         <div class="nav-tabs-boxed">
             <ul class="nav nav-tabs" role="tablist">
@@ -185,6 +185,7 @@
                 width: 100,
                 align: 'left',
                 required: false,
+                mode: 'multiple', // 多选
                 selected: function ($tr, row) {
                 }
             },
