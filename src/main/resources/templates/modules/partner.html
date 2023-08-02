@@ -53,7 +53,7 @@
                         <label for="code" class="col-sm-3 col-form-label required">编码</label>
                         <div class="col-sm-9">
                             <input type="text" class="form-control" id="code" name="code" maxlength="32" th:attr="disabled=${formBO.instanceId != null}"
-                                   placeholder="请输入编码" value="" pattern="^[0-9a-zA-Z_/%-]{1,}$" required="required" th:value="${formBO.propertyMap.code.value}">
+                                   placeholder="请输入编码" value="" pattern="^[0-9a-zA-Z_\/%\-]{1,}$" required="required" th:value="${formBO.propertyMap.code.value}">
                             <!--前端验证所有验证信息-->
                             <div class="invalid-feedback">CODE只能包含数字、字母、下划线、中划线</div>
                             <div class="invalid-feedback">必填项需要填写</div>

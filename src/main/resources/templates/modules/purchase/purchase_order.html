@@ -144,8 +144,12 @@
         let formHeader = document.getElementById('form-header');
         let formItem = document.getElementById('form-item');
 
-        var value = []
-
+        let value = [
+            // {
+                // "marriage": ["990", "999"]
+                // "marriage": true
+            // }
+        ]
         // 可编辑表格初始化
         var $editableTable = $('#table-container').editableTablePlus({
             customizeType,
@@ -206,10 +210,33 @@
                     type: "text",
                     title: "备注",
                     name: "remark",
-                }
+                },
+                // {
+                //     type: "checkbox",
+                //     title: "marriage",
+                //     name: "marriage",
+                //     align: "center",
+                //     datasource: [ // 有datasource 多选， 没有就是单选
+                //         {
+                //             name: "990",
+                //             value: "轮毂"
+                //         },
+                //         {
+                //             name: "999",
+                //             value: "端盖"
+                //         },
+                //         {
+                //             name: "9999",
+                //             value: "转子"
+                //         }
+                //     ],
+                //     onchange: function ($tr, value) {
+                //         console.log(value)
+                //     }
+                // }
             ],
             value, // 初始化值
-            rowFocus: function ($tr, row) {
+            rowClick: function ($tr, row) {
                 console.log(row)
             }
         })
