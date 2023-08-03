@@ -33,8 +33,9 @@
                             <label class="col-form-label mr-2" th:for="${f.name}" th:text="${f.label}"></label>
                             <th:block th:if="${f.type.name() ne 'DATE_RANGE'}">
                                 <input class="form-control" th:id="${f.name}" type="text" th:name="${f.name}" autocomplete th:if="${f.type.name() == 'TEXT'}">
-                                <sp:dict th:id="${f.name}" th:name="${f.name}" th:attr="key=${f.extraData}" class="form-control" th:if="${f.type.name() == 'SELECT'}"/>
-                                <sp:dict th:id="${f.name}" th:name="${f.name}" multiple th:attr="key=${f.extraData}" class="form-control" th:if="${f.type.name() == 'MULTIPLE_SELECT'}" hideAllItem/>
+                                <sp:select  th:id="${f.name}" th:name="${f.name}" th:attr="key=${f.extraData}" class="form-control" th:if="${f.type.name() == 'SELECT'}"/>
+                                <sp:select  th:id="${f.name}" th:name="${f.name}" th:attr="key=${f.extraData}" class="form-control" group th:if="${f.type.name() == 'GROUP_SELECT'}"/>
+                                <sp:select  th:id="${f.name}" th:name="${f.name}" multiple th:attr="key=${f.extraData}" class="form-control" th:if="${f.type.name() == 'MULTIPLE_SELECT'}" hideAllItem/>
                             </th:block>
 
                             <th:block style="margin-bottom: 10px;" th:if="${f.type.name() == 'DATE_RANGE'}">

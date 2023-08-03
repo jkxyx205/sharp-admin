@@ -87,6 +87,9 @@ dict:
     - type: produce_order_status
       map: { "PLANNING": "计划中","PROCESSING": "完成领料", "DONE": "生产完成"}
 
+props:
+  items: {"material_category_select_sql": "select id, name, (select name from core_material_category where c1.parent_id = id) parent_name from `core_material_category` c1"}
+
 
 fileupload:
   tmp: /Users/rick/Space/tmp/fastdfs/tmp # 下载的临时目录

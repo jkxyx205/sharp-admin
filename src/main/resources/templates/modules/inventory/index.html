@@ -65,11 +65,11 @@
                     </div>
                     <div class="form-group">
                         <label class="col-form-label mr-2 required" for="plantId">库房</label>
-                        <sp:dict id="plantId" name="plantId" key="core_plant" class="form-control" required hideAllItem/>
+                        <sp:select  id="plantId" name="plantId" key="core_plant" class="form-control" required hideAllItem/>
                     </div>
                     <div class="form-group">
                         <label class="col-form-label mr-2" for="operatorId">操作人</label>
-                        <sp:dict id="operatorId" name="operatorId" key="sys_user" class="form-control" emptyItemText th:value="${session.user.id}"/>
+                        <sp:select  id="operatorId" name="operatorId" key="sys_user" class="form-control" emptyItemText th:value="${session.user.id}"/>
                     </div>
                     <div class="form-group">
                         <label class="col-form-label mr-2" for="remark">备注</label>

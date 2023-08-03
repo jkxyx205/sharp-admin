@@ -365,7 +365,10 @@ public class MaterialTest {
 //                        new QueryField("code", "编号", QueryField.Type.TEXT),
                         new QueryField("keywords", "关键字", QueryField.Type.TEXT),
 //                        new QueryField("materialType", "类型", QueryField.Type.SELECT, "material_type"),
-                        new QueryField("categoryId", "分类", QueryField.Type.SELECT, "core_material_category")
+                        new QueryField("categoryId", "分类", QueryField.Type.GROUP_SELECT, "material_category_select_sql")
+//                        new QueryField("categoryId", "分类", QueryField.Type.MULTIPLE_SELECT, "core_material_category")
+//                        new QueryField("categoryId", "分类", QueryField.Type.SELECT, "core_material_category")
+
 //                        new QueryField("categoryId", "分类", QueryField.Type.SELECT, "category_path")
 
                 ))
