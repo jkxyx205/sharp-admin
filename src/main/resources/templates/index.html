@@ -86,8 +86,13 @@
                     <a class="nav-link nav-dropdown-toggle" href="#">
                         <i class="nav-icon icon-basket-loaded" style="margin-right: .7rem;"></i>采购</a>
                     <ul class="nav-dropdown-items">
+<!--                        <li class="nav-item" sec:authorize="hasAuthority('pur_purchase_order_add')">-->
+<!--                            <a class="nav-link" href="javascript:addTab('pur_purchase_order_add', '采购订单', '/purchase_order')">-->
+<!--                                <i class="nav-icon icon-plus"></i> 新增采购订单-->
+<!--                            </a>-->
+<!--                        </li>-->
                         <li class="nav-item" sec:authorize="hasAuthority('pur_purchase_order_add')">
-                            <a class="nav-link" href="javascript:addTab('pur_purchase_order_add', '采购订单', '/purchase_order')">
+                            <a class="nav-link" href="javascript:addTab('pur_purchase_order_batch_add', '采购订单', '/purchase_order/batch')">
                                 <i class="nav-icon icon-plus"></i> 新增采购订单
                             </a>
                         </li>
@@ -271,12 +276,12 @@
             //     allowClose: false
             // });
 
-            nthTabs.addTab({
-                id: "inventory_count",
-                title: '盘点',
-                url: "/inventory/count",
-                allowClose: false
-            });
+            // nthTabs.addTab({
+            //     id: "inventory_count",
+            //     title: '盘点',
+            //     url: "/inventory/count",
+            //     allowClose: false
+            // });
 
             // nthTabs.addTab({
             //     id: "inventory_list",
@@ -296,6 +301,13 @@
             //     id: "pur_purchase_order_add",
             //     title: '采购订单',
             //     url: "/purchase_order",
+            //     allowClose: false
+            // });
+
+            // nthTabs.addTab({
+            //     id: "pur_purchase_order_batch_add",
+            //     title: '采购订单2',
+            //     url: "/purchase_order/batch",
             //     allowClose: false
             // });
 

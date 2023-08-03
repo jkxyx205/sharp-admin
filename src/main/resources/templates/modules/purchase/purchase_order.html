@@ -40,7 +40,7 @@
                     <input id="code" type="hidden" name="code" th:value="${po.code == null ? '1' : po.code}">
                     <div class="form-group">
                         <label class="col-form-label mr-2 required" for="partnerId">供应商</label>
-                        <sp:select  id="partnerId" name="partnerId" key="core_partner_vendor" th:value="${po.partnerId}" class="form-control" emptyItemText required/>
+                        <sp:select  id="partnerId" name="partnerId" key="core_partner_vendor" th:value="${po.partnerId}" class="form-control" emptyItemText required onchange="changeVendor(this)"/>
                     </div>
                     <div class="form-group">
                         <label class="col-form-label mr-2" for="plantId">入库库房</label>
@@ -121,6 +121,7 @@
         </div>
 
         <div id="dialogInput" style="display: none"></div>
+        <div id="multipleDialogInput" style="display: none"></div>
         <div class="operator-bar text-center" id="operator-bar" sec:authorize="${hasAuthority('pur_purchase_order_add') or hasAuthority('pur_purchase_order_edit')}">
             <button class="btn btn-primary" type="button" name="send" onclick="send()">
                 <i class="fa fa-send"></i> 提交</button>
@@ -163,6 +164,19 @@
                     title: "物料",
                     width: 100,
                     required: true,
+                    mode: 'multiple', // 多选,
+                    reportId: '718618818011729920',
+                    // params: {categoryId: "717389543182962688"},
+                    beforeShow: function ($tr, context) {
+                        let partnerId = $('#partnerId').val()
+
+                        if (!partnerId) {
+                            toastr.warning('请先选择供应商！');
+                            return false
+                        }
+                        context.params.partnerId = partnerId
+                        return true;
+                    }
                 },
                 {
                     type: "label",
@@ -276,6 +290,12 @@
             $('#totalAmount').text(totalAmount)
         }
 
+        function changeVendor() {
+            if ($editableTable.editableTablePlus('getValue').length && confirm('切换供应商物料数据将会被清空， 要继续吗？')) {
+                $editableTable.editableTablePlus('clear')
+            }
+        }
+
         function valid() {
             var formHeaderValidity = formHeader.checkValidity()
             var formItemValidity = formItem.checkValidity()
@@ -284,10 +304,9 @@
             return formHeaderValidity && formItemValidity;
         }
 
-        function reset() {
+        function removeValidClass() {
             formHeader.classList.remove('was-validated')
             formItem.classList.remove('was-validated')
-            $editableTable.editableTablePlus('clear')
         }
 
         function send() {
@@ -311,20 +330,10 @@
                     $('#id').val(res.id)
                     $('#createTime').text(res.createTime)
 
-                    reset();
+                    removeValidClass();
                     loadItem(res.itemList)
-
                     toastr.success('订单提交成功！' + res.code);
-
-                    let frameLength = window.parent.frames.length
-                    for (let i = 0; i < frameLength; i++) {
-                        // 刷新订单列表
-                        let frame = window.parent.frames[i]
-                        if (frame.location.pathname === '/reports/702566176051462144') {
-                            frame.location.reload()
-                            return
-                        }
-                    }
+                    reloadTab('purchase_order_list')
                 }
             });
         }

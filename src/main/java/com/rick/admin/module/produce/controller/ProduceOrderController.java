@@ -1,6 +1,5 @@
 package com.rick.admin.module.produce.controller;
 
-import com.rick.admin.auth.common.UserContextHolder;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
 import com.rick.admin.module.material.dao.MaterialDAO;
@@ -11,7 +10,6 @@ import com.rick.admin.module.produce.service.ProduceOrderService;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
 import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
-import com.rick.common.util.Time2StringUtils;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
@@ -132,11 +130,45 @@ public class ProduceOrderController {
         return produceOrder;
     }
 
-    @GetMapping("purchase_order")
-    public String a(Model model, String materialIds, String quantity) {
-        PurchaseOrder purchaseOrder = new PurchaseOrder();
-        purchaseOrder.setCreateBy(UserContextHolder.get().getId());
+//    @GetMapping("purchase_order")
+//    public String a(Model model, String materialIds, String quantity) {
+//        PurchaseOrder purchaseOrder = new PurchaseOrder();
+//        purchaseOrder.setCreateBy(UserContextHolder.get().getId());
+//
+//        Map<Long, Material> idMaterialMap = materialDAO.selectByIdsAsMap(materialIds);
+//
+//        List<PurchaseOrder.Item> itemList = new ArrayList<>();
+//
+//        String[] quantityArr = quantity.split(",");
+//        String[] materialIdArr = materialIds.split(",");
+//
+//        for (int i = 0; i < materialIdArr.length; i++) {
+//            PurchaseOrder.Item item = new PurchaseOrder.Item();
+//            item.setMaterialId(Long.parseLong(materialIdArr[i]));
+//            item.setQuantity(new BigDecimal(quantityArr[i]));
+//
+//            Material material = idMaterialMap.get(item.getMaterialId());
+//            item.setMaterialCode(material.getCode());
+//            item.setMaterialText(material.getName() + " " + material.getCharacteristicText());
+//            item.setUnit(material.getBaseUnit());
+//            item.setUnitText(dictService.getDictByTypeAndName("unit", material.getBaseUnit()).get().getLabel());
+//            item.setUnitPrice(material.getStandardPrice());
+//
+//            itemList.add(item);
+//        }
+//
+//        purchaseOrder.setItemList(itemList);
+//
+//        model.addAttribute("po", purchaseOrder);
+//
+//        model.addAttribute("createName", dictService.getDictByTypeAndName("sys_user", purchaseOrder.getCreateBy().toString()).get().getLabel());
+//        model.addAttribute("createTime", Time2StringUtils.format(purchaseOrder.getCreateTime()));
+//
+//        return "modules/purchase/purchase_order";
+//    }
 
+    @GetMapping("purchase_order")
+    public String batch(Model model, String materialIds, String quantity) {
         Map<Long, Material> idMaterialMap = materialDAO.selectByIdsAsMap(materialIds);
 
         List<PurchaseOrder.Item> itemList = new ArrayList<>();
@@ -159,14 +191,8 @@ public class ProduceOrderController {
             itemList.add(item);
         }
 
-        purchaseOrder.setItemList(itemList);
-
-        model.addAttribute("po", purchaseOrder);
-
-        model.addAttribute("createName", dictService.getDictByTypeAndName("sys_user", purchaseOrder.getCreateBy().toString()).get().getLabel());
-        model.addAttribute("createTime", Time2StringUtils.format(purchaseOrder.getCreateTime()));
-
-        return "modules/purchase/purchase_order";
+        model.addAttribute("itemList", itemList);
+        return "modules/purchase/purchase_order_batch";
     }
 
     /**

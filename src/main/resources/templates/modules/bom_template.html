@@ -171,7 +171,7 @@
                     title: '选择物料',
                     name: 'materialId',
                     reportId: '697147523487240192',
-                    params: "categoryId=717389543182962688", // 成品物料
+                    params: {categoryId: "717389543182962688"}, // 成品物料
                     required: true,
                     labelDisplay: function (row) {
                         return row.name + ' ' + (!row.characteristic ? '' : row.characteristic)
@@ -188,7 +188,7 @@
             },
             methods: {
                 showMaterialDialog: function (e) {
-                    dialogInputSingle.dialogInput('setParams', 'categoryId=' + e.target.getAttribute('type_instance_id'))
+                    dialogInputSingle.dialogInput('setParams', {'categoryId' : e.target.getAttribute('type_instance_id')})
                     dialogInputSingle.click();
                     currentMaterialDom = e.target
                 },

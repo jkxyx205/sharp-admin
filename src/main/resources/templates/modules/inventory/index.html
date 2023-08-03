@@ -87,6 +87,7 @@
             </div>
         </div>
         <div id="dialogInput" style="display: none"></div>
+        <div id="multipleDialogInput" style="display: none"></div>
         <div class="operator-bar text-center" id="operator-bar">
             <button class="btn btn-primary" type="button" name="send" onclick="send()">
                 <i class="fa fa-send"></i> 提交</button>
@@ -132,6 +133,7 @@
                     title: "物料",
                     width: 100,
                     required: true,
+                    mode: 'multiple', // 多选
                 },
                 {
                     type: "label",

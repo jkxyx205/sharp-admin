@@ -12,6 +12,7 @@ import com.rick.admin.module.purchase.service.PurchaseOrderService;
 import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
 import com.rick.common.util.Time2StringUtils;
+import com.rick.meta.dict.entity.Dict;
 import com.rick.meta.dict.service.DictService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -24,9 +25,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -51,7 +50,7 @@ public class PurchaseOrderController {
 
     @PostMapping
     @ResponseBody
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public PurchaseOrder saveOrUpdate(@RequestBody PurchaseOrder purchaseOrder) {
         purchaseOrderService.saveOrUpdate(purchaseOrder);
 
@@ -61,6 +60,34 @@ public class PurchaseOrderController {
         materialDAO.updatePrice(paramList);
 
         return purchaseOrder;
+    }
+
+    @GetMapping("batch")
+    public String gotoBatch() {
+        return "modules/purchase/purchase_order_batch";
+    }
+
+    @PostMapping("batch")
+    @ResponseBody
+    @Transactional(rollbackFor = Exception.class)
+    public Result batchSave(@RequestBody Map<String, Object> value) {
+        List<Map> list = (List<Map>) value.get("itemList");
+        Map<String, List<Map>> partnerIdMap = list.stream().collect(Collectors.groupingBy(r -> (String) r.get("partnerId")));
+        List<PurchaseOrder> purchaseOrderList = Lists.newArrayListWithExpectedSize(partnerIdMap.size());
+
+        for (Map.Entry<String, List<Map>> entry : partnerIdMap.entrySet()) {
+            value.put("partnerId", entry.getKey());
+            value.put("itemList", entry.getValue());
+            purchaseOrderList.add(purchaseOrderDAO.mapToEntity(value));
+        }
+        purchaseOrderService.save(purchaseOrderList);
+
+        // 更新物料的价格
+        List<Object[]> paramList = purchaseOrderList.stream().flatMap(purchaseOrder -> purchaseOrder.getItemList().stream()).filter(item -> Objects.nonNull(item.getUnitPrice()))
+                .map(item -> new Object[]{item.getUnitPrice(), item.getMaterialId()}).collect(Collectors.toList());
+        materialDAO.updatePrice(paramList);
+
+        return ResultUtils.success();
     }
 
     @GetMapping
@@ -122,6 +149,23 @@ public class PurchaseOrderController {
 //
 //        return list;
 //    }
+
+    /**
+     * 获取物料的供应商
+     * @return
+     */
+    @GetMapping("materials/{id}/vendors")
+    @ResponseBody
+    public List<Dict> getVendorByMaterialId(@PathVariable Long id) {
+        return purchaseOrderService.getVendorByMaterialId(id);
+    }
+
+    @GetMapping("materials/vendors")
+    @ResponseBody
+    public Map<String, List<Dict>> getVendorByMaterialId(@RequestParam String materialIds) {
+        Set<Long> materialIdSet = Arrays.asList(materialIds.split(",")).stream().map(r -> Long.parseLong(r)).collect(Collectors.toSet());
+        return purchaseOrderService.getVendorByMaterialIds(materialIdSet);
+    }
 
     @DeleteMapping("{id}")
     @ResponseBody

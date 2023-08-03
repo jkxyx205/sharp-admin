@@ -221,7 +221,7 @@
         let form_id =/*[[${report.additionalInfo != null && report.additionalInfo['formId'] != null ? report.additionalInfo['formId'] : '' } + '']]*/
 
         function showDialog(title, id) {
-            openOnNewTab(id, 'purchase_order' + (!id ? '' : '/' + id) + '?readonly=' + (title === '查看'),  '采购订单');
+            openOnNewTab(!id ? 'pur_purchase_order_batch_add' : id, 'purchase_order' + (!id ? '/batch' : '/' + id) + '?readonly=' + (title === '查看'),  '采购订单');
         }
 
         $('#okId').on('click', function () {

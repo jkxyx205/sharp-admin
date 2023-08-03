@@ -551,11 +551,39 @@
                 tabId = new Date().getTime()
             }
 
-            window.parent.addTab("tab-" + tabId, name, url)
+            window.parent.addTab('' + tabId, name, url)
         }
 
         function openOnNewTabLink(url, name) {
             return '<a href="javascript:;" onclick="openOnNewTab(\''+url+'\', \''+name+'\')">'+name+'</a>'
+        }
+
+        function delTab(tabId) {
+            if (!tabId) {
+                // 关闭当前
+                tabId = window.frameElement.parentElement.id
+            }
+
+            window.parent.delTab(tabId)
+        }
+
+        function toggleTab(tabId) {
+            if (!tabId) {
+                // 关闭当前
+                tabId = window.frameElement.parentElement.id
+            }
+            window.parent.toggleTab(tabId)
+        }
+
+        function reloadTab(id) {
+            let frameLength = window.parent.frames.length
+            for (let i = 0; i < frameLength; i++) {
+                let frame = window.parent.frames[i]
+                if (frame.frameElement.parentElement.id === id) {
+                    frame.location.reload()
+                    return true
+                }
+            }
         }
 
         function limitPages(total, displayPage, activePage) {

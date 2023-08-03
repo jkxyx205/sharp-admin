@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+      xmlns:sp="">
+<head th:replace="includes/base :: common_header(~{},~{::link},~{::style})">
+    <link rel="stylesheet" th:href="@{/css/tab-common.css}">
+    <link rel="stylesheet" th:href="@{/css/edit-table.css}">
+    <link rel="stylesheet" th:href="@{/plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css}">
+    <style>
+        .operator-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: .2rem 1.25rem;
+            background: #fff;
+            border-top: 1px solid #c8ced3;
+        }
+
+        #form-item .table-fixed-container {
+            max-height: calc(100vh - 240px);
+        }
+
+        #goods_receipt_container .table-fixed-container {
+            max-height: 120px;
+        }
+
+        .form-item .footer span {
+            margin-right: .5rem;
+        }
+    </style>
+</head>
+<body class="app">
+<th:block th:replace="includes/base :: common_content(~{::div})">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-body">
+                <form class="form-inline query-form-container" id="form-header">
+                    <div class="form-group">
+                        <label class="col-form-label mr-2" for="plantId">入库库房</label>
+                        <sp:select  id="plantId" name="plantId" key="core_plant" class="form-control" hideAllItem/>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label mr-2 required" for="deliveryDate">交货日期</label>
+                        <input class="form-control" type="text" id="deliveryDate" name="deliveryDate" required th:value="${#calendars.format(#calendars.createNow(), 'yyyy-MM-dd')}">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label mr-2" for="remark">备注</label>
+                        <input class="form-control" type="text" id="remark" name="remark">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <form class="form-item" id="form-item">
+                    <div id="table-container">
+                    </div>
+                    <div class="pull-right mt-2 mr-5 footer">
+                        <label>预计本单应付：</label><span class="bold" id="total_amount" style="color: #f86c6b;">0</span>元
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="dialogInput" style="display: none"></div>
+        <div id="multipleDialogInput" style="display: none"></div>
+        <div class="operator-bar text-center" id="operator-bar" sec:authorize="${hasAuthority('pur_purchase_order_add') or hasAuthority('pur_purchase_order_edit')}">
+            <button class="btn btn-primary" type="button" name="send" onclick="send()">
+                <i class="fa fa-send"></i> 提交</button>
+        </div>
+    </div>
+</th:block>
+<th:block th:replace="includes/base :: common_js(~{::script})">
+    <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js}"></script>
+    <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.zh-CN.min.js}"></script>
+    <script type="text/javascript" th:src="@{/plugins/jquery.form2json.js}"></script>
+
+    <script th:src="@{/editable-table/editable-table.js}"></script>
+    <script th:src="@{/js/jquery.table.js}"></script>
+    <script th:src="@{/js/editable-table-plus.js}"></script>
+
+    <script th:src="@{/js/jquery.dialogInput.js}"></script>
+    <script th:src="@{/js/editable-table-plus-customize_type.js}"></script>
+
+    <script th:inline="javascript">
+        var readonly = false
+        let formHeader = document.getElementById('form-header');
+        let formItem = document.getElementById('form-item');
+
+        let value = /*[[${itemList}]]*/
+        if (value) {
+            // 获取供应商
+            $.get("/purchase_order/materials/vendors?materialIds=" + value.map(row => row.materialId).join(','), (res) => {
+                let $tr = $('#table-container table.table-tbody tr:first-child')
+                for (let row of value) {
+                    if (res[row.materialId]) {
+                        $tr.find(':input[name=partnerId]').html(res[row.materialId].map(d => {
+                            return '<option value="'+d.name+'">'+d.label+'</option>'
+                        }).join(''))
+                        $tr = $tr.next()
+                    }
+                }
+            })
+        }
+
+        // 可编辑表格初始化
+        var $editableTable = $('#table-container').editableTablePlus({
+            customizeType,
+            showRowNumber: true, // 是否显示行号
+            readonly: readonly, // 只读
+            allowEmpty: false, // 表格允许为空
+            columnConfigs: [
+                {
+                    type: "material",
+                    name: "materialId",
+                    title: "物料",
+                    width: 100,
+                    required: true,
+                    mode: 'multiple', // 多选
+                    selected: function ($tr, value) {
+                        if (Array.isArray(value)) {
+                            // 获取供应商
+                            $.get("/purchase_order/materials/vendors?materialIds=" + value.map(row => row.id).join(','), (res) => {
+                                for (let row of value) {
+                                    if (res[row.id]) {
+                                        $tr.find(':input[name=partnerId]').html(res[row.id].map(d => {
+                                            return '<option value="'+d.name+'">'+d.label+'</option>'
+                                        }).join(''))
+                                        $tr = $tr.next()
+                                    }
+                                }
+                            })
+                        } else {
+                            // 获取供应商
+                            $.get(`/purchase_order/materials/${value.id}/vendors`, (res) => {
+                                $tr.find(':input[name=partnerId]').html(res.map(d => {
+                                    return '<option value="'+d.name+'">'+d.label+'</option>'
+                                }).join(''))
+                            })
+                        }
+                    }
+                },
+                {
+                    type: "label",
+                    name: "materialText",
+                    title: "规格"
+                },
+                {
+                    type: "decimal",
+                    name: "quantity",
+                    title: "数量",
+                    width: 100,
+                    required: true,
+                    align: 'right',
+                    keyup: function ($tr, event, value) {
+                        calcAmount($tr);
+                    }
+                },
+                {
+                    type: "text_label",
+                    name: "unit",
+                    title: "单位",
+                    width: 100,
+                    disabled: true,
+                    required: false,
+                },
+                {
+                    type: "decimal",
+                    name: "unitPrice",
+                    title: "含税单价",
+                    align: 'right',
+                    width: 100,
+                    required: true,
+                    keyup: function ($tr, event, value) {
+                        calcAmount($tr);
+                    }
+                },
+                {
+                    type: "label",
+                    name: "amount",
+                    width: 100,
+                    title: "含税总计",
+                    required: false,
+                },
+                {
+                    type: "select",
+                    title: "供应商",
+                    name: "partnerId",
+                    required: true
+                },
+                {
+                    type: "text",
+                    title: "备注",
+                    name: "remark",
+                }
+            ],
+            value,
+        })
+
+        // end
+        $('#deliveryDate').datepicker({
+            language: "zh-CN",
+            autoclose: true,
+            clearBtn: true,
+            todayBtn: 'linked',
+            todayHighlight: true,
+            format: 'yyyy-mm-dd',
+            startDate: new Date()
+        })
+
+        function calcAmount($tr) {
+            $tr.find('td input[name=amount]').val('')
+
+            let quantity = $tr.find('td input[name=quantity]').val()
+            let unitPrice = $tr.find('td input[name=unitPrice]').val()
+            if (quantity && unitPrice) {
+                let amount = math.multiply(math.bignumber(quantity), math.bignumber(unitPrice));
+                $tr.find('td input[name=amount]').val(amount)
+            }
+
+            calcTotalAmount()
+        }
+
+        function calcTotalAmount() {
+            let totalAmount = 0
+            $('#table-container tbody input[name=amount]').each(function () {
+                if ($(this).val()) {
+                    totalAmount = math.add(math.bignumber(totalAmount), math.bignumber($(this).val()));
+                }
+            })
+            $('#total_amount').text(totalAmount)
+            $('#totalAmount').text(totalAmount)
+        }
+
+        function valid() {
+            var formHeaderValidity = formHeader.checkValidity()
+            var formItemValidity = formItem.checkValidity()
+            formHeader.classList.add('was-validated')
+            formItem.classList.add('was-validated')
+            return formHeaderValidity && formItemValidity;
+        }
+
+        function send() {
+            if (!valid()) {
+                return
+            }
+
+            var params = $('#form-header').form2json({allowEmptyMultiVal:true})
+            params['itemList'] = $editableTable.editableTablePlus('getValue')
+            console.log(params)
+
+            $.ajax({
+                url: '/purchase_order/batch',
+                type: "POST",
+                data: JSON.stringify(params),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function(res){
+                    // 跳转订单列表
+                    if (reloadTab('purchase_order_list')) {
+                        toggleTab('purchase_order_list');
+                    } else {
+                        openOnNewTab('purchase_order_list', '/reports/702566176051462144',  '采购管理');
+                    }
+                    delTab()
+                }
+            });
+        }
+    </script>
+</th:block>
+</body>
+</html>

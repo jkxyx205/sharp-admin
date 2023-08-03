@@ -391,4 +391,32 @@ public class MaterialTest {
                 .sord(SordEnum.ASC)
                 .build());
     }
+
+    @Test
+    public void testSearchReportForSourceList() {
+        reportService.saveOrUpdate(Report.builder()
+                .id(718618818011729920L)
+                .code("mm_material_source_search")
+                .tplName("tpl/query_list")
+                .name("物料供应商查询")
+                .querySql("SELECT cast(mm_material.id as char(20)) id, mm_material.code, mm_material.name, characteristic, material_type, mm_material.category_id, mm_material.category_id as categoryText, base_unit, base_unit as base_unit_name, standard_price unitPrice FROM mm_material WHERE mm_material.code = :code AND (mm_material.name like :keywords or characteristic like :keywords or mm_material.code like :keywords) AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0 AND id = :id AND id IN (:ids) AND exists (select 1 from pur_source_list where partner_id = :partnerId AND (mm_material.id = material_id OR mm_material.category_id = material_category_id))")
+                .queryFieldList(Arrays.asList(
+                        new QueryField("keywords", "关键字", QueryField.Type.TEXT),
+                        new QueryField("categoryId", "分类", QueryField.Type.GROUP_SELECT, "material_category_select_sql")
+                ))
+                .reportColumnList(Arrays.asList(
+                        new HiddenReportColumn("id"),
+                        new HiddenReportColumn("unitPrice"),
+                        new HiddenReportColumn("category_id"),
+                        new ReportColumn("code", "编号").setColumnWidth(80),
+                        new ReportColumn("name", "名称").setTooltip(true),
+                        new ReportColumn("characteristic", "规格", false, null, Arrays.asList("characteristicConverter")).setTooltip(true),
+                        new HiddenReportColumn("base_unit"),
+                        new HiddenReportColumn("base_unit_name", "unit", Arrays.asList("dictConverter"))
+                ))
+                .pageable(false)
+                .sidx("id")
+                .sord(SordEnum.ASC)
+                .build());
+    }
 }

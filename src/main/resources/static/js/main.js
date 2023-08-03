@@ -21,6 +21,10 @@ function delTab(id) {
     nthTabs.delTab(id);
 }
 
+function toggleTab(id) {
+    nthTabs.toggleTab(id);
+}
+
 function refreshTab(id) {
     var $iframe = $('#' + id).find('> iframe')
 

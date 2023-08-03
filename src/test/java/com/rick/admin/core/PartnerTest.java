@@ -1,6 +1,7 @@
 package com.rick.admin.core;
 
 import com.google.common.collect.Lists;
+import com.rick.admin.module.core.entity.Partner;
 import com.rick.db.service.support.Params;
 import com.rick.formflow.form.cpn.core.CpnConfigurer;
 import com.rick.formflow.form.cpn.core.CpnTypeEnum;
@@ -86,7 +87,7 @@ public class PartnerTest {
                 .datasource("partner_type")
                 .name("partnerType")
                 .label("类型")
-                .defaultValue("CUSTOMER")
+                .defaultValue(Partner.PartnerTypeEnum.VENDOR.name())
                 .validatorList(Arrays.asList(new Required(true)))
                 .build();
 

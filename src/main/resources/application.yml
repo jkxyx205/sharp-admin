@@ -61,7 +61,7 @@ dict:
     - type: core_material_category
       sql: "select 0 as id, '无' from dual union all select id, name from core_material_category order by id asc"
     - type: partner_type
-      map: { "CUSTOMER": "客户", "VENDOR": "供应商" }
+      map: { "VENDOR": "供应商", "CUSTOMER": "客户"}
     - type: core_partner
       sql: "select id, name from core_partner WHERE is_deleted = 0 order by id asc"
     - type: core_partner_vendor
