@@ -88,6 +88,13 @@
                     }
                 })
             }
+
+            for (let i = 0; i < this.options.columnConfigs.length; i++) {
+                let columnConfig = this.options.columnConfigs[i];
+                this.options.customizeType[columnConfig.type] &&
+                this.options.customizeType[columnConfig.type].mounted &&
+                this.options.customizeType[columnConfig.type].mounted(columnConfig)
+            }
         },
         getValue: function() {
             let valueList = []
@@ -249,13 +256,23 @@
                         '                    </label>')
                     $td.html($switch).css('text-align', columnConfig.align ?  columnConfig.align : 'left')
                 } else if (columnConfig.type === 'select') {
-                    let options = []
-                    for(let v of columnConfig.datasource) {
-                        options.push('<option value="'+v.name+'">'+v.value+'</option>')
+                    let optionHTML = ''
+                    if (columnConfig.datasource) {
+                        if (Array.isArray(columnConfig.datasource)) { // 数组
+                            let options = []
+                            for(let v of columnConfig.datasource) {
+                                options.push('<option value="'+v.name+'">'+v.value+'</option>')
+                            }
+                            optionHTML = options.join('')
+                        } else if ((columnConfig.datasource && (columnConfig.datasource instanceof jQuery || columnConfig.datasource.constructor.prototype.jquery))) {
+                            // select jquery对象
+                            optionHTML = columnConfig.datasource.html()
+                        }
                     }
-                    let $select = $('<select class="form-control"'+(columnConfig.disabled ? ' disabled' : '')+' name="'+columnConfig.name+'">'+options.join('')+'</select>')
 
+                    let $select = $('<select class="form-control"'+(columnConfig.disabled ? ' disabled' : '')+' name="'+columnConfig.name+'">'+optionHTML+'</select>')
                     $td.html($select);
+
                     if (columnConfig.onchange) {
                         $select.on('change', function (e) {
                             columnConfig.onchange($tr, this.value, e)
@@ -263,10 +280,13 @@
                     }
                 } else if (columnConfig.type === 'radio') {
                     let radios = []
-                    for(let v of columnConfig.datasource) {
-                        let id = v.name + $tr.index()
-                        radios.push('<input type="radio" name="'+(columnConfig.name + '-' + $tr.index())+'" value="'+v.name+'" id="'+id+'"><label for="'+id+'">'+v.value+'</label>')
+                    if (columnConfig.datasource) {
+                        for(let v of columnConfig.datasource) {
+                            let id = v.name + $tr.index()
+                            radios.push('<input type="radio" name="'+(columnConfig.name + '-' + $tr.index())+'" value="'+v.name+'" id="'+id+'"><label for="'+id+'">'+v.value+'</label>')
+                        }
                     }
+
                     let $radios = $(radios.join(''))
 
                     $td.html($radios);
@@ -285,7 +305,7 @@
                     $input.on('keydown', function(event){
                         if ((event.keyCode > 57 || event.keyCode < 48) && event.keyCode !== 8 && event.keyCode !== 190 && event.keyCode !== 39 && event.keyCode !== 37 && event.keyCode !== 9) {
                             event.preventDefault();
-                            return;
+                            return false;
                         }
                     }).on('keyup', function (event) {
                         columnConfig.keyup && columnConfig.keyup($tr, event, $(this).val())
@@ -302,7 +322,7 @@
                         format: 'yyyy-mm-dd'
                     })
                 } else {
-                    this.options.customizeType && this.options.customizeType[columnConfig.type] && this.options.customizeType[columnConfig.type].formatTr($td, columnConfig)
+                    this.options.customizeType[columnConfig.type] && this.options.customizeType[columnConfig.type].formatTr($td, columnConfig)
                 }
             }
 
