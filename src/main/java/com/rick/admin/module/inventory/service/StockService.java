@@ -35,7 +35,7 @@ public class StockService {
      * @param stock
      */
     public void changeStockQuantity(Stock stock) {
-        Optional<Stock> optional = stockDAO.getStockQuantity(stock.getPlantId(), stock.getMaterialId());
+        Optional<Stock> optional = stockDAO.getStockQuantity(stock.getPlantId(), stock.getMaterialId(), stock.getBatchId());
 
         if (optional.isPresent()) {
             Stock stockInDb = optional.get();

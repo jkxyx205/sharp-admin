@@ -126,7 +126,7 @@ public class BomService {
 
     private void fillMaterialExtraData(Bom.Item item, Material material) {
         item.setMaterialCode(material.getCode());
-        item.setMaterialText(material.getName() + " " + material.getCharacteristicText());
+        item.setMaterialText(material.getName() + " " + material.getSpecificationText());
         item.setUnitText(dictService.getDictByTypeAndName("unit", item.getUnit()).get().getLabel());
         item.setUnitPrice(material.getStandardPrice());
     }

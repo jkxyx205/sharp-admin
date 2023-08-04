@@ -1,6 +1,12 @@
 package com.rick.admin.module;
 
 import com.google.common.collect.Lists;
+import com.rick.admin.module.material.dao.MaterialDAO;
+import com.rick.admin.module.material.entity.CharacteristicValue;
+import com.rick.admin.module.material.entity.Classification;
+import com.rick.admin.module.material.entity.Material;
+import com.rick.admin.module.material.service.MaterialService;
+import com.rick.common.util.JsonUtils;
 import com.rick.db.service.support.Params;
 import com.rick.formflow.form.cpn.core.CpnConfigurer;
 import com.rick.formflow.form.cpn.core.CpnTypeEnum;
@@ -23,6 +29,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * @author Rick.Xu
  * @date 2023/6/2 10:42
@@ -41,6 +49,39 @@ public class MaterialTest {
 
     @Autowired
     private FormService formService;
+
+    @Autowired
+    private MaterialDAO materialDAO;
+
+    @Autowired
+    private MaterialService materialService;
+
+    @Test
+    public void testSaveOrUpdate() {
+        // 分类
+        materialService.saveOrUpdate(Material.builder()
+                .code("PC")
+                .name("电脑")
+                .categoryId(0L)
+                .classificationList(Arrays.asList(
+                        Classification.builder()
+                                .classificationCode("COLOR")
+                                .characteristicValueList(Arrays.asList(
+                                        CharacteristicValue.builder()
+                                                .characteristicCode("COLOR")
+                                                .val("亚黑")
+                                                .build()
+                                ))
+                                .build()))
+                .build());
+    }
+
+    @Test
+    public void testFind() {
+        Material pc = materialService.findByCode("PC").get();
+        System.out.println(JsonUtils.toJson(pc));
+        assertThat(pc.getClassificationList().get(0).getClassification().getCharacteristicValue().get(0).getValue()).isEqualTo("亚黑");
+    }
 
     @Test
     public void testForm() {
@@ -228,7 +269,7 @@ public class MaterialTest {
 
         CpnConfigurer characteristicCpn = CpnConfigurer.builder()
                 .cpnType(CpnTypeEnum.TABLE)
-                .name("characteristic")
+                .name("specification")
                 .label("规格")
                 .additionalInfo(Params.builder()
                         .pv("columns", Arrays.asList(characteristicKeyCpn, characteristicValueCpn))
@@ -321,20 +362,23 @@ public class MaterialTest {
                 .name("物料")
                 .additionalInfo(Params.builder(1).pv("formId", "695978675677433856").build())
                 .reportAdviceName("materialReportAdvice")
-//                .querySql("SELECT mm_material.id, mm_material.code, mm_material.name, characteristic, case when attachment is null or length(attachment) <= 2 then '无' else '有' end  attachment, material_type, mm_material.category_id, base_unit, standard_price, sys_user.name create_name,DATE_FORMAT(mm_material.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM mm_material left join sys_user on sys_user.id = mm_material.create_by WHERE mm_material.code = :code AND mm_material.name like :name AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0")
-                .querySql("SELECT mm_material.id, mm_material.code, mm_material.name, characteristic, case when attachment is null or length(attachment) <= 2 then '无' else '有' end  attachment, material_type, mm_material.category_id, base_unit, standard_price, sys_user.name create_name,DATE_FORMAT(mm_material.create_time, '%Y-%m-%d %H:%i:%s') create_time,stock.quantity stock_quantity, standard_price * stock.quantity stock_quantity_standard_price FROM mm_material left join sys_user on sys_user.id = mm_material.create_by left join (select material_id, sum(quantity) quantity from inv_stock group by material_id) stock on stock.material_id = mm_material.id WHERE mm_material.code = :code AND mm_material.name like :name AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0")
+//                .querySql("SELECT mm_material.id, mm_material.code, mm_material.name, specification, case when attachment is null or length(attachment) <= 2 then '无' else '有' end  attachment, material_type, mm_material.category_id, base_unit, standard_price, sys_user.name create_name,DATE_FORMAT(mm_material.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM mm_material left join sys_user on sys_user.id = mm_material.create_by WHERE mm_material.code = :code AND mm_material.name like :name AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0")
+                .querySql("SELECT mm_material.id, mm_material.code, mm_material.name, specification, color, case when attachment is null or length(attachment) <= 2 then '无' else '有' end  attachment, material_type, mm_material.category_id, base_unit, standard_price, sys_user.name create_name,DATE_FORMAT(mm_material.create_time, '%Y-%m-%d %H:%i:%s') create_time,stock.quantity stock_quantity, standard_price * stock.quantity stock_quantity_standard_price FROM mm_material left join sys_user on sys_user.id = mm_material.create_by left join (select stock.*, characteristic.color from (\n" +
+                        " select material_id, batch_id, sum(quantity) quantity from inv_stock group by material_id, batch_id) stock left join (  select mm_profile.material_id, mm_profile.batch_id, mm_characteristic_value.value color from mm_profile, mm_characteristic_value where category = 'BATCH' AND mm_profile.id = mm_characteristic_value.`reference_id`) characteristic on characteristic.material_id = stock.material_id AND characteristic.batch_id = stock.batch_id ) stock on stock.material_id = mm_material.id\n WHERE mm_material.code = :code AND mm_material.name like :name AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0")
                 .queryFieldList(Arrays.asList(
                         new QueryField("code", "编号", QueryField.Type.TEXT),
+                        new QueryField("name", "名称", QueryField.Type.TEXT),
                         new QueryField("materialType", "类型", QueryField.Type.SELECT, "material_type"),
-                        new QueryField("categoryId", "分类", QueryField.Type.SELECT, "core_material_category"),
+//                        new QueryField("categoryId", "分类", QueryField.Type.SELECT, "core_material_category"),
+                        new QueryField("categoryId", "分类", QueryField.Type.GROUP_SELECT, "material_category_select_sql")
 //                        new QueryField("categoryId", "分类", QueryField.Type.SELECT, "category_path"),
-                        new QueryField("name", "名称", QueryField.Type.TEXT)
                 ))
                 .reportColumnList(Arrays.asList(
                         new HiddenReportColumn("id"),
                         new ReportColumn("code", "编号"),
                         new ReportColumn("name", "名称", true),
-                        new ReportColumn("characteristic", "规格", false, null, Arrays.asList("characteristicConverter")),
+                        new ReportColumn("specification", "规格", false, null, Arrays.asList("characteristicConverter")),
+                        new ReportColumn("color", "颜色"),
                         new ReportColumn("material_type", "类型", false, "material_type", Arrays.asList("dictConverter")),
 //                        new ReportColumn("category_id", "分类", false, "core_material_category", Arrays.asList("dictConverter")),
                         new ReportColumn("category_path", "分类", false),
@@ -360,7 +404,7 @@ public class MaterialTest {
                 .code("mm_material_search")
                 .tplName("tpl/query_list")
                 .name("物料查询")
-                .querySql("SELECT cast(mm_material.id as char(20)) id, mm_material.code, mm_material.name, characteristic, material_type, mm_material.category_id, mm_material.category_id as categoryText, base_unit, base_unit as base_unit_name, standard_price unitPrice FROM mm_material WHERE mm_material.code = :code AND (mm_material.name like :keywords or characteristic like :keywords or mm_material.code like :keywords) AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0 AND id = :id AND id IN (:ids)")
+                .querySql("SELECT cast(mm_material.id as char(20)) id, mm_material.code, mm_material.name, specification, material_type, mm_material.category_id, mm_material.category_id as categoryText, base_unit, base_unit as base_unit_name, standard_price unitPrice, batch_management batchManagement FROM mm_material WHERE mm_material.code = :code AND (mm_material.name like :keywords or specification like :keywords or mm_material.code like :keywords) AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0 AND id = :id AND id IN (:ids)")
                 .queryFieldList(Arrays.asList(
 //                        new QueryField("code", "编号", QueryField.Type.TEXT),
                         new QueryField("keywords", "关键字", QueryField.Type.TEXT),
@@ -376,9 +420,10 @@ public class MaterialTest {
                         new HiddenReportColumn("id"),
                         new HiddenReportColumn("unitPrice"),
                         new HiddenReportColumn("category_id"),
+                        new HiddenReportColumn("batchManagement"),
                         new ReportColumn("code", "编号").setColumnWidth(80),
                         new ReportColumn("name", "名称").setTooltip(true),
-                        new ReportColumn("characteristic", "规格", false, null, Arrays.asList("characteristicConverter")).setTooltip(true),
+                        new ReportColumn("specification", "规格", false, null, Arrays.asList("characteristicConverter")).setTooltip(true),
 //                        new ReportColumn("base_unit", "基本单位", false, "unit", Arrays.asList("dictConverter")),
                         new HiddenReportColumn("base_unit"),
                         // String name, String label, Boolean sortable, String context, List<String> valueConverterNameList, Integer columnWidth, AlignEnum align, Boolean hidden, Boolean tooltip, TypeEnum type
@@ -399,7 +444,7 @@ public class MaterialTest {
                 .code("mm_material_source_search")
                 .tplName("tpl/query_list")
                 .name("物料供应商查询")
-                .querySql("SELECT cast(mm_material.id as char(20)) id, mm_material.code, mm_material.name, characteristic, material_type, mm_material.category_id, mm_material.category_id as categoryText, base_unit, base_unit as base_unit_name, standard_price unitPrice FROM mm_material WHERE mm_material.code = :code AND (mm_material.name like :keywords or characteristic like :keywords or mm_material.code like :keywords) AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0 AND id = :id AND id IN (:ids) AND exists (select 1 from pur_source_list where partner_id = :partnerId AND (mm_material.id = material_id OR mm_material.category_id = material_category_id))")
+                .querySql("SELECT cast(mm_material.id as char(20)) id, mm_material.code, mm_material.name, specification, material_type, mm_material.category_id, mm_material.category_id as categoryText, base_unit, base_unit as base_unit_name, standard_price unitPrice, batch_management batchManagementFROM mm_material WHERE mm_material.code = :code AND (mm_material.name like :keywords or specification like :keywords or mm_material.code like :keywords) AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0 AND id = :id AND id IN (:ids) AND exists (select 1 from pur_source_list where partner_id = :partnerId AND (mm_material.id = material_id OR mm_material.category_id = material_category_id))")
                 .queryFieldList(Arrays.asList(
                         new QueryField("keywords", "关键字", QueryField.Type.TEXT),
                         new QueryField("categoryId", "分类", QueryField.Type.GROUP_SELECT, "material_category_select_sql")
@@ -408,9 +453,10 @@ public class MaterialTest {
                         new HiddenReportColumn("id"),
                         new HiddenReportColumn("unitPrice"),
                         new HiddenReportColumn("category_id"),
+                        new HiddenReportColumn("batchManagement"),
                         new ReportColumn("code", "编号").setColumnWidth(80),
                         new ReportColumn("name", "名称").setTooltip(true),
-                        new ReportColumn("characteristic", "规格", false, null, Arrays.asList("characteristicConverter")).setTooltip(true),
+                        new ReportColumn("specification", "规格", false, null, Arrays.asList("characteristicConverter")).setTooltip(true),
                         new HiddenReportColumn("base_unit"),
                         new HiddenReportColumn("base_unit_name", "unit", Arrays.asList("dictConverter"))
                 ))

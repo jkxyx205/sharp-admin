@@ -94,6 +94,12 @@ public class PurchaseOrder extends BaseCodeEntity {
         @Column(updatable = false)
         String purchaseOrderCode;
 
+        Long batchId;
+
+        String batchCode;
+
+        String color;
+
         @Transient
         String materialCode;
 

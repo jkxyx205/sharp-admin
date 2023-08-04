@@ -270,7 +270,7 @@
             reportId: '697147523487240192',
             params: {categoryId: "717389543182962688"},
             labelDisplay: function (row) {
-                return row.name + ' ' + (!row.characteristic ? '' : row.characteristic)
+                return row.name + ' ' + (!row.specification ? '' : row.specification)
             },
             selected: function (row) {
                 console.log(row)
@@ -300,7 +300,7 @@
             params: {categoryId: "717389543182962688"},
             mode: 'multiple', // 多选
             labelDisplay: function (row) {
-                return row.name + ' ' + (!row.characteristic ? '' : row.characteristic)
+                return row.name + ' ' + (!row.specification ? '' : row.specification)
             },
             selected: function (rows) {
                 for (let row of rows) {

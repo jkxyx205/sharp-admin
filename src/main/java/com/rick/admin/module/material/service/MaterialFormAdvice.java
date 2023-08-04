@@ -1,6 +1,9 @@
 package com.rick.admin.module.material.service;
 
 import com.rick.admin.module.inventory.dao.StockDAO;
+import com.rick.admin.module.material.dao.MaterialDAO;
+import com.rick.admin.module.material.entity.CharacteristicValue;
+import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.entity.Material;
 import com.rick.formflow.form.service.FormAdvice;
 import com.rick.formflow.form.service.bo.FormBO;
@@ -25,6 +28,10 @@ public class MaterialFormAdvice implements FormAdvice {
     private final DictService dictService;
 
     private final StockDAO stockDAO;
+
+    private final MaterialService materialService;
+
+    private final MaterialDAO materialDAO;
 
     @Override
     public void beforeInstanceHandle(FormBO form, Long instanceId, Map<String, Object> values) {
@@ -65,5 +72,26 @@ public class MaterialFormAdvice implements FormAdvice {
         if (Objects.nonNull(standardPrice)) {
             valueMap.put("stockQuantityPrice", numbers.formatDecimal(stockQuantity.multiply(standardPrice), 1, "COMMA", 2, "POINT") + " 元");
         }
+    }
+
+    @Override
+    public boolean insertOrUpdate(Map<String, Object> values) {
+        Material material = materialDAO.mapToEntity(values);
+        if (Objects.equals(material.getBatchManagement(), Boolean.TRUE)) {
+            // 批次物料加上颜色特征
+            material.setClassificationList(Arrays.asList(
+                    Classification.builder()
+                            .classificationCode("COLOR")
+                            .characteristicValueList(Arrays.asList(
+                                    CharacteristicValue.builder()
+                                            .characteristicCode("COLOR")
+                                            .build()
+                            ))
+                            .build()));
+        }
+
+
+        materialService.saveOrUpdate(material);
+        return true;
     }
 }

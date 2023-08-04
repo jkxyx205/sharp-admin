@@ -108,7 +108,7 @@ public class ProduceOrderController {
             Map<Long, Material> idMaterialMap = materialDAO.selectByIdsAsMap(goodsReceiptItemList.stream().map(ProduceOrderController.GoodsReceiptItem::getMaterialId).collect(Collectors.toSet()));
             for (GoodsReceiptItem item : goodsReceiptItemList) {
                 Material material = idMaterialMap.get(item.getMaterialId());
-                item.setMaterialText(material.getName() + " " + material.getCharacteristicText());
+                item.setMaterialText(material.getName() + " " + material.getSpecificationText());
                 item.setUnitText(dictService.getDictByTypeAndName("unit", item.getUnitText()).get().getLabel());
                 item.setOpenQuantity(BigDecimalUtils.lt(item.getOpenQuantity(), BigDecimal.ZERO) ? BigDecimal.ZERO : item.getOpenQuantity());
             }
@@ -149,7 +149,7 @@ public class ProduceOrderController {
 //
 //            Material material = idMaterialMap.get(item.getMaterialId());
 //            item.setMaterialCode(material.getCode());
-//            item.setMaterialText(material.getName() + " " + material.getCharacteristicText());
+//            item.setMaterialText(material.getName() + " " + material.getSpecificationText());
 //            item.setUnit(material.getBaseUnit());
 //            item.setUnitText(dictService.getDictByTypeAndName("unit", material.getBaseUnit()).get().getLabel());
 //            item.setUnitPrice(material.getStandardPrice());
@@ -183,7 +183,7 @@ public class ProduceOrderController {
 
             Material material = idMaterialMap.get(item.getMaterialId());
             item.setMaterialCode(material.getCode());
-            item.setMaterialText(material.getName() + " " + material.getCharacteristicText());
+            item.setMaterialText(material.getName() + " " + material.getSpecificationText());
             item.setUnit(material.getBaseUnit());
             item.setUnitText(dictService.getDictByTypeAndName("unit", material.getBaseUnit()).get().getLabel());
             item.setUnitPrice(material.getStandardPrice());

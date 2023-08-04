@@ -123,15 +123,13 @@
                 // readonly 有 true => false, 根据 _formatTr 重新设置 readonly 和 disabled
                 let _this = this
                 this.$table.find('tbody tr').each(function() {
-                    for (let i = 0; i < _this.options.columnConfigs.length; i++) {
-                        let columnConfig = _this.options.columnConfigs[i];
-                        let childIndex = i + 1 + (_this.options.showRowNumber ? 1 : 0)
-                        let $input = $(this).find('td:nth-child('+childIndex+') input')
+                    _this._consumeUnHiddenColumnConfig((childIndex, columnConfig) => {
+                        let $input = $(this).find('td:nth-child('+childIndex+') :input')
 
                         if (columnConfig.disabled === true) {
                             $input.prop('disabled', true).attr('readonly', true)
                         }
-                    }
+                    })
                 })
             }
         },
@@ -200,11 +198,10 @@
             return value
         },
         _formatTr: function($tr) {
-            for (let i = 0; i < this.options.columnConfigs.length; i++) {
-                let columnConfig = this.options.columnConfigs[i];
-                let childIndex = i + 1 + (this.options.showRowNumber ? 1 : 0)
+            let hiddenColumnConfigs = this._consumeUnHiddenColumnConfig((childIndex, columnConfig) => {
                 let $td = $tr.find('td:nth-child('+childIndex+')')
                 let $input = $tr.find('td:nth-child('+childIndex+') input')
+
                 $input.attr('name', columnConfig.name)
                     .css('text-align', columnConfig.align ?  columnConfig.align : 'left')
 
@@ -310,8 +307,6 @@
                     }).on('keyup', function (event) {
                         columnConfig.keyup && columnConfig.keyup($tr, event, $(this).val())
                     })
-                } else if(columnConfig.type === 'hidden') {
-                    $tr.append('<input type="hidden" name="'+columnConfig.name+'">')
                 } else if(columnConfig.type === 'date') {
                     $td.find('input').datepicker({
                         language: "zh-CN",
@@ -324,8 +319,10 @@
                 } else {
                     this.options.customizeType[columnConfig.type] && this.options.customizeType[columnConfig.type].formatTr($td, columnConfig)
                 }
-            }
+            })
 
+            // 添加隐藏域
+            hiddenColumnConfigs.forEach(columnConfig => $tr.append('<input type="hidden" name="'+columnConfig.name+'">'))
             // id
             $tr.append('<input type="hidden" name="id">')
         },
@@ -350,17 +347,30 @@
                 }
             }
 
-            for (let i = 0; i < this.options.columnConfigs.length; i++) {
-                let columnConfig = this.options.columnConfigs[i];
-                let childIndex = i + 1 + (this.options.showRowNumber ? 1 : 0)
-
+            this._consumeUnHiddenColumnConfig((childIndex, columnConfig) => {
                 if (columnConfig.required === true) {
                     let $input = $requiredTr.find('td:nth-child('+childIndex+') :input')
                     let title = $input.attr('title') ? $input.attr('title') : '请填写' + columnConfig.title
                     $input.attr('required', true)
                         .attr('title', title)
                 }
+            })
+        },
+        _consumeUnHiddenColumnConfig: function (consumer) {
+            let hiddenColumnConfigs = []
+            let tdIndex = 0
+            for (let i = 0; i < this.options.columnConfigs.length; i++) {
+                let columnConfig = this.options.columnConfigs[i];
+                if (columnConfig.type === 'hidden') {
+                    hiddenColumnConfigs.push(columnConfig)
+                    continue
+                }
+
+                let childIndex = (tdIndex++) + 1 + (this.options.showRowNumber ? 1 : 0)
+                consumer(childIndex, columnConfig)
             }
+
+            return hiddenColumnConfigs
         }
     }
 

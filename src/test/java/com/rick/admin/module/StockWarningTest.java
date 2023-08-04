@@ -39,7 +39,7 @@ public class StockWarningTest {
                         new HiddenReportColumn("id"),
                         new ReportColumn("code", "编号"),
                         new ReportColumn("name", "名称", true),
-                        new ReportColumn("characteristic", "规格", false, null, Arrays.asList("characteristicConverter")),
+                        new ReportColumn("specification", "规格", false, null, Arrays.asList("characteristicConverter")),
                         new ReportColumn("category_path", "分类", false),
                         new ReportColumn("stock_quantity", "库存").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
                         new ReportColumn("safety_stock_quantity", "安全库存").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),

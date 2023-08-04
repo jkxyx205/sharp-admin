@@ -31,7 +31,7 @@
             reportId: '697147523487240192',
             value: '696078910634332160',
             labelDisplay: function (row) {
-                return row.name + ' ' + (!row.characteristic ? '' : row.characteristic)
+                return row.name + ' ' + (!row.specification ? '' : row.specification)
             }
         })
 
@@ -43,7 +43,7 @@
             reportId: '697147523487240192',
             value :['696078910634332160', '696545874376949760'],
             labelDisplay: function (rows) {
-                return rows.map(row => row.name + ' ' + (!row.characteristic ? '' : row.characteristic)).join(", ")
+                return rows.map(row => row.name + ' ' + (!row.specification ? '' : row.specification)).join(", ")
             },
             selected: function (rows) {
                 console.log(rows)

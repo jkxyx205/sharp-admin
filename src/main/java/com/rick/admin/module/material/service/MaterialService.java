@@ -1,8 +1,17 @@
 package com.rick.admin.module.material.service;
 
+import com.rick.admin.module.core.entity.Characteristic;
 import com.rick.admin.module.material.dao.MaterialDAO;
+import com.rick.admin.module.material.entity.CharacteristicValue;
+import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.entity.Material;
+import com.rick.admin.module.material.entity.MaterialProfile;
+import com.rick.common.util.IdGenerator;
+import com.rick.db.plugin.dao.core.EntityCodeDAO;
+import com.rick.db.plugin.dao.core.EntityDAO;
+import com.rick.db.plugin.dao.support.EntityCodeIdFillService;
 import com.rick.db.service.support.Params;
+import com.rick.db.util.OptionalUtils;
 import com.rick.meta.dict.service.DictService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -12,9 +21,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -32,6 +39,47 @@ public class MaterialService {
 
     final DictService dictService;
 
+    EntityCodeDAO<Characteristic, Long> characteristicDAO;
+
+    EntityDAO<MaterialProfile, Long> materialProfileDAO;
+
+    EntityCodeDAO<com.rick.admin.module.core.entity.Classification, Long> classificationDAO;
+
+    CharacteristicHelper characteristicHelper;
+
+    EntityCodeIdFillService entityCodeIdFillService;
+
+    public void saveOrUpdate(Material material) {
+        handleClassification(material.getClassificationList());
+        handleMaterialProfile(material);
+
+        if (Objects.isNull(material.getId())) {
+            materialDAO.insert(material);
+        } else {
+            materialDAO.update(material);
+        }
+    }
+
+    public Optional<Material> findByCode(String code) {
+        Optional<Material> optional = materialDAO.selectByCode(code);
+
+        if (optional.isPresent()) {
+            handleCharacteristic(optional.get());
+        }
+
+        return optional;
+    }
+
+    public Optional<Material> findById(Long id) {
+        Optional<Material> optional = materialDAO.selectById(id);
+
+        if (optional.isPresent()) {
+            handleCharacteristic(optional.get());
+        }
+
+        return optional;
+    }
+
     public void fillMaterialDescription(List<? extends MaterialDescription> materialDescriptionList) {
         if (CollectionUtils.isNotEmpty(materialDescriptionList)) {
             consumeMaterialDescription(materialDescriptionList.stream().map(MaterialDescription::getMaterialId).collect(Collectors.toSet()), (idMaterialMap, dictService) -> {
@@ -42,7 +90,7 @@ public class MaterialService {
                     }
 
                     item.setMaterialCode(material.getCode());
-                    item.setMaterialText(material.getName() + " " + material.getCharacteristicText());
+                    item.setMaterialText(material.getName() + " " + material.getSpecificationText());
                     item.setUnit(material.getBaseUnit());
                     item.setUnitText(dictService.getDictByTypeAndName("unit", material.getBaseUnit()).get().getLabel());
                     item.setMaterialCategoryId(material.getCategoryId());
@@ -62,5 +110,78 @@ public class MaterialService {
             consumer.accept(idMaterialMap, dictService);
         }
 
+    }
+
+    private void handleClassification(List<Classification> classificationList) {
+        if (CollectionUtils.isNotEmpty(classificationList)) {
+            Map<String, com.rick.admin.module.core.entity.Classification> codeClassificationMap = classificationDAO.selectByCodesAsMap(classificationList.stream().map(Classification::getClassificationCode).collect(Collectors.toSet()));
+            Map<String, Long> codeCharacteristicMap = characteristicDAO.selectCodeIdMap(classificationList.stream().flatMap(classification -> classification.getCharacteristicValueList().stream()).map(CharacteristicValue::getCharacteristicCode).collect(Collectors.toSet()));
+
+            for (Classification classification : classificationList) {
+                classification.setClassification(codeClassificationMap.get(classification.getClassificationCode()));
+
+                // value
+                if (CollectionUtils.isNotEmpty(classification.getCharacteristicValueList())) {
+                    for (CharacteristicValue characteristicValue : classification.getCharacteristicValueList()) {
+                        characteristicValue.setClassificationCode(classification.getClassificationCode());
+                        characteristicValue.setClassificationId(classification.getClassification().getId());
+                        characteristicValue.setReferenceId(classification.getMaterialId());
+                        characteristicValue.setCharacteristicId(codeCharacteristicMap.get(characteristicValue.getCharacteristicCode()));
+                    }
+                }
+            }
+
+            List<CharacteristicValue> characteristicValueList = classificationList.stream().flatMap(classification -> classification.getCharacteristicValueList().stream()).collect(Collectors.toList());
+            // valid value
+            List<com.rick.admin.module.core.entity.Classification> classificationListInternal
+                    = classificationList.stream().map(Classification::getClassification).collect(Collectors.toList());
+
+            // 物料特征值可以不填
+//            characteristicHelper.validValueToClassification(classificationListInternal, characteristicValueList);
+        }
+    }
+
+    private void handleMaterialProfile(Material material) {
+        // 物料级别的profile
+        Optional<MaterialProfile> materialProfileOptional = OptionalUtils.expectedAsOptional(
+                materialProfileDAO.selectByParams(Params.builder(1).pv("materialCode", material.getCode()).build(), "material_code = :materialCode AND batch_code is NULL"));
+
+        if (CollectionUtils.isEmpty(material.getClassificationList())) {
+            if (materialProfileOptional.isPresent()) {
+                materialProfileDAO.deleteById(materialProfileOptional.get().getId());
+            }
+            return;
+        }
+
+        MaterialProfile materialProfile;
+        List<CharacteristicValue> characteristicValues = material.getClassificationList().stream().flatMap(classification -> classification.getCharacteristicValueList().stream()).collect(Collectors.toList());
+        if (materialProfileOptional.isPresent()) {
+            materialProfile = materialProfileOptional.get();
+            materialProfile.setCharacteristicValueList(characteristicValues);
+            materialProfile.setUpdateTime(null);
+            materialProfile.setUpdateBy(null);
+        } else {
+            Long id = IdGenerator.getSequenceId();
+            materialProfile = MaterialProfile.builder()
+                    .id(id)
+                    .category(MaterialProfile.CategoryEnum.MATERIAL)
+                    .materialCode(material.getCode())
+                    .materialId(material.getId())
+                    .rootId(id)
+                    .level(0)
+                    .characteristicValueList(characteristicValues)
+                    .build();
+        }
+
+        material.setMaterialProfile(materialProfile);
+    }
+
+    private void handleCharacteristic(Material material) {
+        List<com.rick.admin.module.core.entity.Classification> classificationList
+                = material.getClassificationList().stream().map(Classification::getClassification).collect(Collectors.toList());
+
+        if (CollectionUtils.isNotEmpty(classificationList)) {
+            characteristicHelper.fillValueToClassification(classificationList, material.getMaterialProfile().getCharacteristicValueList());
+        }
     }
 }

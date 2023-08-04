@@ -5,11 +5,17 @@ import com.rick.admin.module.core.service.CodeHelper;
 import com.rick.admin.module.inventory.dao.InventoryDocumentDAO;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.inventory.entity.Stock;
+import com.rick.admin.module.material.entity.Batch;
+import com.rick.admin.module.material.entity.CharacteristicValue;
+import com.rick.admin.module.material.entity.Classification;
+import com.rick.admin.module.material.service.BatchService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 /**
@@ -24,6 +30,9 @@ public abstract class AbstractHandler implements MovementHandler {
 
     @Resource
     protected StockService stockService;
+
+    @Resource
+    private BatchService batchService;
 
     @Override
     public void handle(InventoryDocument inventoryDocument) {
@@ -50,9 +59,33 @@ public abstract class AbstractHandler implements MovementHandler {
         inventoryDocumentDAO.insert(inventoryDocument);
 
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
+            // 如果是批次物料，创建批次主数据
+            Long batchId = null;
+            if (StringUtils.isNotBlank(item.getBatchCode())) {
+                Batch batch = Batch.builder()
+                        .code(item.getBatchCode())
+                        .classificationList(Arrays.asList(
+                                Classification.builder().classificationCode("COLOR")
+                                        .characteristicValueList(Arrays.asList(
+                                                CharacteristicValue.builder()
+                                                        .classificationCode("COLOR")
+                                                        .characteristicCode("COLOR")
+                                                        .val(item.getColor()).build()
+                                        ))
+                                        .build()
+                        ))
+                        .materialCode(item.getMaterialCode())
+                        .build();
+                batchService.saveOrUpdate(batch);
+                batchId = batch.getId();
+                item.setBatchId(batchId);
+            }
+
             stockService.changeStockQuantity(Stock.builder()
                     .plantId(item.getPlantId())
                     .materialId(item.getMaterialId())
+                    .batchId(batchId)
+                    .batchCode(item.getBatchCode())
                     .quantity(item.getMovementType() == InventoryDocument.MovementTypeEnum.OUTBOUND ? BigDecimal.ZERO.subtract(item.getQuantity()) : item.getQuantity())
                     .unit(item.getUnit())
                     .build());

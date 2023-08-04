@@ -88,6 +88,7 @@
         </div>
         <div id="dialogInput" style="display: none"></div>
         <div id="multipleDialogInput" style="display: none"></div>
+        <sp:select class="hidden" id="color"  key="COLOR" emptyItemText/>
         <div class="operator-bar text-center" id="operator-bar">
             <button class="btn btn-primary" type="button" name="send" onclick="send()">
                 <i class="fa fa-send"></i> 提交</button>
@@ -128,17 +129,44 @@
             allowEmpty: false, // 表格允许为空
             columnConfigs: [
                 {
+                    type: "hidden",
+                    name: "batchCode"
+                },
+                {
                     type: "material",
                     name: "materialId",
                     title: "物料",
                     width: 100,
                     required: true,
                     mode: 'multiple', // 多选
+                    selected: function ($tr, value) {
+                        if (Array.isArray(value)) {
+                            for (let row of value) {
+                                $tr.find(':input[name=color]')
+                                    .attr('disabled', !row.batchManagement)
+                                    .attr('readonly', !row.batchManagement)
+                                $tr = $tr.next()
+                            }
+                        } else {
+                            $tr.find(':input[name=color]')
+                                .attr('disabled', !value.batchManagement)
+                                .attr('readonly', !value.batchManagement)
+                        }
+                    }
                 },
                 {
                     type: "label",
                     name: "materialText",
                     title: "规格"
+                },
+                {
+                    type: "select",
+                    name: "color",
+                    width: 100,
+                    title: "颜色",
+                    datasource: $('#color'),
+                    required: true,
+                    disabled: true
                 },
                 {
                     type: "decimal",
@@ -187,6 +215,7 @@
         changeType(document.getElementById('type'))
 
         function changeType(select) {
+            reset()
             let selected = false
             for (let option of referenceTypeDom.options) {
                 option.hidden = true
@@ -221,13 +250,15 @@
             }
 
             type = select
-            reset()
+
             if (type.value === 'CANCEL' || type.value === 'DISPLAY' || type.value === 'RETURN') {
                 $editableTable.editableTablePlus('readonly', true)
             }
         }
 
         function changeReferenceType(select) {
+            reset()
+
             if (select.value === 'OTHER') {
                 $referenceCode.hide()
                 $execBtn.hide()
@@ -238,7 +269,7 @@
                 $execBtn.show()
                 $("#form-item :input").prop("disabled", true);
             }
-            reset()
+
             if (type.value === 'CANCEL' || type.value === 'DISPLAY' || type.value === 'RETURN') {
                 $editableTable.editableTablePlus('readonly', true)
             }
@@ -270,7 +301,7 @@
                         let $tr = $("#table-container tbody tr:nth-child("+(index + 1)+")")
                         // 出库入库
                         if (!(type.value === 'INBOUND' || type.value === 'OUTBOUND')) {
-                            $tr.find('td:nth-child(4)').css('position', 'relative').append("<span style='position: absolute;top: 5px; right: 0;'>"+(item.movementType === 'OUTBOUND' ? '-' : '+')+"</span>")
+                            $tr.find('td:nth-child(5)').css('position', 'relative').append("<span style='position: absolute;top: 5px; right: 0;'>"+(item.movementType === 'OUTBOUND' ? '-' : '+')+"</span>")
                         }
                     })
 
@@ -283,7 +314,7 @@
                             toastr.warning('物料凭证已经被取消了，不能重复取消!')
                         }
                         // $("form :input").prop("disabled", true);
-                    } else if(type.value === 'RETURN') {
+                    } else if(type.value === 'RETURN' || (type.value === 'INBOUND')) {
                         // $("form.readonly :input").prop("disabled", true);
                         $("#table-container table.table-tbody :input[name=quantity]").prop("disabled", false).prop('readonly', false)
                     } else {
@@ -337,6 +368,19 @@
             let params = $.extend({},
                 $('#form-operator').form2json({allowEmptyMultiVal:true}), $('#form-header').form2json({allowEmptyMultiVal:true})); //合并参数
             params['itemList'] = $editableTable.editableTablePlus('getValue')
+            for (let item of params['itemList']) {
+                if (item.color) {
+                    let res = [];
+                    for (let i = 0; i < item.color.length; i++) {
+                        res[i] = ("00" + item.color.charCodeAt(i).toString(16)).slice(-4);
+                    }
+
+                    item.batchCode = res.join("")
+                } else {
+                    item.batchCode = null
+                }
+            }
+
             console.log(params)
 
             params.code = '1' // 临时code
@@ -354,6 +398,7 @@
                     }
                     toastr.success('提交成功! ' + msg);
                     reset()
+                    reloadTab('inventory_list')
                 }
             });
         }

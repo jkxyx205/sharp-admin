@@ -29,7 +29,7 @@ public class StockAgeTest {
                 .name("库龄分析")
                 .additionalInfo(Params.builder(1).pv("formId", "695978675677433856").build())
                 .reportAdviceName("stockAgeReportAdvice")
-                .querySql("SELECT mm_material.id, mm_material.code, mm_material.name,characteristic,base_unit, IFNULL(stock.quantity, 0)  stock_quantity FROM mm_material left join (select material_id, sum(quantity) quantity from inv_stock group by material_id) stock on stock.material_id = mm_material.id where mm_material.id = :materialId AND mm_material.code = :materialCode")
+                .querySql("SELECT mm_material.id, mm_material.code, mm_material.name,specification,base_unit, IFNULL(stock.quantity, 0)  stock_quantity FROM mm_material left join (select material_id, sum(quantity) quantity from inv_stock group by material_id) stock on stock.material_id = mm_material.id where mm_material.id = :materialId AND mm_material.code = :materialCode")
                 .queryFieldList(Arrays.asList(
                         new QueryField("materialCode", "物料", QueryField.Type.TEXT)
                 ))
@@ -37,7 +37,7 @@ public class StockAgeTest {
                         new HiddenReportColumn("id"),
                         new ReportColumn("code", "编号"),
                         new ReportColumn("name", "名称", true),
-                        new ReportColumn("characteristic", "规格", false, null, Arrays.asList("characteristicConverter")),
+                        new ReportColumn("specification", "规格", false, null, Arrays.asList("characteristicConverter")),
                         new ReportColumn("base_unit", "基本单位", false, "unit", Arrays.asList("dictConverter")),
                         new ReportColumn("stock_quantity", "库存").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
                         new ReportColumn("0", "<=7天").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),

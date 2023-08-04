@@ -1,9 +1,8 @@
 package com.rick.admin.module.material.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.rick.db.dto.BaseCodeEntity;
-import com.rick.db.plugin.dao.annotation.Column;
-import com.rick.db.plugin.dao.annotation.Embedded;
-import com.rick.db.plugin.dao.annotation.Table;
+import com.rick.db.plugin.dao.annotation.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
@@ -55,8 +54,8 @@ public class Material extends BaseCodeEntity {
 
     String size;
 
-    @Column(comment = "规格", columnDefinition = "text", value = "characteristic")
-    private List<List<String>> characteristicList;
+    @Column(comment = "规格", columnDefinition = "text", value = "specification")
+    private List<List<String>> specificationList;
 
     @Embedded
     private Mrp mrp;
@@ -64,11 +63,18 @@ public class Material extends BaseCodeEntity {
     @Column(comment = "附件", columnDefinition = "text", value = "attachment", nullable = false)
     private List<Map<String, Object>> attachmentList;
 
+    @OneToMany(subTable = "mm_classification", cascadeInsertOrUpdate = true, joinValue="material_id", reversePropertyName="materialId")
+    private List<Classification> classificationList;
+
+    @ManyToOne(value = "profile_id", parentTable = "mm_profile", cascadeInsertOrUpdate = true, comment = "profile信息")
+    @JsonIgnore
+    private MaterialProfile materialProfile;
+
     @Column(comment = "BOM 模版")
     Long bomTemplateId;
 
-    public String getCharacteristicText() {
-        return CollectionUtils.isNotEmpty(getCharacteristicList()) ? getCharacteristicList().stream().map(list -> list.get(1).toString()).collect(Collectors.joining("/")) : "";
+    public String getSpecificationText() {
+        return CollectionUtils.isNotEmpty(getSpecificationList()) ? getSpecificationList().stream().map(list -> list.get(1).toString()).collect(Collectors.joining("/")) : "";
     }
 
     @Data

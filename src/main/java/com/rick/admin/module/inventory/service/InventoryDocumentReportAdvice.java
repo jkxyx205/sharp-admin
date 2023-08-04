@@ -28,7 +28,7 @@ public class InventoryDocumentReportAdvice implements ReportAdvice {
         for (Map<String, Object> row : rows) {
             Material material = idMaterialMap.get((Long) row.get("material_id"));
             row.put("material_code", material.getCode());
-            row.put("material_text", material.getName() + " " + material.getCharacteristicText());
+            row.put("material_text", material.getName() + " " + material.getSpecificationText());
             row.put("quantity", (Objects.equals(row.get("movement_type"), "INBOUND") ? "+" : "-") + row.get("quantity"));
         }
     }

@@ -4,6 +4,8 @@ import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.module.inventory.dao.StockDAO;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.inventory.service.AbstractHandler;
+import com.rick.admin.module.material.dao.BatchDAO;
+import com.rick.admin.module.material.model.MaterialIdBatchCode;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +25,8 @@ public class CountHandler extends AbstractHandler {
     @Resource
     private StockDAO stockDAO;
 
+    private BatchDAO batchDAO;
+
     @Override
     public InventoryDocument.TypeEnum type() {
         return InventoryDocument.TypeEnum.COUNT;
@@ -35,12 +39,14 @@ public class CountHandler extends AbstractHandler {
 
     @Override
     public void handle0(InventoryDocument inventoryDocument) {
-        Map<Long, BigDecimal> materialIdStockQuantityMap = stockDAO.getStockQuantityByMaterialId(inventoryDocument.getItemList().stream().map(InventoryDocument.Item::getMaterialId).collect(Collectors.toSet()), inventoryDocument.getPlantId());
+        Map<MaterialIdBatchCode, BigDecimal> materialIdStockQuantityMap
+                = stockDAO.getStockQuantityByMaterialIdAndBatchCode(inventoryDocument.getPlantId(),
+                inventoryDocument.getItemList().stream().map(item -> new MaterialIdBatchCode(item.getMaterialId(), item.getBatchCode())).collect(Collectors.toSet()));
 
         Iterator<InventoryDocument.Item> iterator = inventoryDocument.getItemList().iterator();
         while (iterator.hasNext()) {
             InventoryDocument.Item item = iterator.next();
-            BigDecimal quantityInDb = ObjectUtils.defaultIfNull(materialIdStockQuantityMap.get(item.getMaterialId()), BigDecimal.ZERO);
+            BigDecimal quantityInDb = ObjectUtils.defaultIfNull(materialIdStockQuantityMap.get(new MaterialIdBatchCode(item.getMaterialId(), item.getBatchCode())), BigDecimal.ZERO);
             item.setRootReferenceCode(item.getInventoryDocumentCode());
 
             BigDecimal difference = item.getQuantity().subtract(quantityInDb);

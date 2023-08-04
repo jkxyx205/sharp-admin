@@ -47,7 +47,7 @@
             name: 'material_id',
             reportId: '697147523487240192',
             labelDisplay: function (row) {
-                return row.name + ' ' + (!row.characteristic ? '' : row.characteristic)
+                return row.name + ' ' + (!row.specification ? '' : row.specification)
             }
         })
 
@@ -84,7 +84,7 @@
             if (!rows.length) {
                 __$modal.modal('hide')
                 document.getElementById('iframe').input.val(row.id)
-                document.getElementById('iframe').label.text(row.name + ' ' + (!row.characteristic ? '' : row.characteristic))
+                document.getElementById('iframe').label.text(row.name + ' ' + (!row.specification ? '' : row.specification))
             } else {
                 toastr.error('请先选择一条记录后再点击确定');
             }

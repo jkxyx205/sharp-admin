@@ -29,6 +29,10 @@ public class Stock extends BaseEntity {
     @NotNull
     private Long materialId;
 
+    private Long batchId;
+
+    private String batchCode;
+
     @NotNull
     private BigDecimal quantity;
 

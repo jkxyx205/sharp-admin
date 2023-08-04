@@ -125,6 +125,12 @@ public class InventoryDocument extends BaseCodeEntity {
         @Column(comment = "备注")
         String remark;
 
+        Long batchId;
+
+        String batchCode;
+
+        String color;
+
         Long inventoryDocumentId;
 
         String inventoryDocumentCode;
