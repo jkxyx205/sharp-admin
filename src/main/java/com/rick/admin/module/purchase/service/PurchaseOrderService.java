@@ -48,7 +48,6 @@ public class PurchaseOrderService {
         }
 
         order.getItemList().forEach(item -> {
-            item.setComplete(false);
             item.setPurchaseOrderCode(order.getCode());
         });
 

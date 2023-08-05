@@ -143,6 +143,7 @@
 
     <script th:inline="javascript">
         var readonly = false
+        let isAdd = /*[[${po.id == null}]]*/
         let formHeader = document.getElementById('form-header');
         let formItem = document.getElementById('form-item');
 
@@ -252,6 +253,13 @@
                     type: "text",
                     title: "备注",
                     name: "remark",
+                },
+                {
+                    type: isAdd ? "hidden": "checkbox",
+                    title: "收货完成",
+                    name: "complete",
+                    align: 'center',
+                    width: 100,
                 },
                 // {
                 //     type: "checkbox",

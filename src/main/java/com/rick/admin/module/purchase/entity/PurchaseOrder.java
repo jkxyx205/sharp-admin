@@ -86,7 +86,7 @@ public class PurchaseOrder extends BaseCodeEntity {
         @Column(comment = "备注")
         String remark;
 
-        @Column(value = "is_complete", comment = "完成", updatable = false)
+        @Column(value = "is_complete", comment = "完成")
         Boolean complete;
 
         Long purchaseOrderId;
