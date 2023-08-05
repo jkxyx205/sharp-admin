@@ -16,5 +16,10 @@ public class DashboardController {
     public String gotoDashboard() {
         return "dashboard";
     }
+
+    @GetMapping("help")
+    public String gotoHelp() {
+        return "help";
+    }
 }
 
