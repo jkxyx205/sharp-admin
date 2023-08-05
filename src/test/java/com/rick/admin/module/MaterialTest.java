@@ -444,7 +444,7 @@ public class MaterialTest {
                 .code("mm_material_source_search")
                 .tplName("tpl/query_list")
                 .name("物料供应商查询")
-                .querySql("SELECT cast(mm_material.id as char(20)) id, mm_material.code, mm_material.name, specification, material_type, mm_material.category_id, mm_material.category_id as categoryText, base_unit, base_unit as base_unit_name, standard_price unitPrice, batch_management batchManagementFROM mm_material WHERE mm_material.code = :code AND (mm_material.name like :keywords or specification like :keywords or mm_material.code like :keywords) AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0 AND id = :id AND id IN (:ids) AND exists (select 1 from pur_source_list where partner_id = :partnerId AND (mm_material.id = material_id OR mm_material.category_id = material_category_id))")
+                .querySql("SELECT cast(mm_material.id as char(20)) id, mm_material.code, mm_material.name, specification, material_type, mm_material.category_id, mm_material.category_id as categoryText, base_unit, base_unit as base_unit_name, standard_price unitPrice, batch_management batchManagement FROM mm_material WHERE mm_material.code = :code AND (mm_material.name like :keywords or specification like :keywords or mm_material.code like :keywords) AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0 AND id = :id AND id IN (:ids) AND exists (select 1 from pur_source_list where partner_id = :partnerId AND (mm_material.id = material_id OR mm_material.category_id = material_category_id))")
                 .queryFieldList(Arrays.asList(
                         new QueryField("keywords", "关键字", QueryField.Type.TEXT),
                         new QueryField("categoryId", "分类", QueryField.Type.GROUP_SELECT, "material_category_select_sql")
@@ -465,4 +465,46 @@ public class MaterialTest {
                 .sord(SordEnum.ASC)
                 .build());
     }
+
+    @Test
+    public void testSearchHasTemplate() {
+        reportService.saveOrUpdate(Report.builder()
+                .id(719185652091981824L)
+                .code("mm_material_template_search")
+                .tplName("tpl/query_list")
+                .name("bom模版物料查询")
+                .querySql("SELECT cast(mm_material.id as char(20)) id, mm_material.code, mm_material.name, specification, material_type, mm_material.category_id, mm_material.category_id as categoryText, base_unit, base_unit as base_unit_name, standard_price unitPrice, batch_management batchManagement FROM mm_material WHERE mm_material.code = :code AND (mm_material.name like :keywords or specification like :keywords or mm_material.code like :keywords) AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0 AND id = :id AND id IN (:ids) AND bom_template_id is NOT NULL")
+                .queryFieldList(Arrays.asList(
+//                        new QueryField("code", "编号", QueryField.Type.TEXT),
+                        new QueryField("keywords", "关键字", QueryField.Type.TEXT),
+//                        new QueryField("materialType", "类型", QueryField.Type.SELECT, "material_type"),
+                        new QueryField("categoryId", "分类", QueryField.Type.GROUP_SELECT, "material_category_select_sql")
+//                        new QueryField("categoryId", "分类", QueryField.Type.MULTIPLE_SELECT, "core_material_category")
+//                        new QueryField("categoryId", "分类", QueryField.Type.SELECT, "core_material_category")
+
+//                        new QueryField("categoryId", "分类", QueryField.Type.SELECT, "category_path")
+
+                ))
+                .reportColumnList(Arrays.asList(
+                        new HiddenReportColumn("id"),
+                        new HiddenReportColumn("unitPrice"),
+                        new HiddenReportColumn("category_id"),
+                        new HiddenReportColumn("batchManagement"),
+                        new ReportColumn("code", "编号").setColumnWidth(80),
+                        new ReportColumn("name", "名称").setTooltip(true),
+                        new ReportColumn("specification", "规格", false, null, Arrays.asList("characteristicConverter")).setTooltip(true),
+//                        new ReportColumn("base_unit", "基本单位", false, "unit", Arrays.asList("dictConverter")),
+                        new HiddenReportColumn("base_unit"),
+                        // String name, String label, Boolean sortable, String context, List<String> valueConverterNameList, Integer columnWidth, AlignEnum align, Boolean hidden, Boolean tooltip, TypeEnum type
+                        new HiddenReportColumn("base_unit_name", "unit", Arrays.asList("dictConverter"))
+//                        new ReportColumn("material_type", "类型", false, "material_type", Arrays.asList("dictConverter")),
+//                        new ReportColumn("categoryText", "分类", false, "core_material_category", Arrays.asList("dictConverter"))
+                ))
+                .pageable(false)
+                .sidx("id")
+                .sord(SordEnum.ASC)
+                .build());
+    }
+
+
 }

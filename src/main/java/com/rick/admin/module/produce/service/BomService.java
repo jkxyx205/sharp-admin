@@ -63,12 +63,12 @@ public class BomService {
             throw new BizException(500, "没有找到 bom 模版");
         }
 
-        Bom bom = findByMaterialId(materialId);
+//        Bom bom = findByMaterialId(materialId);
 
-        bom.setBomTemplateId(bomTemplateOptional.get());
-        Map<Long, Bom.Item> componentDetailIdBomItemMap = bom.getItemList().stream().collect(Collectors.toMap(bomItem -> bomItem.getComponentDetailId(), bomItem -> bomItem));
+//        bom.setBomTemplateId(bomTemplateOptional.get());
+        Map<Long, Bom.Item> componentDetailIdBomItemMap = new HashMap<>();// bom.getItemList().stream().collect(Collectors.toMap(bomItem -> bomItem.getComponentDetailId(), bomItem -> bomItem));
 
-        BomTemplate bomTemplate = bomTemplateDAO.selectById(bom.getBomTemplateId()).get();
+        BomTemplate bomTemplate = bomTemplateDAO.selectById(bomTemplateOptional.get()).get();
 
         Set<Long> materialIdSet = bomTemplate.getComponentList().stream().flatMap(component -> component.getComponentDetailList().stream())
                 .filter(d -> d.getType() == BomTemplate.TypeEnum.MATERIAL).map(BomTemplate.ComponentDetail::getTypeInstanceId).collect(Collectors.toSet());
@@ -100,14 +100,14 @@ public class BomService {
                                 .build();
 
                         fillMaterialExtraData(item, material);
-                        materialService.fillMaterialDescription(bom.getItemList());
+//                        materialService.fillMaterialDescription(bom.getItemList());
                     }
                     componentDetail.setBomItem(item);
                 }
             }
         }
 
-        bomTemplate.setBom(bom);
+//        bomTemplate.setBom(bom);
         return bomTemplate;
     }
 
