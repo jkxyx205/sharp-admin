@@ -78,13 +78,19 @@
             this.readonly(this.options.readonly)
 
             // 注册事件
-            if (this.options.rowClick) {
+            if (this.options.rowClick || this.options.highlight) {
                 this.$table.delegate('tr', 'click', (e) => {
                     let $tr = $(e.target).parents('tr')
                     if (this.focusRow !== $tr[0]) {
                         // 多次点击 保证只触发一次请求
                         this.options.rowClick($tr, this._getValue($tr))
                         this.focusRow = $tr[0]
+
+                        // highlight
+                        if (this.options.highlight) {
+                            $tr.css('border-left', '4px solid rgb(32, 168, 216)')
+                                .siblings().css('border-left', 'none')
+                        }
                     }
                 })
             }
@@ -302,6 +308,7 @@
                     $input.on('keydown', function(event){
                         if ((event.keyCode > 57 || event.keyCode < 48) && event.keyCode !== 8 && event.keyCode !== 190 && event.keyCode !== 39 && event.keyCode !== 37 && event.keyCode !== 9) {
                             event.preventDefault();
+                            event.stopPropagation()
                             return false;
                         }
                     }).on('keyup', function (event) {
@@ -408,7 +415,8 @@
     $.fn.editableTablePlus.defaults = {
         showRowNumber: true, // 是否显示行号
         readonly: false, // 只读
-        allowEmpty: false // 表格允许为空
+        allowEmpty: false, // 表格允许为空,
+        highlight: false, // 行点击后highlight
     };
 
 })(jQuery);
