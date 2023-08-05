@@ -1,6 +1,5 @@
 package com.rick.admin.module;
 
-import com.rick.admin.module.produce.entity.Bom;
 import com.rick.admin.module.produce.service.BomService;
 import com.rick.db.plugin.dao.core.EntityDAO;
 import com.rick.db.plugin.dao.core.EntityDAOSupport;
@@ -17,7 +16,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.Arrays;
 
 /**
@@ -51,17 +49,17 @@ public class BomTest {
 
     @Test
     public void testInsertBom() {
-        Bom bom = Bom.builder()
-                .materialId(697175396411510784L)
-                .itemList(Arrays.asList(
-                        Bom.Item.builder()
-                                .materialId(697175443165417472L)
-                                .quantity(BigDecimal.TEN)
-                                .unit("KG")
-                                .remark("remark")
-                                .build()
-                ))
-                .build();
+//        Bom bom = Bom.builder()
+//                .materialId(697175396411510784L)
+//                .itemList(Arrays.asList(
+//                        Bom.Item.builder()
+//                                .materialId(697175443165417472L)
+//                                .quantity(BigDecimal.TEN)
+//                                .unit("KG")
+//                                .remark("remark")
+//                                .build()
+//                ))
+//                .build();
 
         // 不参与包扫描也可以使用
 //        entityDAOSupport.getEntityDAO(bom.getClass()).insert(bom);
@@ -72,7 +70,7 @@ public class BomTest {
 //                .insert(bom);
 
 //        bomDAO.insert(bom);
-        bomService.saveOrUpdate(bom);
+//        bomService.saveOrUpdate(bom);
     }
 
 

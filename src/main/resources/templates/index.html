@@ -124,7 +124,12 @@
                         </li>
                         <li class="nav-item" sec:authorize="hasAuthority('stock_warning')">
                             <a class="nav-link" href="javascript:addTab('stock_warning', '库存预警', '/reports/708404920146989056')">
-                                <i class="nav-icon icon-eyeglass"></i> 库存预警
+                                <i class="nav-icon icon-eyeglass"></i> 安全库存预警
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasAuthority('stock_warning')">
+                            <a class="nav-link" href="javascript:addTab('stock_warning', '库存预警', '/reports/708404920146989056')">
+                                <i class="nav-icon icon-eyeglass"></i> 生产库存预警
                             </a>
                         </li>
                         <li class="nav-item" sec:authorize="hasAuthority('stock_age')">
@@ -138,11 +143,11 @@
                     <a class="nav-link nav-dropdown-toggle" href="#">
                         <i class="nav-icon icon-settings"></i> 生产</a>
                     <ul class="nav-dropdown-items">
-                        <li class="nav-item" sec:authorize="hasAuthority('produce_bom')">
-                            <a class="nav-link" href="javascript:addTab('bom', '物料清单', '/produce/bom')">
-                                <i class="nav-icon icon-puzzle"></i> 物料清单
-                            </a>
-                        </li>
+<!--                        <li class="nav-item" sec:authorize="hasAuthority('produce_bom')">-->
+<!--                            <a class="nav-link" href="javascript:addTab('bom', '物料清单', '/produce/bom')">-->
+<!--                                <i class="nav-icon icon-puzzle"></i> 物料清单-->
+<!--                            </a>-->
+<!--                        </li>-->
                         <li class="nav-item" sec:authorize="hasAuthority('produce_order_add')">
                             <a class="nav-link" href="javascript:addTab('produce_order_add', '生产单', '/produce_orders/new')">
                                 <i class="nav-icon icon-clock"></i> 新增生产单
@@ -155,7 +160,7 @@
                         </li>
                         <li class="nav-item" sec:authorize="hasAuthority('produce_order_stock')">
                             <a class="nav-link" href="javascript:addTab('produce_order_stock', '生产库存', '/reports/710331838161227776?mode=multiple')">
-                                <i class="nav-icon icon-clock"></i> 生产库存
+                                <i class="nav-icon icon-clock"></i> 生产报表
                             </a>
                         </li>
                     </ul>
@@ -181,6 +186,11 @@
                         </li>
                     </ul>
                 </li>
+<!--                <li class="nav-item">-->
+<!--                    <a class="nav-link" href="javascript:addTab('help', '帮助文档', '/dashboard/help')">-->
+<!--                        <i class="nav-icon icon-earphones-alt"></i> 帮助文档-->
+<!--                    </a>-->
+<!--                </li>-->
             </ul>
         </nav>
         <button class="sidebar-minimizer brand-minimizer" type="button"></button>

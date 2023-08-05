@@ -3,25 +3,25 @@ package com.rick.admin.module.produce.service;
 import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.entity.Material;
 import com.rick.admin.module.material.service.MaterialService;
-import com.rick.admin.module.produce.entity.Bom;
 import com.rick.admin.module.produce.entity.BomTemplate;
+import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.common.http.exception.BizException;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
-import com.rick.db.plugin.dao.core.EntityDAO;
 import com.rick.db.service.support.Params;
+import com.rick.meta.dict.entity.Dict;
 import com.rick.meta.dict.service.DictService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
-import javax.validation.Valid;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -34,8 +34,6 @@ import java.util.stream.Collectors;
 @Validated
 public class BomService {
 
-    EntityDAO<Bom, Long> bomDAO;
-
     MaterialDAO materialDAO;
 
     DictService dictService;
@@ -45,28 +43,11 @@ public class BomService {
     @Resource
     private EntityCodeDAO<BomTemplate, Long> bomTemplateDAO;
 
-    @Transactional(rollbackFor = Exception.class)
-    public Bom saveOrUpdate(@Valid Bom bom) {
-        bomDAO.insertOrUpdate(bom);
-
-        // 更新物料价格
-//        List<Object[]> paramList = bom.getItemList().stream().filter(item -> Objects.nonNull(item.getUnitPrice()))
-//                .map(item -> new Object[]{item.getUnitPrice(), item.getMaterialId()}).collect(Collectors.toList());
-//        materialDAO.updatePrice(paramList);
-
-        return bom;
-    }
-
-    public BomTemplate getBomTemplateMaterialId(Long materialId) {
+    public BomTemplate getBomTemplateMaterialId(Long materialId, Map<Long, ProduceOrder.Item.Detail> valueMapping) {
         Optional<Long> bomTemplateOptional = materialDAO.selectSingleValueById(materialId, "bom_template_id", Long.class);
         if (!bomTemplateOptional.isPresent()) {
             throw new BizException(500, "没有找到 bom 模版");
         }
-
-//        Bom bom = findByMaterialId(materialId);
-
-//        bom.setBomTemplateId(bomTemplateOptional.get());
-        Map<Long, Bom.Item> componentDetailIdBomItemMap = new HashMap<>();// bom.getItemList().stream().collect(Collectors.toMap(bomItem -> bomItem.getComponentDetailId(), bomItem -> bomItem));
 
         BomTemplate bomTemplate = bomTemplateDAO.selectById(bomTemplateOptional.get()).get();
 
@@ -79,56 +60,44 @@ public class BomService {
             idMaterialMap = materialDAO.selectByParamsWithoutCascade(Params.builder(1).pv("id", materialIdSet).build(), "id IN (:id)")
                     .stream().collect(Collectors.toMap(Material::getId, material -> material));
         }
+//
+//        Map<Long, BomTemplate.ComponentDetail> componentDetailMap = bomTemplate.getComponentList().stream().flatMap(component -> component.getComponentDetailList().stream())
+//                .collect(Collectors.toMap(BomTemplate.ComponentDetail::getComponentId, componentDetail -> componentDetail));
 
         for (BomTemplate.Component component : bomTemplate.getComponentList()) {
             component.setUnitText(dictService.getDictByTypeAndName("unit", component.getUnit()).get().getLabel());
             for (BomTemplate.ComponentDetail componentDetail : component.getComponentDetailList()) {
-                Bom.Item item = componentDetailIdBomItemMap.get(componentDetail.getId());
-                if (componentDetail.getType() == BomTemplate.TypeEnum.CATEGORY) {
-                    componentDetail.setBomItem(ObjectUtils.defaultIfNull(item, new Bom.Item()));
+                componentDetail.setOptions(dictService.getDictByType("COLOR").stream().map(Dict::getLabel).collect(Collectors.toList()));
+                ProduceOrder.Item.Detail value = valueMapping.get(componentDetail.getId());
+                if (Objects.nonNull(value)) {
+                    // 实例
+                    componentDetail.setValue(value);
+                }  else if (componentDetail.getType() == BomTemplate.TypeEnum.CATEGORY) {
+                    componentDetail.setValue(new ProduceOrder.Item.Detail());
                 } else if (componentDetail.getType() == BomTemplate.TypeEnum.MATERIAL) {
-                    if (Objects.isNull(item)) {
-//                        Material material = materialDAO.selectByParamsWithoutCascade(Material.builder().id(componentDetail.getTypeInstanceId()).build()).get(0);
-                        Material material = idMaterialMap.get(componentDetail.getTypeInstanceId());
-                        item = Bom.Item.builder()
-                                .materialId(material.getId())
-                                .quantity(componentDetail.getQuantity())
-                                .unit(material.getBaseUnit())
-                                .remark("")
-                                .componentDetailId(componentDetail.getId())
-//                            .bomId()
-                                .build();
+                    Material material = idMaterialMap.get(componentDetail.getTypeInstanceId());
+                    value = ProduceOrder.Item.Detail.builder()
+                            .materialId(material.getId())
+                            .quantity(componentDetail.getQuantity())
+                            .unit(material.getBaseUnit())
+                            .remark("")
+                            .componentDetailId(componentDetail.getId())
+                            .build();
 
-                        fillMaterialExtraData(item, material);
-//                        materialService.fillMaterialDescription(bom.getItemList());
-                    }
-                    componentDetail.setBomItem(item);
+                    componentDetail.setValue(value);
                 }
             }
         }
 
-//        bomTemplate.setBom(bom);
+
+        Set<ProduceOrder.Item.Detail> values = bomTemplate.getComponentList().stream().flatMap(component -> component.getComponentDetailList().stream())
+                .filter(componentDetail -> Objects.nonNull(componentDetail.getValue().getMaterialId()))
+                .map(BomTemplate.ComponentDetail::getValue)
+                .collect(Collectors.toSet());
+
+        materialService.fillMaterialDescription(values);
+
         return bomTemplate;
-    }
-
-    public Bom findByMaterialId(Long materialId) {
-        List<Bom> bomList =  bomDAO.selectByParams(Bom.builder().materialId(materialId).build());
-        if (bomList.size() == 0) {
-            Bom bom = new Bom();
-            bom.setItemList(Collections.EMPTY_LIST);
-            return bom;
-        }
-
-        Bom bom = bomList.get(0);
-        materialService.fillMaterialDescription(bom.getItemList());
-        return bom;
-    }
-
-    private void fillMaterialExtraData(Bom.Item item, Material material) {
-        item.setMaterialCode(material.getCode());
-        item.setMaterialText(material.getName() + " " + material.getSpecificationText());
-        item.setUnitText(dictService.getDictByTypeAndName("unit", item.getUnit()).get().getLabel());
-        item.setUnitPrice(material.getStandardPrice());
     }
 
 }

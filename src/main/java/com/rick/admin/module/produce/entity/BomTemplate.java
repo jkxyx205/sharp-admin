@@ -31,9 +31,6 @@ public class BomTemplate extends BaseCodeEntity {
     @OneToMany(subTable = "produce_bom_template_component", cascadeInsertOrUpdate = true, joinValue = "bom_template_id", reversePropertyName="bomTemplateId")
     List<Component> componentList;
 
-    @Transient
-    Bom bom;
-
     @Getter
     @Setter
     @NoArgsConstructor
@@ -78,7 +75,10 @@ public class BomTemplate extends BaseCodeEntity {
         Long componentId;
 
         @Transient
-        Bom.Item bomItem;
+        ProduceOrder.Item.Detail value;
+
+        @Transient
+        List<String> options;
 
     }
 

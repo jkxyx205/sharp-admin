@@ -12,6 +12,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
@@ -63,6 +65,13 @@ public class ProduceOrder extends BaseCodeEntity {
 
         Long produceOrderId;
 
+        String batchCode;
+
+        String color;
+
+        @Column(value = "is_complete", comment = "完成")
+        Boolean complete;
+
         @Column(updatable = false)
         String produceOrderCode;
 
@@ -74,6 +83,55 @@ public class ProduceOrder extends BaseCodeEntity {
 
         @Transient
         String unitText;
+
+        @Valid
+        @NotEmpty
+        @OneToMany(subTable = "produce_order_item_detail", reversePropertyName = "produceOrderItemId", cascadeInsertOrUpdate = true, joinValue = "produce_order_item_id")
+        List<Detail> itemList;
+
+        @Getter
+        @Setter
+        @NoArgsConstructor
+        @AllArgsConstructor
+        @FieldDefaults(level = AccessLevel.PRIVATE)
+        @SuperBuilder
+        @Table(value = "produce_order_item_detail", comment = "物料BOM实例详情")
+        public static class Detail extends BaseEntity implements MaterialDescription {
+
+            @NotNull
+            @Column(comment = "物料")
+            Long materialId;
+
+            @NotNull
+            BigDecimal quantity;
+
+            @NotNull
+            String unit;
+
+            String remark;
+
+            @NotNull
+            Long componentDetailId;
+
+            String batchCode;
+
+            String color;
+
+            Long produceOrderItemId;
+
+            @Column(value = "is_complete", comment = "完成")
+            Boolean complete;
+
+            @Transient
+            String materialCode;
+
+            @Transient
+            String materialText;
+
+            @Transient
+            String unitText;
+
+        }
     }
 
     @AllArgsConstructor

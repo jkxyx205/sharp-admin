@@ -295,7 +295,6 @@
                     $remark.val(res.remark)
 
                     $editableTable.editableTablePlus('setValue', res.itemList)
-                        .editableTablePlus('readonly', true)
 
                     res.itemList.forEach((item, index) => {
                         let $tr = $("#table-container tbody tr:nth-child("+(index + 1)+")")
@@ -306,17 +305,15 @@
                     })
 
                     if (type.value === 'DISPLAY') {
-                        // $("form :input").prop("disabled", true);
-                        // $referenceCode.prop("disabled", false);
-                        // $execBtn.prop("disabled", false);
+                        $editableTable.editableTablePlus('readonly', true)
                     } else if (type.value === 'CANCEL') {
                         if (res.canceled) {
                             toastr.warning('物料凭证已经被取消了，不能重复取消!')
                         }
-                        // $("form :input").prop("disabled", true);
-                    } else if(type.value === 'RETURN' || (type.value === 'INBOUND')) {
-                        // $("form.readonly :input").prop("disabled", true);
-                        $("#table-container table.table-tbody :input[name=quantity]").prop("disabled", false).prop('readonly', false)
+                        $editableTable.editableTablePlus('readonly', true)
+                    } else if(type.value === 'RETURN' || (type.value === 'INBOUND') || (type.value === 'OUTBOUND')) {
+                        $editableTable.editableTablePlus('readonly', false)
+                        $("#table-container table.table-tbody :input[name=materialCode]").prop("disabled", true).prop('readonly', true)
                     } else {
                         // $("form.readonly :input").prop("disabled", true);
                     }

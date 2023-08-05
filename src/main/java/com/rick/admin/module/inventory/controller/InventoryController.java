@@ -167,12 +167,18 @@ public class InventoryController {
     }
 
     private InventoryDocument getDocumentFromProduceOrder(InventoryDocument.MovementTypeEnum movementType, InventoryDocument.TypeEnum type, InventoryDocument.ReferenceTypeEnum referenceType, String referenceCode) {
-        String sql = "select produce_bom_detail.`material_id`, produce_bom_detail.`material_id` referenceItemId,  produce_bom_detail.`material_id` rootReferenceItemId, sum(produce_bom_detail.quantity * produce_order_item.quantity) quantity, mm_material.base_unit unit from produce_order \n" +
-                "inner join produce_order_item on produce_order_item.`produce_order_id` = produce_order.id \n" +
-                "inner join produce_bom on produce_bom.`material_id` = produce_order_item.material_id\n" +
-                "inner join produce_bom_detail on produce_bom.id = produce_bom_detail.`bom_id`\n" +
-                "inner join mm_material on mm_material.id = produce_bom_detail.`material_id`\n" +
-                "where produce_order.code = :referenceCode group by material_id";
+        String sql = "select produce_order_item_detail.`material_id`,\n" +
+                "       produce_order_item_detail.`id`                               referenceItemId,\n" +
+                "       produce_order_item_detail.`id`                               rootReferenceItemId,\n" +
+                "       produce_order_item_detail.color,\n" +
+                "       sum(produce_order_item_detail.quantity * produce_order_item.quantity) quantity,\n" +
+                "       mm_material.base_unit                                          unit\n" +
+                "from produce_order\n" +
+                "         inner join produce_order_item on produce_order_item.`produce_order_id` = produce_order.id\n" +
+                "         inner join produce_order_item_detail on produce_order_item.id = produce_order_item_detail.`produce_order_item_id`\n" +
+                "         inner join mm_material on mm_material.id = produce_order_item_detail.`material_id`\n" +
+                "where produce_order.code = :referenceCode\n" +
+                "group by material_id";
 
         List<InventoryDocument.Item> itemList = sharpService.query(sql, Params.builder(1).pv("referenceCode", referenceCode).build(), InventoryDocument.Item.class);
         if (CollectionUtils.isEmpty(itemList)) {

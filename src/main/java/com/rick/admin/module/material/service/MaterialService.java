@@ -80,7 +80,7 @@ public class MaterialService {
         return optional;
     }
 
-    public void fillMaterialDescription(List<? extends MaterialDescription> materialDescriptionList) {
+    public void fillMaterialDescription(Collection<? extends MaterialDescription> materialDescriptionList) {
         if (CollectionUtils.isNotEmpty(materialDescriptionList)) {
             consumeMaterialDescription(materialDescriptionList.stream().map(MaterialDescription::getMaterialId).collect(Collectors.toSet()), (idMaterialMap, dictService) -> {
                 for (MaterialDescription item : materialDescriptionList) {

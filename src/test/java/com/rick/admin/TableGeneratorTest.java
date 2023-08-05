@@ -1,6 +1,6 @@
 package com.rick.admin;
 
-import com.rick.admin.module.material.entity.Batch;
+import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.db.plugin.dao.core.TableGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +44,11 @@ public class TableGeneratorTest {
 //        tableGenerator.createTable(CharacteristicValue.class);
 //        tableGenerator.createTable(Classification.class);
 //        tableGenerator.createTable(MaterialProfile.class);
-        tableGenerator.createTable(Batch.class);
+//        tableGenerator.createTable(Batch.class);
+
+        tableGenerator.createTable(ProduceOrder.class);
+        tableGenerator.createTable(ProduceOrder.Item.class);
+        tableGenerator.createTable(ProduceOrder.Item.Detail.class);
 
     }
 }

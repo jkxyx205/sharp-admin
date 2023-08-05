@@ -1,16 +1,20 @@
 package com.rick.admin.module.produce.controller;
 
+import com.google.common.collect.Maps;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
 import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.entity.Material;
 import com.rick.admin.module.material.service.MaterialService;
+import com.rick.admin.module.produce.entity.BomTemplate;
 import com.rick.admin.module.produce.entity.ProduceOrder;
+import com.rick.admin.module.produce.service.BomService;
 import com.rick.admin.module.produce.service.ProduceOrderService;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
 import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
+import com.rick.db.plugin.dao.core.EntityDAO;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
 import com.rick.meta.dict.service.DictService;
@@ -24,10 +28,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -42,6 +43,8 @@ public class ProduceOrderController {
 
     EntityCodeDAO<ProduceOrder, Long> produceOrderDAO;
 
+    EntityDAO<ProduceOrder.Item, Long> produceOrderItemDAO;
+
     ProduceOrderService produceOrderService;
 
     MaterialDAO materialDAO;
@@ -51,6 +54,28 @@ public class ProduceOrderController {
     SharpService sharpService;
 
     MaterialService materialService;
+
+    BomService bomService;
+
+    /**
+     * 根据物料 ID 获取 bom
+     * @param materialId
+     * @return
+     */
+    @GetMapping("bom")
+    @ResponseBody
+    public BomTemplate gotoBomForm(@RequestParam Long materialId, Long itemId) {
+        Map<Long, ProduceOrder.Item.Detail> valueMapping = Collections.EMPTY_MAP;
+
+        if (Objects.nonNull(itemId)) {
+            ProduceOrder.Item item = produceOrderItemDAO.selectById(itemId).get();
+            valueMapping = item.getItemList().stream().collect(Collectors.toMap(ProduceOrder.Item.Detail::getComponentDetailId, v -> v));
+        }
+
+        BomTemplate bomTemplate = bomService.getBomTemplateMaterialId(materialId, valueMapping);
+
+        return bomTemplate;
+    }
 
     @GetMapping("code/{code}")
     public String gotoDetailPageByCode(@PathVariable String code, Model model) {
@@ -78,30 +103,51 @@ public class ProduceOrderController {
         if (Objects.nonNull(id)) {
             ProduceOrder produceOrder = produceOrderDAO.selectById(id).orElseThrow(() -> new ResourceNotFoundException());
 
-            Map<Long, Material> idMaterialMap = materialDAO.selectByIdsAsMap(produceOrder.getItemList().stream().map(ProduceOrder.Item::getMaterialId).collect(Collectors.toSet()));
             materialService.fillMaterialDescription(produceOrder.getItemList());
+            Map<Long, BomTemplate> itemIdBomTemplateMap = Maps.newHashMapWithExpectedSize(produceOrder.getItemList().size());
+
+            for (ProduceOrder.Item item : produceOrder.getItemList()) {
+                BomTemplate bomTemplate = gotoBomForm(item.getMaterialId(), item.getId());
+                itemIdBomTemplateMap.put(item.getId(), bomTemplate);
+            }
 
             model.addAttribute("po", produceOrder);
+            model.addAttribute("bomTemplate", itemIdBomTemplateMap);
 
             // 领料记录
             model.addAttribute("goodsReceiptItemList", getGoodsReceiptItemList(produceOrder.getCode()));
         } else {
             model.addAttribute("po", new ProduceOrder());
+            model.addAttribute("bomTemplate", Collections.emptyMap());
         }
 
         return "modules/produce_order";
     }
 
     private List<ProduceOrderController.GoodsReceiptItem> getGoodsReceiptItemList(String produceOrderCode) {
-        String sql = "select '${produceOrderCode}' produceOrderCode, t1.material_id, mm_material.code materialCode, mm_material.base_unit unitText, t1.quantity, IFNULL(t2.quantity, 0) goodsReceiptQuantity, (t1.quantity - IFNULL(t2.quantity, 0)) openQuantity  from (\n" +
-                "select produce_bom_detail.`material_id`, sum(produce_bom_detail.quantity * produce_order_item.quantity) quantity from produce_order \n" +
-                "inner join produce_order_item on produce_order_item.`produce_order_id` = produce_order.id \n" +
-                "inner join produce_bom on produce_bom.`material_id` = produce_order_item.material_id\n" +
-                "inner join produce_bom_detail on produce_bom.id = produce_bom_detail.`bom_id`\n" +
-                "inner join mm_material on mm_material.id = produce_bom_detail.`material_id`\n" +
-                "where produce_order.code = :produceOrderCode group by material_id) t1 \n" +
-                "left join (select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where `root_reference_code` = :produceOrderCode group by root_reference_item_id)t2 on t1.material_id = t2.root_reference_item_id\n" +
-                "left join `mm_material` on mm_material.id = t1.material_id";
+        String sql = "select '${produceOrderCode}'                    produceOrderCode,\n" +
+                "       mm_material.id                         material_id,\n" +
+                "       mm_material.code                       materialCode,\n" +
+                "       v.value color,\n" +
+                "       mm_material.base_unit                  unitText,\n" +
+                "       t1.quantity,\n" +
+                "       IFNULL(t2.quantity, 0)                 goodsReceiptQuantity,\n" +
+                "       (t1.quantity - IFNULL(t2.quantity, 0)) openQuantity\n" +
+                "from (select produce_order_item_detail.`id`,\n" +
+                "             produce_order_item_detail.material_id,\n" +
+                "             produce_order_item_detail.batch_code,\n" +
+                "             produce_order_item_detail.quantity * produce_order_item.quantity quantity\n" +
+                "      from produce_order\n" +
+                "               inner join produce_order_item on produce_order_item.`produce_order_id` = produce_order.id\n" +
+                "               inner join produce_order_item_detail on produce_order_item.id = produce_order_item_detail.`produce_order_item_id`\n" +
+                "      where produce_order.code = :produceOrderCode) t1\n" +
+                "         left join (select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity\n" +
+                "                    from inv_document_item\n" +
+                "                    where `root_reference_code` = :produceOrderCode\n" +
+                "                    group by root_reference_item_id) t2 on t1.id = t2.root_reference_item_id\n" +
+                "         left join `mm_material` on mm_material.id = t1.material_id\n" +
+                "         left join mm_profile mp on mp.material_id = t1.material_id AND mp.batch_code = t1.batch_code\n" +
+                "         left join mm_characteristic_value v on v.reference_id = mp.id";
 
         List<GoodsReceiptItem> goodsReceiptItemList = sharpService.query(sql, Params.builder(1).pv("produceOrderCode", produceOrderCode).build(), GoodsReceiptItem.class);
         if (CollectionUtils.isNotEmpty(goodsReceiptItemList)) {
@@ -129,43 +175,6 @@ public class ProduceOrderController {
         produceOrderService.saveOrUpdate(produceOrder);
         return produceOrder;
     }
-
-//    @GetMapping("purchase_order")
-//    public String a(Model model, String materialIds, String quantity) {
-//        PurchaseOrder purchaseOrder = new PurchaseOrder();
-//        purchaseOrder.setCreateBy(UserContextHolder.get().getId());
-//
-//        Map<Long, Material> idMaterialMap = materialDAO.selectByIdsAsMap(materialIds);
-//
-//        List<PurchaseOrder.Item> itemList = new ArrayList<>();
-//
-//        String[] quantityArr = quantity.split(",");
-//        String[] materialIdArr = materialIds.split(",");
-//
-//        for (int i = 0; i < materialIdArr.length; i++) {
-//            PurchaseOrder.Item item = new PurchaseOrder.Item();
-//            item.setMaterialId(Long.parseLong(materialIdArr[i]));
-//            item.setQuantity(new BigDecimal(quantityArr[i]));
-//
-//            Material material = idMaterialMap.get(item.getMaterialId());
-//            item.setMaterialCode(material.getCode());
-//            item.setMaterialText(material.getName() + " " + material.getSpecificationText());
-//            item.setUnit(material.getBaseUnit());
-//            item.setUnitText(dictService.getDictByTypeAndName("unit", material.getBaseUnit()).get().getLabel());
-//            item.setUnitPrice(material.getStandardPrice());
-//
-//            itemList.add(item);
-//        }
-//
-//        purchaseOrder.setItemList(itemList);
-//
-//        model.addAttribute("po", purchaseOrder);
-//
-//        model.addAttribute("createName", dictService.getDictByTypeAndName("sys_user", purchaseOrder.getCreateBy().toString()).get().getLabel());
-//        model.addAttribute("createTime", Time2StringUtils.format(purchaseOrder.getCreateTime()));
-//
-//        return "modules/purchase/purchase_order";
-//    }
 
     @GetMapping("purchase_order")
     public String batch(Model model, String materialIds, String quantity) {
@@ -218,6 +227,8 @@ public class ProduceOrderController {
         private String materialText;
 
         private String unitText;
+
+        private String color;
 
         private BigDecimal quantity;
 

@@ -28,10 +28,10 @@ public class StockWarningTest {
                 .tplName("modules/inventory/warning")
 //                .tplName("tpl/list")
 //                .tplName("tpl/ajax_list")
-                .name("库存预警")
+                .name("安全库存预警")
                 .additionalInfo(Params.builder(1).pv("formId", "695978675677433856").build())
                 .reportAdviceName("stockWarningReportAdvice")
-                .querySql("select id, code, name, `characteristic`, mm_material.category_id, ifnull(stock.quantity, 0) stock_quantity, `safety_stock_quantity`, `maximum_stock_quantity` from mm_material left join (select material_id, sum(quantity) quantity from inv_stock group by material_id) stock on stock.material_id = mm_material.id where ((safety_stock_quantity is not null and safety_stock_quantity > ifnull(stock.quantity, 0))  or (maximum_stock_quantity is not null and maximum_stock_quantity < ifnull(stock.quantity, 0))) AND mm_material.id = :material_id AND category_id = :categoryId")
+                .querySql("select id, code, name, `specification`, mm_material.category_id, ifnull(stock.quantity, 0) stock_quantity, `safety_stock_quantity`, `maximum_stock_quantity` from mm_material left join (select material_id, sum(quantity) quantity from inv_stock group by material_id) stock on stock.material_id = mm_material.id where ((safety_stock_quantity is not null and safety_stock_quantity > ifnull(stock.quantity, 0))  or (maximum_stock_quantity is not null and maximum_stock_quantity < ifnull(stock.quantity, 0))) AND mm_material.id = :material_id AND category_id = :categoryId")
                 .queryFieldList(Arrays.asList(
                         new QueryField("categoryId", "分类", QueryField.Type.SELECT, "core_material_category")
                 ))

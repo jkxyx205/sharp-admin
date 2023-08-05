@@ -24,6 +24,15 @@
             max-height: calc(100vh - 300px);
         }
 
+
+        .status-false {
+            color: #f86c6b;
+        }
+
+        .status-true {
+            color: #1da142;
+        }
+
         .component-name {
             font-weight: bold;
             margin-bottom: 16px;
@@ -72,11 +81,11 @@
 
         <div class="nav-tabs-boxed">
             <ul class="nav nav-tabs" role="tablist">
-                <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#tab-1" role="tab" aria-controls="home" aria-selected="false">物料清单</a></li>
-                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-2" role="tab" aria-controls="home" aria-selected="false" th:if="${po.id != null}">领料记录</a></li>
+                <li class="nav-item"><a class="nav-link" th:classappend="${po.id == null ? 'active' :''}" data-toggle="tab" href="#tab-1" role="tab" aria-controls="home" aria-selected="false">物料清单</a></li>
+                <li class="nav-item"><a class="nav-link" th:classappend="${po.id != null ? 'active' :''}" data-toggle="tab" href="#tab-2" role="tab" aria-controls="home" aria-selected="false" th:if="${po.id != null}">领料记录</a></li>
             </ul>
             <div class="tab-content">
-                <div class="tab-pane active" id="tab-1" role="tabpanel">
+                <div class="tab-pane" th:classappend="${po.id == null ? 'active' :''}" id="tab-1" role="tabpanel">
                     <div class="container-fluid" id="form-detail">
                         <div v-show="form.id" v-cloak>
                             <div class="card">
@@ -97,7 +106,7 @@
                                                     </tr>
                                                     </thead>
                                                     <tbody>
-                                                    <tr v-for="d in c.componentDetailList"><td style="padding: 0;"><input class="form-control material" type="text" :disabled="d.type === 'MATERIAL'" :readonly="d.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="d.bomItem.materialCode" :component_detail_id="d.id" :component_id="d.componentId" :type_instance_id="d.typeInstanceId" required="required" :placeholder="d.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="d.bomItem.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialText" v-model="d.bomItem.materialText"></td><td><select class="form-control" name="color" required="required" title="请填写颜色" disabled="disabled"><option v-for="option in d.options" v-text="option" :value="option"></option></select></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="d.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="d.bomItem.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="d.bomItem.unit"></td><td style="padding: 0;"><input class="form-control" type="text" v-model="d.bomItem.remark" autocomplete="off" name="remark"></td></tr>
+                                                    <tr v-for="d in c.componentDetailList"><td style="padding: 0;"><input class="form-control material" type="text" :disabled="d.type === 'MATERIAL'" :readonly="d.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="d.value.materialCode" :component_detail_id="d.id" :component_id="d.componentId" :type_instance_id="d.typeInstanceId" required="required" :placeholder="d.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="d.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialText" v-model="d.value.materialText"></td><td><select class="form-control" name="color" required="required" title="请填写颜色" disabled="disabled" v-model="d.value.color"><option v-for="option in d.options" v-text="option" :value="option"></option></select></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="d.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="d.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="d.value.unit"></td><td style="padding: 0;"><input class="form-control" type="text" v-model="d.value.remark" autocomplete="off" name="remark"></td></tr>
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -111,7 +120,7 @@
                         <div id="materialDetailInput" style="display: none"></div>
                     </div>
                 </div>
-                <div class="tab-pane" id="tab-2" role="tabpanel">
+                <div class="tab-pane"  th:classappend="${po.id != null ? 'active' :''}" id="tab-2" role="tabpanel">
                     <div id="goods_receipt_container" role="tabpanel">
                         <div class="table-fixed-container">
                             <table class="table table-responsive-sm table-bordered table-striped table-sm table-thead">
@@ -119,7 +128,8 @@
                                 <tr>
                                     <th style="width: 50px" data-index>序号</th>
                                     <th style="width: 100px" class="sortable active asc">物料</th>
-                                    <th>描述</th>
+                                    <th>规格</th>
+                                    <th>颜色</th>
                                     <th style="width: 100px">基本单位</th>
                                     <th style="width: 100px" class="sortable text-right">领料数量</th>
                                     <th style="width: 120px" class="sortable text-right" data-sort-type="number">已领料数量</th>
@@ -135,6 +145,7 @@
                                     <td th:text="${sStat.index + 1}" data-index></td>
                                     <td th:text="${s.materialCode}" th:data-sort-value="${s.materialCode}"></td>
                                     <td th:text="${s.materialText}" th:data-sort-value="${s.materialText}"></td>
+                                    <td th:text="${s.color}" th:data-sort-value="${s.color}"></td>
                                     <td th:text="${s.unitText}" th:data-sort-value="${s.unitText}"></td>
                                     <td th:text="${#numbers.formatDecimal(s.quantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.quantity}" th:class="text-right"></td>
                                     <td th:text="${#numbers.formatDecimal(s.goodsReceiptQuantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.goodsReceiptQuantity}" th:class="text-right"></td>
@@ -173,14 +184,15 @@
     <script th:src="@{/js/editable-table-plus-customize_type.js}"></script>
 
     <script th:inline="javascript">
+        let isAdd = /*[[${po.id == null}]]*/
         let formHeader = document.getElementById('form-header');
         let formItem = document.getElementById('form-item');
 
-        function showDetail($tr, materialId) {
-            if (materialId && $tr[0].form) {
+        function showDetail($tr, materialId, itemId) {
+            if (materialId && $tr[0].form && materialId === $tr[0].form.materialId) {
                  vue.$data.form = $tr[0].form
             } else if (materialId) {
-                $.get('/produce/bom?materialId=' + materialId, function (res) {
+                $.get('/produce_orders/bom?materialId=' + materialId + (itemId ? ('&itemId=' + itemId) : ''), function (res) {
                     res.materialId = materialId
                     $tr[0].form = vue.$data.form = res
                 })
@@ -193,8 +205,16 @@
             showRowNumber: true, // 是否显示行号
             allowEmpty: false, // 表格允许为空,
             highlight: true,
-            rowClick: function ($tr, row) {
-                showDetail($tr, row.materialId)
+            rowClick: function (context, $tr, row) {
+                showDetail($tr, row.materialId, row.id)
+            },
+            beforeDeleteRow: function (context, $tr, row) {
+                // 删除对应的物料清单
+                if (context.options.activeIndex === ($tr.index() + 1)) {
+                    vue.$data.form = {}
+                }
+
+                return true
             },
             columnConfigs: [
                 {
@@ -284,14 +304,65 @@
                 return
             }
 
-            var params = {}
+            let detailValid = true
+            $('#table-container table.table-tbody tbody tr:not(:last-child)').each(function (index) {
+                for(let component of this.form.componentList) {
+                    for(let componentDetail of component.componentDetailList) {
+                        if (!componentDetail.value.materialId) {
+                            toastr.error('第 '+(index + 1)+' 行物料清单有物料没有填写！')
+                            detailValid = false
+                            return
+                        }
+
+                        if (componentDetail.value.color) {
+                            let res = [];
+                            for (let i = 0; i < componentDetail.value.color.length; i++) {
+                                res[i] = ("00" + componentDetail.value.color.charCodeAt(i).toString(16)).slice(-4);
+                            }
+
+                            componentDetail.value.batchCode = res.join("")
+                        } else {
+                            componentDetail.value.batchCode = null
+                        }
+
+                        console.log(componentDetail.value)
+                    }
+                }
+
+            })
+            if (!detailValid) {
+                return;
+            }
+
+            let params = {}
 
             params['itemList'] = $editableTable.editableTablePlus('getValue')
 
+            for (let index in params['itemList']) {
+                let item = params['itemList'][index]
+
+                if (item.color) {
+                    let res = [];
+                    for (let i = 0; i < item.color.length; i++) {
+                        res[i] = ("00" + item.color.charCodeAt(i).toString(16)).slice(-4);
+                    }
+                    item.batchCode = res.join("")
+                } else {
+                    item.batchCode = null
+                }
+
+                // 获取value
+                let valueList = []
+                for(let component of $('#table-container table.table-tbody tbody tr').eq(index)[0].form.componentList) {
+                    for (let componentDetail of component.componentDetailList) {
+                        valueList.push({...componentDetail.value, ...{quantity: componentDetail.quantity}})
+                    }
+                }
+                item['itemList'] = valueList
+            }
+
             params = $.extend({},
                 params, $('#form-header').form2json({allowEmptyMultiVal:true})); //合并参数
-
-            console.log(params)
 
             $.ajax({
                 url: '/produce_orders',
@@ -300,10 +371,10 @@
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
                 success: function(res){
-                    $('#id').val(res.id)
-                    $('#code').val(res.code)
-                    loadItem(res.itemList)
                     toastr.success('生产单保存成功');
+                    if (isAdd) {
+                        window.location = '/produce_orders/'+res.id+'?readonly=true'
+                    }
                     reloadTab('produce_order_list')
                 }
             });
@@ -314,15 +385,16 @@
         })
 
         let itemList = /*[[${po.itemList}]]*/
-        loadItem(itemList)
+        let valueMap =  /*[[${bomTemplate}]]*/
 
+        loadItem(itemList)
         function loadItem(itemList) {
             if (itemList && itemList.length > 0) {
-                $editableTable.editableTablePlus('setValue', itemList)
+                $editableTable.editableTablePlus('setValue', itemList).editableTablePlus('setActiveIndex', 1)
             }
         }
-        
-        // detail
+
+        // 物料清单选择 detail
         let materialDetailInput = $('#materialDetailInput').dialogInput({
             title: '选择物料',
             reportId: '697147523487240192',
@@ -349,13 +421,13 @@
 
                     for (d of c.componentDetailList) {
                         if (d.componentId === currentMaterialDom.getAttribute('component_id') && d.typeInstanceId === currentMaterialDom.getAttribute('type_instance_id')) {
-                            d.bomItem.materialId = row.id
-                            d.bomItem.materialCode = row.code
-                            d.bomItem.materialText = this.labelDisplay(row)
-                            d.bomItem.unit = row.base_unit
-                            d.bomItem.unitText = row.base_unit_name
-                            d.bomItem.componentDetailId = currentMaterialDom.getAttribute('component_detail_id')
-                            d.options = [...document.getElementById('color').options].map(o => o.text)
+                            d.value.materialId = row.id
+                            d.value.materialCode = row.code
+                            d.value.materialText = this.labelDisplay(row)
+                            d.value.unit = row.base_unit
+                            d.value.unitText = row.base_unit_name
+                            d.value.componentDetailId = currentMaterialDom.getAttribute('component_detail_id')
+                            // d.options = [...document.getElementById('color').options].map(o => o.text)
                             break_flag = true
                             break
                         }
@@ -374,10 +446,22 @@
             el: '#form-detail',
             data: {
                 form: {
-                    bom: {}
+
                 }
             },
             mounted: function () {
+                if (itemList && itemList.length > 0) {
+                    $editableTable
+                        .editableTablePlus('each',  (index, context, $tr, row) => {
+                            let value = valueMap[row.id]
+                            if(index === 0) {
+                                this.form = value
+                            }
+
+                            value.materialId = row.materialId
+                            $tr[0].form = value
+                        })
+                }
             },
             methods: {
                 showMaterialDialog: function (e) {
@@ -386,42 +470,6 @@
                     currentMaterialDom = e.target
                 },
                 send() {
-                    // TODO
-                    let itemList = []
-                    for (let c of this.form.componentList) {
-                        for (d of c.componentDetailList) {
-                            if (!d.bomItem.materialId) {
-                                toastr.error('请将物料填写完整');
-                                return
-                            }
-
-                            d.bomItem.quantity = d.quantity
-                            itemList.push(d.bomItem);
-                        }
-                    }
-
-                    let params = {
-                        id: this.form.bom.id,
-                        materialId: this.form.materialId,
-                        remark: this.form.bom.remark,
-                        bomTemplateId: this.form.id,
-                        itemList
-                    }
-
-                    console.log(params)
-
-                    $.ajax({
-                        url: '/produce/bom',
-                        type: "POST",
-                        data: JSON.stringify(params),
-                        dataType: "json",
-                        contentType: "application/json; charset=utf-8",
-                        success: function(res){
-                            res.materialId = res.bom.materialId
-                            vue.form = res
-                            toastr.success('物料清单保存成功');
-                        }
-                    });
                 }
             }
         })
