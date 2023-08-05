@@ -550,8 +550,8 @@
             if (!tabId) {
                 tabId = new Date().getTime()
             }
-
-            window.parent.addTab('' + tabId, name, url)
+            // 'tab-' 防止 tabId 是纯数字，tab切换会有问题
+            window.parent.addTab('tab-' + tabId, name, url)
         }
 
         function openOnNewTabLink(url, name) {

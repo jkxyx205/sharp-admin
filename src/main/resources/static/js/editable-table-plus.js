@@ -55,6 +55,14 @@
                     _this._setRequired();
                 },
                 beforeRemoveCallback: function ($parent) {
+                    if ( _this.options.beforeDeleteRow) {
+                        let deleted =  _this.options.beforeDeleteRow(_this, $parent, _this._getValue($parent))
+                        if (deleted) {
+                            _this.options.activeIndex--
+                        }
+                        return deleted
+                    }
+
                     return true
                 },
                 afterRemoveCallback: function ($parent) {
@@ -81,16 +89,14 @@
             if (this.options.rowClick || this.options.highlight) {
                 this.$table.delegate('tr', 'click', (e) => {
                     let $tr = $(e.target).parents('tr')
+                    this.options.activeIndex = $tr.index() + 1 // 第一行从 1 开始
+
                     if (this.focusRow !== $tr[0]) {
                         // 多次点击 保证只触发一次请求
-                        this.options.rowClick($tr, this._getValue($tr))
+                        this.options.rowClick(this, $tr, this._getValue($tr))
                         this.focusRow = $tr[0]
 
-                        // highlight
-                        if (this.options.highlight) {
-                            $tr.css('border-left', '4px solid rgb(32, 168, 216)')
-                                .siblings().css('border-left', 'none')
-                        }
+                        this.setActiveIndex(this.options.activeIndex)
                     }
                 })
             }
@@ -118,6 +124,20 @@
                 // 清空表格
                 this.clear()
             }
+        },
+        setActiveIndex: function (index) {
+            this.options.activeIndex = index
+            // highlight
+            if (this.options.highlight) {
+                this.$table.find('tr:nth-child('+this.options.activeIndex+')')
+                    .css('border-left', '4px solid rgb(32, 168, 216)')
+                    .siblings().css('border-left', 'none')
+            }
+        },
+        each: function (callback) {
+            this.$table.find('tbody tr:not(:last-child)').each((index, elem) => {
+                callback(index, this, $(elem), this._getValue($(elem)))
+            })
         },
         readonly:function (readonly) {
             this.options.readonly = readonly
