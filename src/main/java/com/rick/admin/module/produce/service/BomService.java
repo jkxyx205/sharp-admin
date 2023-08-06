@@ -60,9 +60,6 @@ public class BomService {
             idMaterialMap = materialDAO.selectByParamsWithoutCascade(Params.builder(1).pv("id", materialIdSet).build(), "id IN (:id)")
                     .stream().collect(Collectors.toMap(Material::getId, material -> material));
         }
-//
-//        Map<Long, BomTemplate.ComponentDetail> componentDetailMap = bomTemplate.getComponentList().stream().flatMap(component -> component.getComponentDetailList().stream())
-//                .collect(Collectors.toMap(BomTemplate.ComponentDetail::getComponentId, componentDetail -> componentDetail));
 
         for (BomTemplate.Component component : bomTemplate.getComponentList()) {
             component.setUnitText(dictService.getDictByTypeAndName("unit", component.getUnit()).get().getLabel());
@@ -72,10 +69,11 @@ public class BomService {
                 if (Objects.nonNull(value)) {
                     // 实例
                     componentDetail.setValue(value);
-                }  else if (componentDetail.getType() == BomTemplate.TypeEnum.CATEGORY) {
+                } else if (componentDetail.getType() == BomTemplate.TypeEnum.CATEGORY) {
                     componentDetail.setValue(new ProduceOrder.Item.Detail());
                 } else if (componentDetail.getType() == BomTemplate.TypeEnum.MATERIAL) {
                     Material material = idMaterialMap.get(componentDetail.getTypeInstanceId());
+
                     value = ProduceOrder.Item.Detail.builder()
                             .materialId(material.getId())
                             .quantity(componentDetail.getQuantity())
@@ -83,12 +81,14 @@ public class BomService {
                             .remark("")
                             .componentDetailId(componentDetail.getId())
                             .build();
-
                     componentDetail.setValue(value);
+
+                    if (material.isBomMaterial()) {
+                        componentDetail.setBomTemplate(getBomTemplateMaterialId(material.getId(), valueMapping));
+                    }
                 }
             }
         }
-
 
         Set<ProduceOrder.Item.Detail> values = bomTemplate.getComponentList().stream().flatMap(component -> component.getComponentDetailList().stream())
                 .filter(componentDetail -> Objects.nonNull(componentDetail.getValue().getMaterialId()))
@@ -96,7 +96,6 @@ public class BomService {
                 .collect(Collectors.toSet());
 
         materialService.fillMaterialDescription(values);
-
         return bomTemplate;
     }
 

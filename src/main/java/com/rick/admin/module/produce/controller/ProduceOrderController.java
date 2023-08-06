@@ -186,8 +186,23 @@ public class ProduceOrderController {
         String[] materialIdArr = materialIds.split(",");
 
         for (int i = 0; i < materialIdArr.length; i++) {
+            String mc = materialIdArr[i];
+            String[] split = mc.split("@");
+            long materialId = Long.parseLong(split[0]);
             PurchaseOrder.Item item = new PurchaseOrder.Item();
-            item.setMaterialId(Long.parseLong(materialIdArr[i]));
+            item.setMaterialId(materialId);
+            if (split.length > 1) {
+                sharpService.queryForObject("select mm_batch.id, mm_batch.code, mm_characteristic_value.`value` from mm_profile left join mm_batch on code = `mm_profile`.batch_code and mm_batch.`material_id` = mm_profile.`material_id`\n" +
+                                "left join `mm_characteristic_value` on mm_profile.id = mm_characteristic_value.`reference_id`\n" +
+                                "where mm_profile.material_id = :materialId and mm_profile.batch_code = :batchCode",
+                        Params.builder(2).pv("materialId", materialId).pv("batchCode", split[1]).build())
+                                .ifPresent(map -> {
+                                    item.setBatchCode(split[1]);
+                                    item.setBatchId((Long) map.get("id"));
+                                    item.setColor((String) map.get("value"));
+                                });
+            }
+
             item.setQuantity(new BigDecimal(quantityArr[i]));
 
             Material material = idMaterialMap.get(item.getMaterialId());

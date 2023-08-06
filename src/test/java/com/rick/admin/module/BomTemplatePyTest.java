@@ -112,6 +112,40 @@ public class BomTemplatePyTest {
     }
 
     @Test
+    public void testInsertBom4() {
+        bomTemplateDAO.insertOrUpdate(BomTemplate.builder()
+//                .id(717388507961626624L)
+                .code("DEFAULT_1")
+                .description("test_多bom")
+                .componentList(Arrays.asList(
+                        BomTemplate.Component.builder()
+                                .description("轮毂组件")
+                                .quantity(BigDecimal.ONE)
+                                .unit("TAO")
+                                .componentDetailList(Arrays.asList(BomTemplate.ComponentDetail.builder()
+                                                .type(BomTemplate.TypeEnum.CATEGORY)
+                                                .typeInstanceId(717361462728724480L)
+                                                .placeholder("选择轮毂")
+                                                .quantity(BigDecimal.valueOf(1))
+                                                .build(),
+                                        BomTemplate.ComponentDetail.builder()
+                                                .type(BomTemplate.TypeEnum.CATEGORY)
+                                                .typeInstanceId(717361597823062016L)
+                                                .placeholder("选择轴承")
+                                                .quantity(BigDecimal.valueOf(1))
+                                                .build(),
+                                        BomTemplate.ComponentDetail.builder()
+                                                .type(BomTemplate.TypeEnum.MATERIAL)
+                                                .typeInstanceId(719170708285952000L)
+                                                .quantity(BigDecimal.valueOf(1))
+                                                .build()))
+
+                                .build()
+                ))
+                .build());
+    }
+
+    @Test
     public void testInsertBom2() {
         bomTemplateDAO.insertOrUpdate(BomTemplate.builder()
                 .id(717388507961626624L)

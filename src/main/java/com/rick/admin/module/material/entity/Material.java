@@ -11,6 +11,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -86,4 +87,9 @@ public class Material extends BaseCodeEntity {
 
         BigDecimal maximumStockQuantity;
     }
+
+    public Boolean isBomMaterial() {
+        return Objects.nonNull(bomTemplateId);
+    }
+
 }

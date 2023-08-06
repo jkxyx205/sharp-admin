@@ -127,9 +127,9 @@
                                 <i class="nav-icon icon-eyeglass"></i> 安全库存预警
                             </a>
                         </li>
-                        <li class="nav-item" sec:authorize="hasAuthority('stock_warning')">
-                            <a class="nav-link" href="javascript:addTab('stock_warning', '库存预警', '/reports/708404920146989056')">
-                                <i class="nav-icon icon-eyeglass"></i> 生产库存预警
+                        <li class="nav-item" sec:authorize="hasAuthority('produce_order_stock')">
+                            <a class="nav-link" href="javascript:addTab('produce_order_stock', '生产库存', '/reports/710331838161227776?mode=multiple')">
+                                <i class="nav-icon icon-clock"></i> 生产库存预警
                             </a>
                         </li>
                         <li class="nav-item" sec:authorize="hasAuthority('stock_age')">
@@ -156,11 +156,6 @@
                         <li class="nav-item" sec:authorize="hasAuthority('produce_order_read')">
                             <a class="nav-link" href="javascript:addTab('produce_order_list', '生产单管理', '/reports/710221635797413888')">
                                 <i class="nav-icon icon-clock"></i> 生产单管理
-                            </a>
-                        </li>
-                        <li class="nav-item" sec:authorize="hasAuthority('produce_order_stock')">
-                            <a class="nav-link" href="javascript:addTab('produce_order_stock', '生产库存', '/reports/710331838161227776?mode=multiple')">
-                                <i class="nav-icon icon-clock"></i> 生产报表
                             </a>
                         </li>
                     </ul>

@@ -3,6 +3,7 @@ package com.rick.admin.module.produce.entity;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.rick.db.dto.BaseCodeEntity;
 import com.rick.db.dto.BaseEntity;
+import com.rick.db.plugin.dao.annotation.Column;
 import com.rick.db.plugin.dao.annotation.OneToMany;
 import com.rick.db.plugin.dao.annotation.Table;
 import com.rick.db.plugin.dao.annotation.Transient;
@@ -74,11 +75,17 @@ public class BomTemplate extends BaseCodeEntity {
 
         Long componentId;
 
+        @Column(comment = "是否必填", value = "is_required")
+        Boolean required;
+
         @Transient
         ProduceOrder.Item.Detail value;
 
         @Transient
         List<String> options;
+
+        @Transient
+        BomTemplate bomTemplate;
 
     }
 

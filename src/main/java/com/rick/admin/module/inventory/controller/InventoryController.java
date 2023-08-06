@@ -171,14 +171,13 @@ public class InventoryController {
                 "       produce_order_item_detail.`id`                               referenceItemId,\n" +
                 "       produce_order_item_detail.`id`                               rootReferenceItemId,\n" +
                 "       produce_order_item_detail.color,\n" +
-                "       sum(produce_order_item_detail.quantity * produce_order_item.quantity) quantity,\n" +
+                "       produce_order_item_detail.quantity * produce_order_item.quantity quantity,\n" +
                 "       mm_material.base_unit                                          unit\n" +
                 "from produce_order\n" +
                 "         inner join produce_order_item on produce_order_item.`produce_order_id` = produce_order.id\n" +
                 "         inner join produce_order_item_detail on produce_order_item.id = produce_order_item_detail.`produce_order_item_id`\n" +
                 "         inner join mm_material on mm_material.id = produce_order_item_detail.`material_id`\n" +
-                "where produce_order.code = :referenceCode\n" +
-                "group by material_id";
+                "where produce_order.code = :referenceCode";
 
         List<InventoryDocument.Item> itemList = sharpService.query(sql, Params.builder(1).pv("referenceCode", referenceCode).build(), InventoryDocument.Item.class);
         if (CollectionUtils.isEmpty(itemList)) {

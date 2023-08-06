@@ -28,7 +28,7 @@ public class ProduceOrderStockTest {
                 .id(710331838161227776L)
                 .code("produce_order_stock")
                 .tplName("tpl/list")
-                .name("生产库存")
+                .name("生产库存预警")
                 .additionalInfo(Params.builder(1).pv("formId", "695978675677433856").build())
                 .reportAdviceName("produceOrderStockReportAdvice")
                 .querySql("SELECT mm_material.id,\n" +
@@ -37,6 +37,7 @@ public class ProduceOrderStockTest {
                         "       specification,\n" +
                         "       mm_characteristic_value.value color,\n" +
                         "       base_unit,\n" +
+                        "       po.batch_code,\n" +
                         "       IFNULL(stock.quantity, 0)     stock_quantity,\n" +
                         "       IFNULL(open.open_quantity, 0) open_quantity,\n" +
                         "       po.quantity\n" +
@@ -85,7 +86,8 @@ public class ProduceOrderStockTest {
                         new ReportColumn("stock_quantity", "实际库存").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
                         new ReportColumn("open_quantity", "在途库存").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
                         new ReportColumn("quantity", "生产需求").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
-                        new ReportColumn("diffQuantity", "差异").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT)
+                        new ReportColumn("diffQuantity", "差异").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
+                        new HiddenReportColumn("batch_code")
                 ))
                 .pageable(false)
                 .sidx("id")
