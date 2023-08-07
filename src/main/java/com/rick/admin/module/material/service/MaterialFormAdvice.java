@@ -5,6 +5,8 @@ import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.entity.CharacteristicValue;
 import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.entity.Material;
+import com.rick.db.service.SharpService;
+import com.rick.db.service.support.Params;
 import com.rick.formflow.form.service.FormAdvice;
 import com.rick.formflow.form.service.bo.FormBO;
 import com.rick.meta.dict.service.DictService;
@@ -33,8 +35,29 @@ public class MaterialFormAdvice implements FormAdvice {
 
     private final MaterialDAO materialDAO;
 
+    private final SharpService sharpService;
+
+
     @Override
     public void beforeInstanceHandle(FormBO form, Long instanceId, Map<String, Object> values) {
+        // code处理
+        String code = (String) values.get("code");
+        String materialType = (String) values.get("materialType");
+        if (StringUtils.isBlank(code)) {
+            Optional<String> remarkOptional = sharpService.queryForObject("select remark from sys_dict where type = :type AND name = :name",
+                    Params.builder(2).pv("type", "MATERIAL_TYPE").pv("name", materialType)
+                            .build(),
+                    String.class);
+
+            Long currentNumber = Long.parseLong(remarkOptional.get());
+            Long newNumber = ++currentNumber;
+            values.put("code", materialType.charAt(0) + String.format("%05d", newNumber));
+
+            sharpService.getNamedJdbcTemplate().update("update sys_dict set remark = :newNumber where type = :type AND name = :name",
+                    Params.builder(2).pv("type", "MATERIAL_TYPE").pv("name", materialType).pv("newNumber", newNumber)
+                            .build());
+        }
+
         // checkbox List => boolean
         if (CollectionUtils.isEmpty((Collection<?>) values.get("batchManagement"))) {
             values.put("batchManagement", false);
