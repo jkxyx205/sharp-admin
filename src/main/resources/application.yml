@@ -88,7 +88,7 @@ dict:
       map: { "PLANNING": "计划中","PROCESSING": "完成领料", "DONE": "生产完成"}
 
 props:
-  items: {"material_category_select_sql": "select id, name, (select name from core_material_category where c1.parent_id = id) parent_name from `core_material_category` c1"}
+  items: {"material_category_select_sql": "select id, name, (select name from core_material_category where c1.parent_id = id) parent_name from `core_material_category` c1 where id not in(719894871824945152, 719894910232186880, 719894937591631872, 719895017157578752)"}
 
 
 fileupload:

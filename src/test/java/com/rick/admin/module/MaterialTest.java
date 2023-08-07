@@ -121,7 +121,7 @@ public class MaterialTest {
 
         // code
         CustomizeRegex codeRegex = new CustomizeRegex("^[0-9a-zA-Z_\\/%\\-]{1,}$", "CODE只能包含数字、字母、下划线、中划线");
-        List<Validator> codeRegexValidatorList = Lists.newArrayList(textRequiredValidatorList);
+        List<Validator> codeRegexValidatorList = Lists.newArrayList(textValidatorList);
 
         // long text
         List<Validator> longTextValidatorList = Lists.newArrayListWithExpectedSize(1);
@@ -159,9 +159,11 @@ public class MaterialTest {
                 .name("categoryId")
                 .label("分类")
 //                .datasource("core_material_category")
-                .datasource("category_path")
+                .datasource("material_category_select_sql")
                 .validatorList(Arrays.asList(new Required(true)))
-                .additionalInfo(Params.builder(1).pv("pane-index", "1").build())
+                .additionalInfo(Params.builder(1).pv("pane-index", "1")
+                        // 分组显示
+                        .pv("group", "true").build())
                 .build();
 
         CpnConfigurer baseUnitCpn = CpnConfigurer.builder()
@@ -363,7 +365,7 @@ public class MaterialTest {
                 .additionalInfo(Params.builder(1).pv("formId", "695978675677433856").build())
                 .reportAdviceName("materialReportAdvice")
 //                .querySql("SELECT mm_material.id, mm_material.code, mm_material.name, specification, case when attachment is null or length(attachment) <= 2 then '无' else '有' end  attachment, material_type, mm_material.category_id, base_unit, standard_price, sys_user.name create_name,DATE_FORMAT(mm_material.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM mm_material left join sys_user on sys_user.id = mm_material.create_by WHERE mm_material.code = :code AND mm_material.name like :name AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0")
-                .querySql("SELECT mm_material.id, mm_material.code, mm_material.name, specification, color, case when attachment is null or length(attachment) <= 2 then '无' else '有' end  attachment, material_type, mm_material.category_id, base_unit, standard_price, sys_user.name create_name,DATE_FORMAT(mm_material.create_time, '%Y-%m-%d %H:%i:%s') create_time,stock.quantity stock_quantity, standard_price * stock.quantity stock_quantity_standard_price FROM mm_material left join sys_user on sys_user.id = mm_material.create_by left join (select stock.*, characteristic.color from (\n" +
+                .querySql("SELECT mm_material.id, mm_material.code, mm_material.name, specification, color, case when attachment is null or length(attachment) <= 2 then '无' else '有' end  attachment, material_type, mm_material.category_id, base_unit, standard_price, batch_management batchManagement, sys_user.name create_name,DATE_FORMAT(mm_material.create_time, '%Y-%m-%d %H:%i:%s') create_time,stock.quantity stock_quantity, standard_price * stock.quantity stock_quantity_standard_price FROM mm_material left join sys_user on sys_user.id = mm_material.create_by left join (select stock.*, characteristic.color from (\n" +
                         " select material_id, batch_id, sum(quantity) quantity from inv_stock group by material_id, batch_id) stock left join (  select mm_profile.material_id, mm_profile.batch_id, mm_characteristic_value.value color from mm_profile, mm_characteristic_value where category = 'BATCH' AND mm_profile.id = mm_characteristic_value.`reference_id`) characteristic on characteristic.material_id = stock.material_id AND characteristic.batch_id = stock.batch_id ) stock on stock.material_id = mm_material.id\n WHERE mm_material.code = :code AND mm_material.name like :name AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0")
                 .queryFieldList(Arrays.asList(
                         new QueryField("code", "编号", QueryField.Type.TEXT),
@@ -382,6 +384,7 @@ public class MaterialTest {
                         new ReportColumn("material_type", "类型", false, "material_type", Arrays.asList("dictConverter")),
 //                        new ReportColumn("category_id", "分类", false, "core_material_category", Arrays.asList("dictConverter")),
                         new ReportColumn("category_path", "分类", false),
+                        new ReportColumn("batchManagement", "批次物料", false, null, Arrays.asList("boolConverter")),
                         new ReportColumn("base_unit", "基本单位", false, "unit", Arrays.asList("dictConverter")),
                         new ReportColumn("attachment", "附件"),
                         new ReportColumn("standard_price", "标准价格(元)").setType(ReportColumn.TypeEnum.DECIMAL).setAlign(AlignEnum.RIGHT),

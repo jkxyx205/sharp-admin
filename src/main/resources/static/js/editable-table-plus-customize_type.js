@@ -32,13 +32,13 @@
                         $(currentMaterialDom).siblings().val(row.id)
 
                         $(currentMaterialDom).parent().next().find('input[type=text]').val(this.labelDisplay(row))
-                        $(currentMaterialDom).parents('tr').find(':input[name=materialCategoryId]').val(row.category_id)
-                        $(currentMaterialDom).parents('tr').find(':input[name=unit]').val(row.base_unit)
-                        $(currentMaterialDom).parents('tr').find(':input[name=unitText]').val(row.base_unit_name)
+                        $(currentMaterialDom).parent().parent().find(':input[name=materialCategoryId]').val(row.category_id)
+                        $(currentMaterialDom).parent().parent().find(':input[name=unit]').val(row.base_unit)
+                        $(currentMaterialDom).parent().parent().find(':input[name=unitText]').val(row.base_unit_name)
 
                         setCaretPosition(currentMaterialDom, currentMaterialDom.value.length)
 
-                        _this.columnConfig.selected && _this.columnConfig.selected($(currentMaterialDom).parents('tr'), row)
+                        _this.columnConfig.selected && _this.columnConfig.selected($(currentMaterialDom).parent().parent(), row)
                     }
                 })
 
@@ -62,7 +62,7 @@
                             }
                         }))
 
-                        _this.columnConfig.selected && _this.columnConfig.selected($(currentMaterialDom).parents('tr'), rows)
+                        _this.columnConfig.selected && _this.columnConfig.selected($(currentMaterialDom).parent().parent(), rows)
                     }
                 })
 
@@ -97,7 +97,7 @@
                         let context = {
                             params: {}
                         }
-                        if (!_this.columnConfig.beforeShow || _this.columnConfig.beforeShow($(currentMaterialDom).parents('tr'), context)) {
+                        if (!_this.columnConfig.beforeShow || _this.columnConfig.beforeShow($(currentMaterialDom).parent().parent(), context)) {
                             // 获取客户端参数查询
                             if (columnConfig.mode === 'single' || $(this).parents("tr").next().length) {
                                 // 设置参数
