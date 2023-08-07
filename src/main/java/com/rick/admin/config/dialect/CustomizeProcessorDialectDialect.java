@@ -1,6 +1,7 @@
 package com.rick.admin.config.dialect;
 
 import com.google.common.collect.Sets;
+import com.rick.admin.config.dialect.processor.SelectOptionProcessor;
 import com.rick.admin.config.dialect.processor.SelectProcessor;
 import com.rick.db.service.SharpService;
 import com.rick.meta.dict.service.DictService;
@@ -39,6 +40,7 @@ public class CustomizeProcessorDialectDialect extends AbstractProcessorDialect {
 
         // 添加自定义标签
         processors.add(new SelectProcessor(DIALECT_PREFIX, dictService, sharpService));
+        processors.add(new SelectOptionProcessor(DIALECT_PREFIX, dictService, sharpService));
         return processors;
     }
 }
