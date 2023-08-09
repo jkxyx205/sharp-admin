@@ -7,7 +7,6 @@ import com.rick.meta.dict.service.DictService;
 import com.rick.meta.props.service.PropertyUtils;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.thymeleaf.context.ITemplateContext;
 import org.thymeleaf.model.IModel;
 import org.thymeleaf.model.IModelFactory;
 import org.thymeleaf.model.IProcessableElementTag;
@@ -29,15 +28,12 @@ public class SelectOptionHelper {
 
     private SharpService sharpService;
 
-    public void appendOptions(ITemplateContext iTemplateContext, IProcessableElementTag iProcessableElementTag, IElementTagStructureHandler iElementTagStructureHandler) {
+    public void appendOptions(IModelFactory modelFactory, IModel model, IProcessableElementTag iProcessableElementTag, IElementTagStructureHandler iElementTagStructureHandler) {
         //  获取前端页面传递的属性
         String key = iProcessableElementTag.getAttributeValue("key");
         String selected = iProcessableElementTag.getAttributeValue("value");
         String excludeValues = iProcessableElementTag.getAttributeValue("exclude");
 
-        // 创建标签
-        IModelFactory modelFactory = iTemplateContext.getModelFactory();
-        IModel model = modelFactory.createModel();
 
         String emptyItemText = iProcessableElementTag.hasAttribute("emptyItemText") ? StringUtils.defaultString(iProcessableElementTag.getAttributeValue("emptyItemText"), "") : "全部";
 

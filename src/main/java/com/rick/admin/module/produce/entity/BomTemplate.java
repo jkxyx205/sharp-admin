@@ -13,6 +13,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Rick.Xu
@@ -86,6 +87,10 @@ public class BomTemplate extends BaseCodeEntity {
 
         @Transient
         BomTemplate bomTemplate;
+
+        public boolean hasTemplate() {
+            return Objects.nonNull(bomTemplate);
+        }
 
     }
 

@@ -40,6 +40,7 @@
         .component-name2 {
             font-weight: bold;
             margin: 16px 0 16px 16px;
+            color: #73818f;
         }
 
         .form-item {
@@ -445,7 +446,7 @@
                 if (tpl) {
                     for(let component of tpl.componentList) {
                         for (let componentDetail of component.componentDetailList) {
-                            if (!componentDetail.value.materialId) {
+                            if (!componentDetail.value.materialId && !(componentDetail.required === false)) {
                                 toastr.error('第 '+(index + 1)+' 行产成品的物料清单有【物料】没有填写！')
                                 detailValid = false
                                 return
@@ -472,7 +473,9 @@
                             if (componentDetail.bomTemplate) {
                                 checkAndGetValueList(componentDetail.bomTemplate, valueList, index)
                             } else {
-                                valueList.push({...componentDetail.value, ...{quantity: componentDetail.quantity}})
+                                if (componentDetail.value.materialId) {
+                                    valueList.push({...componentDetail.value, ...{quantity: componentDetail.quantity}})
+                                }
                             }
                         }
                     }

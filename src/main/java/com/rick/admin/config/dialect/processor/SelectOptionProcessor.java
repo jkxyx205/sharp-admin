@@ -4,6 +4,8 @@ import com.rick.admin.config.dialect.SelectOptionHelper;
 import com.rick.db.service.SharpService;
 import com.rick.meta.dict.service.DictService;
 import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.model.IModel;
+import org.thymeleaf.model.IModelFactory;
 import org.thymeleaf.model.IProcessableElementTag;
 import org.thymeleaf.processor.element.AbstractElementTagProcessor;
 import org.thymeleaf.processor.element.IElementTagStructureHandler;
@@ -58,8 +60,10 @@ public class SelectOptionProcessor extends AbstractElementTagProcessor {
 
     @Override
     protected void doProcess(ITemplateContext iTemplateContext, IProcessableElementTag iProcessableElementTag, IElementTagStructureHandler iElementTagStructureHandler) {
+        IModelFactory modelFactory = iTemplateContext.getModelFactory();
+        IModel model = modelFactory.createModel();
         new SelectOptionHelper(dictService, sharpService)
-                .appendOptions(iTemplateContext, iProcessableElementTag, iElementTagStructureHandler);
+                .appendOptions(modelFactory, model, iProcessableElementTag, iElementTagStructureHandler);
     }
 
 
