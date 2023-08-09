@@ -31,6 +31,22 @@ import java.util.List;
 @Table(value = "produce_order", comment = "生产单")
 public class ProduceOrder extends BaseCodeEntity {
 
+    @NotNull
+    @Column(comment = "客户")
+    Long partnerId;
+
+    //    @NotBlank
+    @Column(comment = "联系人")
+    String contactPerson;
+
+    //    @NotBlank
+    @Column(comment = "联系方式")
+    String contactNumber;
+
+    //    @NotBlank
+    @Column(comment = "联系邮箱")
+    String contactMail;
+
     StatusEnum status;
 
     @OneToMany(subTable = "produce_order_item", reversePropertyName = "produceOrderId", cascadeInsertOrUpdate = true, joinValue = "produce_order_id")

@@ -41,6 +41,9 @@ public class Plant extends BaseCodeEntity {
     @Column(comment = "联系方式")
     String contactNumber;
 
+    @Column(comment = "联系邮箱")
+    String contactMail;
+
     @Length(max = 128, message = "详细地址不能超过128个字符")
     String detailAddress;
 }

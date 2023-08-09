@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.rick.admin.auth.common.UserContextHolder;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
+import com.rick.admin.module.core.dao.PartnerDAO;
+import com.rick.admin.module.core.entity.Partner;
 import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
@@ -48,6 +50,8 @@ public class PurchaseOrderController {
 
     final MaterialService materialService;
 
+    final PartnerDAO partnerDAO;
+
     @PostMapping
     @ResponseBody
     @Transactional(rollbackFor = Exception.class)
@@ -75,9 +79,17 @@ public class PurchaseOrderController {
         Map<String, List<Map>> partnerIdMap = list.stream().collect(Collectors.groupingBy(r -> (String) r.get("partnerId")));
         List<PurchaseOrder> purchaseOrderList = Lists.newArrayListWithExpectedSize(partnerIdMap.size());
 
+        Map<Long, Partner> partnerMap = partnerDAO.selectByIdsAsMap(partnerIdMap.keySet());
+
         for (Map.Entry<String, List<Map>> entry : partnerIdMap.entrySet()) {
             value.put("partnerId", entry.getKey());
             value.put("itemList", entry.getValue());
+            // 添加供应商联系人和联系方式
+            Partner partner = partnerMap.get(Long.parseLong(entry.getKey()));
+            value.put("contactPerson", partner.getContactPerson());
+            value.put("contactNumber", partner.getContactNumber());
+            value.put("contactMail", partner.getContactMail());
+            value.put("status", PurchaseOrder.StatusEnum.PLANNING);
             purchaseOrderList.add(purchaseOrderDAO.mapToEntity(value));
         }
         purchaseOrderService.save(purchaseOrderList);

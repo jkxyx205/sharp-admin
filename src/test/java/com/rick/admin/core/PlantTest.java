@@ -124,7 +124,14 @@ public class PlantTest {
                 .build();
 
 
-        List<CpnConfigurer> cpnConfigurerList = Lists.newArrayList(codeCpn, nameCpn, detailAddressCpn, contactPersonCpn, contactNumberCpn);
+        CpnConfigurer contactMailCpn = CpnConfigurer.builder()
+                .cpnType(CpnTypeEnum.EMAIL)
+                .name("contactMail")
+                .label("联系邮箱")
+                .placeholder("请输入联系邮箱")
+                .build();
+
+        List<CpnConfigurer> cpnConfigurerList = Lists.newArrayList(codeCpn, nameCpn, detailAddressCpn, contactPersonCpn, contactNumberCpn, contactMailCpn);
         return cpnConfigurerList;
     }
 
@@ -136,7 +143,7 @@ public class PlantTest {
                 .tplName("tpl/list")
                 .name("库房")
                 .additionalInfo(Params.builder(1).pv("formId", "695620585685782528").build())
-                .querySql("SELECT core_plant.id, core_plant.code, core_plant.name, detail_address, contact_person, contact_number, sys_user.name create_name,DATE_FORMAT(core_plant.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM core_plant left join sys_user on sys_user.id = core_plant.create_by WHERE core_plant.code = :code AND core_plant.name like :name AND core_plant.is_deleted = 0")
+                .querySql("SELECT core_plant.id, core_plant.code, core_plant.name, detail_address, contact_person, contact_number, contact_mail, sys_user.name create_name,DATE_FORMAT(core_plant.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM core_plant left join sys_user on sys_user.id = core_plant.create_by WHERE core_plant.code = :code AND core_plant.name like :name AND core_plant.is_deleted = 0")
                 .queryFieldList(Arrays.asList(
                         new QueryField("code", "编号", QueryField.Type.TEXT),
                         new QueryField("name", "名称", QueryField.Type.TEXT)
@@ -148,6 +155,7 @@ public class PlantTest {
                         new ReportColumn("detail_address", "详细地址"),
                         new ReportColumn("contact_person", "联系人"),
                         new ReportColumn("contact_number", "联系电话"),
+                        new ReportColumn("contact_mail", "联系邮箱"),
                         new ReportColumn("create_name", "创建人").setColumnWidth(100),
                         new ReportColumn("create_time", "创建时间").setColumnWidth(180).setAlign(AlignEnum.CENTER)
                 ))

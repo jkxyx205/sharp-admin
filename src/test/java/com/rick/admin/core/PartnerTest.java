@@ -139,6 +139,14 @@ public class PartnerTest {
                 .placeholder("请输入联系邮箱")
                 .build();
 
+        CpnConfigurer contactFaxCpn = CpnConfigurer.builder()
+                .cpnType(CpnTypeEnum.TEXT)
+                .name("contactFax")
+                .label("传真")
+                .validatorList(textValidatorList)
+                .placeholder("请输入传真")
+                .build();
+
         CpnConfigurer bankNameCpn = CpnConfigurer.builder()
                 .cpnType(CpnTypeEnum.TEXT)
                 .name("bankName")
@@ -172,7 +180,7 @@ public class PartnerTest {
                 .build();
 
 
-        List<CpnConfigurer> cpnConfigurerList = Lists.newArrayList(typeCpn, codeCpn, nameCpn, remarkCpn, contactPersonCpn, contactNumberCpn, contactMailCpn,
+        List<CpnConfigurer> cpnConfigurerList = Lists.newArrayList(typeCpn, codeCpn, nameCpn, remarkCpn, contactPersonCpn, contactNumberCpn, contactMailCpn, contactFaxCpn,
                 bankNameCpn, bankAccountCpn, taxCodeCpn, addressCpn);
         return cpnConfigurerList;
     }
@@ -185,7 +193,7 @@ public class PartnerTest {
                 .tplName("tpl/list")
                 .name("合作伙伴")
                 .additionalInfo(Params.builder(1).pv("formId", "695708313425285120").build())
-                .querySql("SELECT core_partner.id, core_partner.partner_type, core_partner.code, core_partner.name, core_partner.remark, core_partner.contact_person, core_partner.contact_number, core_partner.contact_mail, core_partner.bank_name, core_partner.bank_account, core_partner.tax_code, core_partner.address, sys_user.name create_name,DATE_FORMAT(core_partner.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM core_partner left join sys_user on sys_user.id = core_partner.create_by WHERE core_partner.partner_type = :partnerType AND core_partner.code = :code AND core_partner.name like :name AND core_partner.is_deleted = 0")
+                .querySql("SELECT core_partner.id, core_partner.partner_type, core_partner.code, core_partner.name, core_partner.remark, core_partner.contact_person, core_partner.contact_number, core_partner.contact_mail, contact_fax, core_partner.bank_name, core_partner.bank_account, core_partner.tax_code, core_partner.address, sys_user.name create_name,DATE_FORMAT(core_partner.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM core_partner left join sys_user on sys_user.id = core_partner.create_by WHERE core_partner.partner_type = :partnerType AND core_partner.code = :code AND core_partner.name like :name AND core_partner.is_deleted = 0")
                 .queryFieldList(Arrays.asList(
                         new QueryField("partnerType", "类型", QueryField.Type.SELECT, "partner_type"),
                         new QueryField("code", "编号", QueryField.Type.TEXT),
@@ -199,6 +207,7 @@ public class PartnerTest {
                         new ReportColumn("contact_person", "联系人"),
                         new ReportColumn("contact_number", "联系电话"),
                         new ReportColumn("contact_mail", "联系邮箱"),
+                        new ReportColumn("contact_fax", "传真"),
 //                        new ReportColumn("address", "公司地址"),
                         new ReportColumn("create_name", "创建人").setColumnWidth(100),
                         new ReportColumn("create_time", "创建时间").setColumnWidth(180).setAlign(AlignEnum.CENTER)

@@ -54,6 +54,9 @@ public class PurchaseOrderInboundHandler extends AbstractHandler {
         inventoryDocument.setRootReferenceCode(inventoryDocument.getReferenceCode());
 
         purchaseOrderItemDAO.setComplete(completeIdList);
+
+        // 如果全部收货完成， 订单标记完成
+        purchaseOrderService.ifAllCompleteAndSetDone(inventoryDocument.getRootReferenceCode());
     }
 
 }

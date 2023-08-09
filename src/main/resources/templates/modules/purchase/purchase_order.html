@@ -18,11 +18,11 @@
         }
 
         #form-item .table-fixed-container {
-            max-height: calc(100vh - 440px);
+            max-height: calc(100vh - 580px);
         }
 
         #goods_receipt_container .table-fixed-container {
-            max-height: 120px;
+            max-height: 220px;
         }
 
         .form-item .footer span {
@@ -51,12 +51,28 @@
                         <sp:select  id="partnerId" name="partnerId" key="core_partner_vendor" th:value="${po.partnerId}" class="form-control" emptyItemText required onchange="changeVendor(this)"/>
                     </div>
                     <div class="form-group">
+                        <label class="col-form-label mr-2 required" for="contactPerson">联系人</label>
+                        <input class="form-control" type="text" id="contactPerson" th:value="${po.contactPerson}" name="contactPerson" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label mr-2 required" for="contactNumber">联系电话</label>
+                        <input class="form-control" type="text" id="contactNumber" th:value="${po.contactNumber}" name="contactNumber" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label mr-2 required" for="contactMail">联系邮箱</label>
+                        <input class="form-control" type="text" id="contactMail" th:value="${po.contactMail}" name="contactMail" required>
+                    </div>
+                    <div class="form-group">
                         <label class="col-form-label mr-2" for="plantId">入库库房</label>
                         <sp:select  id="plantId" name="plantId" key="core_plant" th:value="${po.plantId}" class="form-control" hideAllItem/>
                     </div>
                     <div class="form-group">
                         <label class="col-form-label mr-2 required" for="deliveryDate">交货日期</label>
                         <input class="form-control" type="text" id="deliveryDate" name="deliveryDate" required th:value="${po.deliveryDate == null ? #calendars.format(#calendars.createNow(), 'yyyy-MM-dd') : po.deliveryDate}">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label mr-2">状态</label>
+                        <sp:select  id="status" name="status" key="purchase_order_status" class="form-control" th:value="${po.status}" hideAllItem/>
                     </div>
                     <div class="form-group">
                         <label class="col-form-label mr-2" for="remark">备注</label>
@@ -90,7 +106,7 @@
                 <div class="tab-pane active" id="tab-1" role="tabpanel">
                     <div id="goods_receipt_container" role="tabpanel">
                         <div class="table-fixed-container">
-                            <table class="table table-responsive-sm table-bordered table-striped table-sm table-thead">
+                            <table class="table table-responsive-sm table-bordered table-striped table-sm table-thead" style="margin-bottom: 0">
                                 <thead>
                                 <tr>
                                     <th style="width: 50px" data-index>序号</th>
@@ -105,7 +121,7 @@
                                 </tr>
                                 </thead>
                             </table>
-                            <table class="table table-responsive-sm table-bordered table-striped table-sm table-tbody">
+                            <table class="table table-responsive-sm table-bordered table-striped table-sm table-tbody" style="margin-bottom: 0">
                                 <tbody>
                                 <tr th:each="s: ${goodsReceiptItemList}">
                                     <td th:text="${sStat.index + 1}" data-index></td>

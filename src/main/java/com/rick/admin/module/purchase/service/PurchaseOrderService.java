@@ -7,6 +7,7 @@ import com.rick.admin.common.exception.ResourceNotFoundException;
 import com.rick.admin.module.core.service.CodeHelper;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
+import com.rick.admin.module.purchase.dao.PurchaseOrderItemDAO;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
@@ -37,6 +38,8 @@ public class PurchaseOrderService {
     PurchaseOrderDAO purchaseOrderDAO;
 
     SharpService sharpService;
+
+    PurchaseOrderItemDAO purchaseOrderItemDAO;
 
     /**
      * 新增或修改
@@ -143,4 +146,14 @@ public class PurchaseOrderService {
         return resultMap;
     }
 
+    public void ifAllCompleteAndSetDone(String rootReferenceCode) {
+        List<PurchaseOrder.Item> list = purchaseOrderItemDAO.list(rootReferenceCode);
+
+        boolean hasUnComplete = list.stream().anyMatch(item -> !item.getComplete());
+        if (!hasUnComplete) {
+            purchaseOrderDAO.update("status"
+                    , Params.builder(2).pv("code", rootReferenceCode).pv("status", PurchaseOrder.StatusEnum.DONE).build(),
+                    "code = :code");
+        }
+    }
 }

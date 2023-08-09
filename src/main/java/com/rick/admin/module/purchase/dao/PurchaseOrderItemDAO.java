@@ -23,4 +23,9 @@ public class PurchaseOrderItemDAO extends EntityDAOImpl<PurchaseOrder.Item, Long
                     "id IN (:completeIdList)");
         }
     }
+
+    public List<PurchaseOrder.Item> list(String purchaseOrderCode) {
+        return selectByParams("purchase_order_code="+purchaseOrderCode);
+    }
+
 }

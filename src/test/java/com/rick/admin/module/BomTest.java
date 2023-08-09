@@ -108,8 +108,8 @@ public class BomTest {
                         new ReportColumn("quantity", "数量"),
                         new ReportColumn("unit", "单位", false, "unit", Arrays.asList("dictConverter")),
                         new ReportColumn("remark", "备注"),
-                        new ReportColumn("create_by", "创建人", false, "sys_user", Arrays.asList("dictConverter")),
-                        new ReportColumn("create_time", "创建时间", false,null, Arrays.asList("localDateTimeConverter"))
+                        new ReportColumn("create_by", "创建人", false, "sys_user", Arrays.asList("dictConverter")).setColumnWidth(100),
+                        new ReportColumn("create_time", "创建时间", false,null, Arrays.asList("localDateTimeConverter")).setColumnWidth(180)
                 ))
                 .pageable(true)
                 .sidx("id")

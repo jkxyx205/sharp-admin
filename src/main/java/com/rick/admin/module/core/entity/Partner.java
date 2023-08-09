@@ -40,6 +40,9 @@ public class Partner extends BaseCodeEntity {
     @Column(comment = "联系邮箱")
     String contactMail;
 
+    @Column(comment = "传真")
+    String contactFax;
+
     @Column(comment = "开户银行")
     String bankName;
 

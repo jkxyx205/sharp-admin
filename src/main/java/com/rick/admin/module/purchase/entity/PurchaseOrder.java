@@ -1,5 +1,6 @@
 package com.rick.admin.module.purchase.entity;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.rick.admin.module.material.service.MaterialDescription;
 import com.rick.db.dto.BaseCodeEntity;
 import com.rick.db.dto.BaseEntity;
@@ -43,6 +44,10 @@ public class PurchaseOrder extends BaseCodeEntity {
     @Column(comment = "联系方式")
     String contactNumber;
 
+//    @NotBlank
+    @Column(comment = "联系邮箱")
+    String contactMail;
+
     @NotNull
     @Column(comment = "库房")
     Long plantId;
@@ -53,6 +58,8 @@ public class PurchaseOrder extends BaseCodeEntity {
 
     @Column(comment = "备注")
     String remark;
+
+    StatusEnum status;
 
     @NotEmpty
     @OneToMany(subTable = "pur_purchase_order_item", reversePropertyName = "purchaseOrderId", cascadeInsertOrUpdate = true, joinValue = "purchase_order_id")
@@ -117,5 +124,23 @@ public class PurchaseOrder extends BaseCodeEntity {
             return null;
         }
 
+    }
+
+    @AllArgsConstructor
+    @Getter
+    public enum StatusEnum {
+        PLANNING("采购中"),
+        DONE("采购完成");
+
+        @JsonValue
+        public String getCode() {
+            return this.name();
+        }
+
+        private final String label;
+
+        public static PurchaseOrder.StatusEnum valueOfCode(String code) {
+            return valueOf(code);
+        }
     }
 }

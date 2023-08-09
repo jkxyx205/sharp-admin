@@ -111,6 +111,15 @@
                         </div>
                     </div>
                     <div class="form-group row">
+                        <label for="contactFax" class="col-sm-3 col-form-label">传真</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="contactFax" name="contactFax" maxlength="16" th:value="${formBO.propertyMap.contactFax.value}"
+                                   placeholder="请输入传真" value="">
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">长度范围 0 - 16 个字符</div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
                         <label for="bankName" class="col-sm-3 col-form-label">开户银行</label>
                         <div class="col-sm-9">
                             <input type="text" class="form-control" id="bankName" name="bankName" maxlength="16" th:value="${formBO.propertyMap.bankName.value}"

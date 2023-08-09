@@ -42,6 +42,7 @@ public class PartnerFormService implements FormAdvice {
     public void afterInstanceHandle(FormBO form, Long instanceId, Map<String, Object> values) {
         dictService.rebuild("core_partner");
         dictService.rebuild("core_partner_vendor");
+        dictService.rebuild("core_partner_customer");
     }
 
     @Override
