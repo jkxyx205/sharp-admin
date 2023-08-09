@@ -270,7 +270,7 @@
                         }
                     } else {
                         // 单个checkbox
-                        $input.attr('type', 'checkbox').attr('class', '').parents().css('text-align', columnConfig.align ?  columnConfig.align : 'left')
+                        $input.attr('type', 'checkbox').attr('class', '').parent().css('text-align', columnConfig.align ?  columnConfig.align : 'left')
                     }
                 } else if(columnConfig.type === 'switch') {
                     let $switch = $('<label style="position: relative; top: 3px;" class="switch switch-pill switch-primary">\n' +
