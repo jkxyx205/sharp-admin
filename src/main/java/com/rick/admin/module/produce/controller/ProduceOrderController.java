@@ -125,10 +125,11 @@ public class ProduceOrderController {
     }
 
     private List<ProduceOrderController.GoodsReceiptItem> getGoodsReceiptItemList(String produceOrderCode) {
+        // language=SQL
         String sql = "select '${produceOrderCode}'                    produceOrderCode,\n" +
                 "       mm_material.id                         material_id,\n" +
                 "       mm_material.code                       materialCode,\n" +
-                "       v.value color,\n" +
+                "       t1.color,\n" +
                 "       mm_material.base_unit                  unitText,\n" +
                 "       t1.quantity,\n" +
                 "       IFNULL(t2.quantity, 0)                 goodsReceiptQuantity,\n" +
@@ -136,6 +137,7 @@ public class ProduceOrderController {
                 "from (select produce_order_item_detail.`id`,\n" +
                 "             produce_order_item_detail.material_id,\n" +
                 "             produce_order_item_detail.batch_code,\n" +
+                "             produce_order_item_detail.color,\n" +
                 "             produce_order_item_detail.quantity * produce_order_item.quantity quantity\n" +
                 "      from produce_order\n" +
                 "               inner join produce_order_item on produce_order_item.`produce_order_id` = produce_order.id\n" +
@@ -145,9 +147,7 @@ public class ProduceOrderController {
                 "                    from inv_document_item\n" +
                 "                    where `root_reference_code` = :produceOrderCode\n" +
                 "                    group by root_reference_item_id) t2 on t1.id = t2.root_reference_item_id\n" +
-                "         left join `mm_material` on mm_material.id = t1.material_id\n" +
-                "         left join mm_profile mp on mp.material_id = t1.material_id AND mp.batch_code = t1.batch_code\n" +
-                "         left join mm_characteristic_value v on v.reference_id = mp.id";
+                "         left join `mm_material` on mm_material.id = t1.material_id";
 
         List<GoodsReceiptItem> goodsReceiptItemList = sharpService.query(sql, Params.builder(1).pv("produceOrderCode", produceOrderCode).build(), GoodsReceiptItem.class);
         if (CollectionUtils.isNotEmpty(goodsReceiptItemList)) {
