@@ -52,10 +52,6 @@ public class PurchaseOrder extends BaseCodeEntity {
     @Column(comment = "库房")
     Long plantId;
 
-    @NotNull
-    @Column(comment = "交货日期")
-    LocalDate deliveryDate;
-
     @Column(comment = "备注")
     String remark;
 
@@ -64,6 +60,10 @@ public class PurchaseOrder extends BaseCodeEntity {
     @NotEmpty
     @OneToMany(subTable = "pur_purchase_order_item", reversePropertyName = "purchaseOrderId", cascadeInsertOrUpdate = true, joinValue = "purchase_order_id")
     List<Item> itemList;
+
+    public BigDecimal getAmount() {
+        return itemList.stream().map(PurchaseOrder.Item::getAmount).reduce(BigDecimal.ZERO, (a1, a2) -> a1.add(a2));
+    }
 
     @Getter
     @Setter
@@ -89,6 +89,10 @@ public class PurchaseOrder extends BaseCodeEntity {
         @NotNull
         @Column(comment = "含税单价")
         BigDecimal unitPrice;
+
+        @NotNull
+        @Column(comment = "交货日期")
+        LocalDate deliveryDate;
 
         @Column(comment = "备注")
         String remark;

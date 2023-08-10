@@ -41,10 +41,6 @@
                         <sp:select  id="plantId" name="plantId" key="core_plant" class="form-control" hideAllItem/>
                     </div>
                     <div class="form-group">
-                        <label class="col-form-label mr-2 required" for="deliveryDate">交货日期</label>
-                        <input class="form-control" type="text" id="deliveryDate" name="deliveryDate" required th:value="${#calendars.format(#calendars.createNow(), 'yyyy-MM-dd')}">
-                    </div>
-                    <div class="form-group">
                         <label class="col-form-label mr-2" for="remark">备注</label>
                         <input class="form-control" type="text" id="remark" name="remark">
                     </div>
@@ -205,6 +201,13 @@
                     width: 100,
                     title: "含税总计",
                     required: false,
+                },
+                {
+                    type: "date",
+                    name: "deliveryDate",
+                    width: 150,
+                    title: "交货日期",
+                    required: true,
                 },
                 {
                     type: "select",

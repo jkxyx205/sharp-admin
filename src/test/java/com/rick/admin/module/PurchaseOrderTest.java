@@ -30,7 +30,7 @@ public class PurchaseOrderTest {
                 .tplName("modules/purchase/list")
                 .name("订单列表")
 //                .reportAdviceName("inventoryDocumentReportAdvice")
-                .querySql("select id, code, partner_id, plant_id, delivery_date, status, remark, create_by, create_time from pur_purchase_order where code = :code and status = :status and partner_id = :partner_id and create_by = :create_by and create_time >= :create_time0 and create_time <= :create_time1")
+                .querySql("select id, code, partner_id, plant_id, status, remark, create_by, create_time from pur_purchase_order where code = :code and status = :status and partner_id = :partner_id and create_by = :create_by and create_time >= :create_time0 and create_time <= :create_time1")
                 .queryFieldList(Arrays.asList(
                         new QueryField("code", "订单号", QueryField.Type.TEXT),
                         new QueryField("partner_id", "供应商", QueryField.Type.SELECT, "core_partner"),
@@ -43,7 +43,7 @@ public class PurchaseOrderTest {
                         new ReportColumn("code", "订单号").setColumnWidth(180),
                         new ReportColumn("partner_id", "供应商", false, "core_partner", Arrays.asList("dictConverter")),
                         new ReportColumn("plant_id", "入库库房", false, "core_plant", Arrays.asList("dictConverter")),
-                        new ReportColumn("delivery_date", "交货日期", true,null, Arrays.asList("sqlDateConverter")).setColumnWidth(120),
+//                        new ReportColumn("delivery_date", "交货日期", true,null, Arrays.asList("sqlDateConverter")).setColumnWidth(120),
                         new ReportColumn("status", "状态", false, "purchase_order_status", Arrays.asList("dictConverter")).setColumnWidth(100),
                         new ReportColumn("remark", "备注"),
                         new ReportColumn("create_by", "创建人", false, "sys_user", Arrays.asList("dictConverter")).setColumnWidth(100),
