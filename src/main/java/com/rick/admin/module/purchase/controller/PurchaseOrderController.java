@@ -26,6 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -183,6 +186,11 @@ public class PurchaseOrderController {
     @ResponseBody
     public Result<Integer> deleteById(@PathVariable Long id) {
         return ResultUtils.success(purchaseOrderDAO.deleteById(id));
+    }
+
+    @GetMapping("{id}/download")
+    public void downloadById(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        purchaseOrderService.downloadById(id, request, response);
     }
 
     class GoodsReceiptItem extends PurchaseOrder.Item {

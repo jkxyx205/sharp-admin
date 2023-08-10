@@ -4,25 +4,46 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
+import com.rick.admin.module.core.dao.PartnerDAO;
+import com.rick.admin.module.core.entity.Partner;
 import com.rick.admin.module.core.service.CodeHelper;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
+import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
 import com.rick.admin.module.purchase.dao.PurchaseOrderItemDAO;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
+import com.rick.common.http.HttpServletResponseUtils;
+import com.rick.common.util.Time2StringUtils;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
+import com.rick.excel.core.ExcelWriter;
+import com.rick.excel.core.model.ExcelCell;
 import com.rick.meta.dict.entity.Dict;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.xssf.usermodel.*;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigDecimal;
-import java.util.Collection;
+import java.math.RoundingMode;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -40,6 +61,10 @@ public class PurchaseOrderService {
     SharpService sharpService;
 
     PurchaseOrderItemDAO purchaseOrderItemDAO;
+
+    PartnerDAO partnerDAO;
+
+    MaterialService materialService;
 
     /**
      * 新增或修改
@@ -155,5 +180,105 @@ public class PurchaseOrderService {
                     , Params.builder(2).pv("code", rootReferenceCode).pv("status", PurchaseOrder.StatusEnum.DONE).build(),
                     "code = :code");
         }
+    }
+
+    public void downloadById(Long id, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        PurchaseOrder purchaseOrder = purchaseOrderDAO.selectById(id).get();
+        Partner partner = partnerDAO.selectById(purchaseOrder.getPartnerId()).get();
+        OutputStream os = HttpServletResponseUtils.getOutputStreamAsAttachment(request, response, partner.getName() + "_" + purchaseOrder.getCode() + ".xlsx");
+
+        // 这样就不会改变模版文件
+        final ClassPathResource classPathResource = new ClassPathResource("templates/excel/po.xlsx");
+        byte[] bytes = IOUtils.toByteArray(classPathResource.getInputStream());
+
+        ExcelWriter excelWriter = new ExcelWriter(new XSSFWorkbook(new ByteArrayInputStream(bytes)));
+
+        excelWriter.writeCell(new ExcelCell(7, 3, "PO NO: "+ purchaseOrder.getCode()));
+        excelWriter.writeCell(new ExcelCell(1, 5, "供方（Vendor）：" + partner.getName()));
+        excelWriter.writeCell(new ExcelCell(2, 6, purchaseOrder.getContactPerson() + " " + purchaseOrder.getContactNumber()));
+        excelWriter.writeCell(new ExcelCell(2, 7, partner.getContactFax()));
+        excelWriter.writeCell(new ExcelCell(2, 8, partner.getContactFax()));
+        excelWriter.writeCell(new ExcelCell(1, 9, "ADD：  " + partner.getAddress()));
+
+//        excelWriter.writeCell(new ExcelCell(7, 5, "需方：普源电机制造（苏州）有限公司"));
+//        excelWriter.writeCell(new ExcelCell(7, 6, "慧博士 18898876623"));
+//        excelWriter.writeCell(new ExcelCell(7, 7, "0512-77359511"));
+//        excelWriter.writeCell(new ExcelCell(7, 8, "0512-77359511"));
+//        excelWriter.writeCell(new ExcelCell(7, 10, "交货地点：苏州市高新区石阳路28号一号厂房大厅"));
+
+        ArrayList<Object[]> data = new ArrayList<>();
+        materialService.fillMaterialDescription(purchaseOrder.getItemList());
+        for (int i = 0; i < purchaseOrder.getItemList().size(); i++) {
+            PurchaseOrder.Item item = purchaseOrder.getItemList().get(i);
+            String[] materialText = item.getMaterialText().split(" ");
+            //        data.add(new Object[]{1, "资材编号1", "品 名", "型号规格", 3, "单位", 1, 11, "2022-11-16"});
+            data.add(new Object[] {i + 1, item.getMaterialCode(), materialText[0],
+                    (materialText.length > 1 ? materialText[1] : "") + (StringUtils.isBlank(item.getColor()) ? "" : " " + item.getColor()),
+                    item.getQuantity(), item.getUnitText(), item.getUnitPrice(), item.getAmount(),
+                    StringUtils.isNotBlank(item.getRemark()) ? item.getRemark() : Time2StringUtils.format(item.getDeliveryDate())
+            });
+        }
+
+        int rowSize = data.size();
+
+        // 获取 cell 样式
+        XSSFRow row = excelWriter.getActiveSheet().getRow(11);
+        int physicalNumberOfCells = row.getPhysicalNumberOfCells();
+        XSSFCellStyle[] cellStyles = new XSSFCellStyle[physicalNumberOfCells];
+        for (int i = 0; i < physicalNumberOfCells; i++) {
+            cellStyles[i] = row.getCell(i).getCellStyle();
+        }
+
+        XSSFColor redColor = new XSSFColor(Color.RED, new DefaultIndexedColorMap());
+
+        // 文字色
+        XSSFFont font = excelWriter.getBook().createFont();
+        font.setColor(redColor);
+        font.setBold(true);
+
+        excelWriter.insertAndWriteRow(1, 12, data, row.getHeightInPoints(), cellStyles, (ecell, cell) -> {
+            if (ecell.getX() == 9 && !String.valueOf(ecell.getValue()).matches("\\d{4}-\\d{2}-\\d{2}")) {
+                XSSFCellStyle newStyle = cell.getCellStyle().copy();
+                font.setFamily(newStyle.getFont().getFamily());
+                font.setFontName(newStyle.getFont().getFontName());
+                font.setFontHeight(newStyle.getFont().getFontHeight());
+                newStyle.setFont(font);
+                cell.setCellStyle(newStyle);
+            }
+        });
+
+        BigDecimal amount = purchaseOrder.getAmount().setScale(2, RoundingMode.HALF_UP);
+        String downloadDate = Time2StringUtils.format(new Date());
+        excelWriter.writeCell(new ExcelCell(3, 13 + rowSize, "¥" + amount));
+        excelWriter.writeCell(new ExcelCell(3, 14 + rowSize, "RMB" + amount));
+        excelWriter.writeCell(new ExcelCell(2, 15 + rowSize, purchaseOrder.getRemark()));
+        excelWriter.writeCell(new ExcelCell(4, 28 + rowSize, "本公司确认：方慧" + downloadDate));
+
+        excelWriter.getBook().setSheetName(0, downloadDate);
+
+        // 插入图片
+        //创建一个excel文件，名称为：
+        XSSFWorkbook workbook = excelWriter.getBook();
+        //创建一个sheet，名称为工作簿1
+        XSSFSheet sheet = excelWriter.getActiveSheet();
+
+        BufferedImage bufferImg;
+        //先把读进来的图片放到一个ByteArrayOutputStream中，以便产生ByteArray
+        ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
+        final ClassPathResource classPathResource2 = new ClassPathResource("templates/excel/seal.png");
+
+        //获取图片后缀
+        bufferImg = ImageIO.read(classPathResource2.getInputStream());
+        ImageIO.write(bufferImg, "png", byteArrayOut);
+
+        //画图的顶级管理器，一个sheet只能获取一个（一定要注意这点）
+        XSSFDrawing patriarch = sheet.createDrawingPatriarch();
+        //anchor主要用于设置图片的属性
+        XSSFClientAnchor anchor = new XSSFClientAnchor(0, 0, 0, 0, (short) 7, 19 + rowSize, (short) 9, 30 + rowSize);
+        anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_AND_RESIZE);
+        //插入图片
+        patriarch.createPicture(anchor, workbook.addPicture(byteArrayOut.toByteArray(), XSSFWorkbook.PICTURE_TYPE_PNG));
+
+        excelWriter.toFile(os);
     }
 }
