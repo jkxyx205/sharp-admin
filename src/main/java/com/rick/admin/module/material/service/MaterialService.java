@@ -80,20 +80,25 @@ public class MaterialService {
         return optional;
     }
 
-    public void fillMaterialDescription(Collection<? extends MaterialDescription> materialDescriptionList) {
+    public void fillMaterialDescription(Collection<? extends MaterialDescriptionHandler> materialDescriptionList) {
         if (CollectionUtils.isNotEmpty(materialDescriptionList)) {
-            consumeMaterialDescription(materialDescriptionList.stream().map(MaterialDescription::getMaterialId).collect(Collectors.toSet()), (idMaterialMap, dictService) -> {
-                for (MaterialDescription item : materialDescriptionList) {
-                    Material material = idMaterialMap.get(item.getMaterialId());
+            consumeMaterialDescription(materialDescriptionList.stream().map(MaterialDescriptionHandler::getMaterialId).collect(Collectors.toSet()), (idMaterialMap, dictService) -> {
+                for (MaterialDescriptionHandler handler : materialDescriptionList) {
+                    MaterialDescription materialDescription = new MaterialDescription(handler.getMaterialId());
+                    handler.setMaterialDescription(materialDescription);
+
+                    Material material = idMaterialMap.get(materialDescription.getId());
                     if (material == null) {
                         continue;
                     }
 
-                    item.setMaterialCode(material.getCode());
-                    item.setMaterialText(material.getName() + " " + material.getSpecificationText());
-                    item.setUnit(material.getBaseUnit());
-                    item.setUnitText(dictService.getDictByTypeAndName("unit", material.getBaseUnit()).get().getLabel());
-                    item.setMaterialCategoryId(material.getCategoryId());
+                    materialDescription.setCode(material.getCode());
+                    materialDescription.setName(material.getName());
+                    materialDescription.setSpecification(material.getSpecificationText());
+                    materialDescription.setUnit(material.getBaseUnit());
+                    materialDescription.setUnitText(dictService.getDictByTypeAndName("unit", material.getBaseUnit()).get().getLabel());
+                    materialDescription.setCategoryId(material.getCategoryId());
+                    materialDescription.setUnitPrice(material.getStandardPrice());
                 }
             });
         }

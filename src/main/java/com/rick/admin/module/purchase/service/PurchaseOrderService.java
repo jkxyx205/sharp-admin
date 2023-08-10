@@ -8,6 +8,7 @@ import com.rick.admin.module.core.dao.PartnerDAO;
 import com.rick.admin.module.core.entity.Partner;
 import com.rick.admin.module.core.service.CodeHelper;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
+import com.rick.admin.module.material.service.MaterialDescription;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
 import com.rick.admin.module.purchase.dao.PurchaseOrderItemDAO;
@@ -210,11 +211,11 @@ public class PurchaseOrderService {
         materialService.fillMaterialDescription(purchaseOrder.getItemList());
         for (int i = 0; i < purchaseOrder.getItemList().size(); i++) {
             PurchaseOrder.Item item = purchaseOrder.getItemList().get(i);
-            String[] materialText = item.getMaterialText().split(" ");
+            MaterialDescription materialDescription = item.getMaterialDescription();
             //        data.add(new Object[]{1, "资材编号1", "品 名", "型号规格", 3, "单位", 1, 11, "2022-11-16"});
-            data.add(new Object[] {i + 1, item.getMaterialCode(), materialText[0],
-                    (materialText.length > 1 ? materialText[1] : "") + (StringUtils.isBlank(item.getColor()) ? "" : " " + item.getColor()),
-                    item.getQuantity(), item.getUnitText(), item.getUnitPrice(), item.getAmount(),
+            data.add(new Object[] {i + 1, materialDescription.getCode(), materialDescription.getName(),
+                    materialDescription.getSpecification() + (StringUtils.isBlank(item.getColor()) ? "" : " " + item.getColor()),
+                    item.getQuantity(), materialDescription.getUnitText(), item.getUnitPrice(), item.getAmount(),
                     StringUtils.isNotBlank(item.getRemark()) ? item.getRemark() : Time2StringUtils.format(item.getDeliveryDate())
             });
         }

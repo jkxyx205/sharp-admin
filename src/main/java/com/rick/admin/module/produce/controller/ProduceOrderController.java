@@ -3,8 +3,8 @@ package com.rick.admin.module.produce.controller;
 import com.google.common.collect.Maps;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
-import com.rick.admin.module.material.dao.MaterialDAO;
-import com.rick.admin.module.material.entity.Material;
+import com.rick.admin.module.material.service.MaterialDescription;
+import com.rick.admin.module.material.service.MaterialDescriptionHandler;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.produce.entity.BomTemplate;
 import com.rick.admin.module.produce.entity.ProduceOrder;
@@ -17,7 +17,6 @@ import com.rick.db.plugin.dao.core.EntityCodeDAO;
 import com.rick.db.plugin.dao.core.EntityDAO;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
-import com.rick.meta.dict.service.DictService;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -46,10 +45,6 @@ public class ProduceOrderController {
     EntityDAO<ProduceOrder.Item, Long> produceOrderItemDAO;
 
     ProduceOrderService produceOrderService;
-
-    MaterialDAO materialDAO;
-
-    DictService dictService;
 
     SharpService sharpService;
 
@@ -130,6 +125,7 @@ public class ProduceOrderController {
                 "       mm_material.id                         material_id,\n" +
                 "       mm_material.code                       materialCode,\n" +
                 "       t1.color,\n" +
+                "       t1.id rootReferenceItemId," +
                 "       mm_material.base_unit                  unitText,\n" +
                 "       t1.quantity,\n" +
                 "       IFNULL(t2.quantity, 0)                 goodsReceiptQuantity,\n" +
@@ -150,15 +146,11 @@ public class ProduceOrderController {
                 "         left join `mm_material` on mm_material.id = t1.material_id";
 
         List<GoodsReceiptItem> goodsReceiptItemList = sharpService.query(sql, Params.builder(1).pv("produceOrderCode", produceOrderCode).build(), GoodsReceiptItem.class);
+        materialService.fillMaterialDescription(goodsReceiptItemList);
         if (CollectionUtils.isNotEmpty(goodsReceiptItemList)) {
-            Map<Long, Material> idMaterialMap = materialDAO.selectByIdsAsMap(goodsReceiptItemList.stream().map(ProduceOrderController.GoodsReceiptItem::getMaterialId).collect(Collectors.toSet()));
             for (GoodsReceiptItem item : goodsReceiptItemList) {
-                Material material = idMaterialMap.get(item.getMaterialId());
-                item.setMaterialText(material.getName() + " " + material.getSpecificationText());
-                item.setUnitText(dictService.getDictByTypeAndName("unit", item.getUnitText()).get().getLabel());
                 item.setOpenQuantity(BigDecimalUtils.lt(item.getOpenQuantity(), BigDecimal.ZERO) ? BigDecimal.ZERO : item.getOpenQuantity());
             }
-
         }
 
         return goodsReceiptItemList;
@@ -178,8 +170,6 @@ public class ProduceOrderController {
 
     @GetMapping("purchase_order")
     public String batch(Model model, String materialIds, String quantity) {
-        Map<Long, Material> idMaterialMap = materialDAO.selectByIdsAsMap(materialIds);
-
         List<PurchaseOrder.Item> itemList = new ArrayList<>();
 
         String[] quantityArr = quantity.split(",");
@@ -205,15 +195,10 @@ public class ProduceOrderController {
 
             item.setQuantity(new BigDecimal(quantityArr[i]));
 
-            Material material = idMaterialMap.get(item.getMaterialId());
-            item.setMaterialCode(material.getCode());
-            item.setMaterialText(material.getName() + " " + material.getSpecificationText());
-            item.setUnit(material.getBaseUnit());
-            item.setUnitText(dictService.getDictByTypeAndName("unit", material.getBaseUnit()).get().getLabel());
-            item.setUnitPrice(material.getStandardPrice());
-
             itemList.add(item);
         }
+
+        materialService.fillMaterialDescription(itemList);
 
         model.addAttribute("itemList", itemList);
         return "modules/purchase/purchase_order_batch";
@@ -231,17 +216,15 @@ public class ProduceOrderController {
     }
 
     @Data
-    public static class GoodsReceiptItem {
+    public static class GoodsReceiptItem implements MaterialDescriptionHandler {
 
         private String produceOrderCode;
+
+        private String rootReferenceItemId;
 
         private Long materialId;
 
         private String materialCode;
-
-        private String materialText;
-
-        private String unitText;
 
         private String color;
 
@@ -251,9 +234,7 @@ public class ProduceOrderController {
 
         private BigDecimal openQuantity;
 
-        public Long getId() {
-            return materialId;
-        }
+        private MaterialDescription materialDescription;
 
         public Boolean getComplete() {
             return BigDecimalUtils.eq(openQuantity, BigDecimal.ZERO);

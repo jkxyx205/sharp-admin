@@ -1,20 +1,34 @@
 package com.rick.admin.module.material.service;
 
+import lombok.Data;
+
+import java.math.BigDecimal;
+
 /**
  * @author Rick.Xu
  * @date 2023/8/2 00:08
  */
-public interface MaterialDescription {
+@Data
+public class MaterialDescription {
 
-    Long getMaterialId();
+    Long id;
 
-    void setMaterialCode(String materialCode);
+    String code;
 
-    void setMaterialText(String materialText);
+    String name;
 
-    default void setUnitText(String unitText) {}
+    String specification;
 
-    default void setUnit(String unit) {}
+    String unit;
 
-    default void setMaterialCategoryId(Long categoryId) {};
+    String unitText;
+
+    Long categoryId;
+
+    BigDecimal unitPrice;
+
+    public MaterialDescription(Long id) {
+        this.id = id;
+    }
 }
+

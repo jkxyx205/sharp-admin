@@ -152,6 +152,7 @@ public class InventoryController {
                             .batchCode(item.getBatchCode())
                             .color(item.getColor())
                             .materialId(item.getMaterialId())
+                            .materialCode(item.getMaterialCode())
                             .quantity(item.getQuantity())
                             .unit(item.getUnit())
                             .build());
@@ -168,6 +169,7 @@ public class InventoryController {
 
     private InventoryDocument getDocumentFromProduceOrder(InventoryDocument.MovementTypeEnum movementType, InventoryDocument.TypeEnum type, InventoryDocument.ReferenceTypeEnum referenceType, String referenceCode) {
         String sql = "select produce_order_item_detail.`material_id`,\n" +
+                "       mm_material.code material_code," +
                 "       produce_order_item_detail.`id`                               referenceItemId,\n" +
                 "       produce_order_item_detail.`id`                               rootReferenceItemId,\n" +
                 "       produce_order_item_detail.color,\n" +

@@ -69,7 +69,7 @@
                     </div>
                     <div class="form-group">
                         <label class="col-form-label mr-2 required" for="partnerId">客户</label>
-                        <sp:select  id="partnerId" name="partnerId" key="core_partner_customer" th:value="${po.partnerId}" class="form-control" emptyItemText required/>
+                        <sp:select  id="partnerId" name="partnerId" key="core_partner_customer" th:value="${po.partnerId}" class="form-control" emptyItemText required th:attr="disabled=${po.id != null}"/>
                     </div>
                     <div class="form-group">
                         <label class="col-form-label mr-2 required" for="contactPerson">联系人</label>
@@ -126,6 +126,7 @@
                                                 <thead>
                                                 <tr>
                                                     <th style="width: 100px;"><label class="required">零部件物料</label></th>
+                                                    <th style="width: 100px;"><label>名称</label></th>
                                                     <th><label>规格</label></th>
                                                     <th style="width: 100px;"><label class="required">颜色</label></th>
                                                     <th style="width: 80px;"><label>用量</label></th>
@@ -135,12 +136,12 @@
                                                 </thead>
                                                 <tbody>
                                                 <tr v-for="d in c.componentDetailList">
-                                                    <template  v-if="!d.bomTemplate">
-                                                        <td style="padding: 0;"><input class="form-control material" type="text" :disabled="d.type === 'MATERIAL'" :readonly="d.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="d.value.materialCode" :component_detail_id="d.id" :component_id="d.componentId" :type_instance_id="d.typeInstanceId" required="required" :placeholder="d.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="d.value.materialId" required="required" value=""></td><td v-if="!d.bomTemplate"><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialText" v-model="d.value.materialText"></td><td v-if="!d.bomTemplate"><select class="form-control" name="color" required="required" title="请填写颜色" disabled="disabled" v-model="d.value.color"><option v-for="option in d.options" v-text="option" :value="option"></option></select></td><td v-if="!d.bomTemplate"><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="d.quantity" disabled required="required"></td><td v-if="!d.bomTemplate"><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="d.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="d.value.unit"></td><td v-if="!d.bomTemplate" style="padding: 0;"><input class="form-control" type="text" v-model="d.value.remark" autocomplete="off" name="remark"></td>
+                                                    <template v-if="!d.bomTemplate">
+                                                        <td style="padding: 0;"><input class="form-control material" type="text" :disabled="d.type === 'MATERIAL'" :readonly="d.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="d.value.materialCode" :component_detail_id="d.id" :component_id="d.componentId" :type_instance_id="d.typeInstanceId" required="required" :placeholder="d.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="d.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="d.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="d.value.materialSpecification"></td><td><select class="form-control" name="color" required="required" title="请填写颜色" disabled="disabled" v-model="d.value.color"><option v-for="option in d.options" v-text="option" :value="option"></option></select></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="d.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="d.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="d.value.unit"></td><td v-if="!d.bomTemplate" style="padding: 0;"><input class="form-control" type="text" v-model="d.value.remark" autocomplete="off" name="remark"></td>
                                                     </template>
 
                                                     <!--第二层-->
-                                                    <td colspan="6" v-if="d.bomTemplate">
+                                                    <td colspan="7" v-if="d.bomTemplate">
                                                         <div class="component-name2"><span v-text="d.value.materialText + ' ' +  d.value.quantity + '套'"></span></span></div>
                                                         <div v-for="cc in d.bomTemplate.componentList" style="padding-left: 16px">
                                                             <!--                                                                <div class="component-name2" v-text="cc.description + '（' + cc.quantity + cc.unitText + '）'"></div>-->
@@ -151,6 +152,7 @@
                                                                         <thead>
                                                                         <tr>
                                                                             <th style="width: 100px;"><label class="required">零部件物料</label></th>
+                                                                            <th style="width: 100px;"><label>名称</label></th>
                                                                             <th><label>规格</label></th>
                                                                             <th style="width: 100px;"><label class="required">颜色</label></th>
                                                                             <th style="width: 80px;"><label>用量</label></th>
@@ -160,11 +162,11 @@
                                                                         </thead>
                                                                         <tbody>
                                                                         <tr v-for="dd in cc.componentDetailList">
-                                                                            <template  v-if="!dd.bomTemplate">
-                                                                                <td style="padding: 0;"><input class="form-control material" type="text" :disabled="dd.type === 'MATERIAL'" :readonly="dd.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="dd.value.materialCode" :component_detail_id="dd.id" :component_id="dd.componentId" :type_instance_id="dd.typeInstanceId" required="required" :placeholder="dd.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="dd.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialText" v-model="dd.value.materialText"></td><td><select class="form-control" name="color" required="required" title="请填写颜色" disabled="disabled" v-model="dd.value.color"><option v-for="option in dd.options" v-text="option" :value="option"></option></select></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="dd.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="dd.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="dd.value.unit"></td><td style="padding: 0;"><input class="form-control" type="text" v-model="dd.value.remark" autocomplete="off" name="remark"></td>
+                                                                            <template v-if="!dd.bomTemplate">
+                                                                                <td style="padding: 0;"><input class="form-control material" type="text" :disabled="dd.type === 'MATERIAL'" :readonly="dd.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="dd.value.materialCode" :component_detail_id="dd.id" :component_id="dd.componentId" :type_instance_id="dd.typeInstanceId" required="required" :placeholder="dd.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="dd.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="dd.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="dd.value.materialSpecification"></td><td><select class="form-control" name="color" required="required" title="请填写颜色" disabled="disabled" v-model="dd.value.color"><option v-for="option in dd.options" v-text="option" :value="option"></option></select></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="dd.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="dd.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="dd.value.unit"></td><td style="padding: 0;"><input class="form-control" type="text" v-model="dd.value.remark" autocomplete="off" name="remark"></td>
                                                                             </template>
                                                                             <!--第三层-->
-                                                                            <td colspan="6" v-if="dd.bomTemplate">
+                                                                            <td colspan="7" v-if="dd.bomTemplate">
                                                                                 <div class="component-name2"><span v-text="dd.value.materialText + ' ' +  dd.value.quantity + '套'"></span></span></div>
                                                                                 <div v-for="ccc in dd.bomTemplate.componentList" style="padding-left: 16px">
                                                                                     <!--                                                                                        <div class="component-name2" v-text="ccc.description + '（' + ccc.quantity + ccc.unitText + '）'"></div>-->
@@ -175,6 +177,7 @@
                                                                                                 <thead>
                                                                                                 <tr>
                                                                                                     <th style="width: 100px;"><label class="required">零部件物料</label></th>
+                                                                                                    <th style="width: 100px;"><label>名称</label></th>
                                                                                                     <th><label>规格</label></th>
                                                                                                     <th style="width: 100px;"><label class="required">颜色</label></th>
                                                                                                     <th style="width: 80px;"><label>用量</label></th>
@@ -185,11 +188,11 @@
                                                                                                 <tbody>
                                                                                                 <tr v-for="ddd in ccc.componentDetailList">
                                                                                                     <template  v-if="!ddd.bomTemplate">
-                                                                                                        <td style="padding: 0;"><input class="form-control material" type="text" :disabled="ddd.type === 'MATERIAL'" :readonly="ddd.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="ddd.value.materialCode" :component_detail_id="ddd.id" :component_id="ddd.componentId" :type_instance_id="ddd.typeInstanceId" required="required" :placeholder="ddd.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="ddd.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialText" v-model="ddd.value.materialText"></td><td><select class="form-control" name="color" required="required" title="请填写颜色" disabled="disabled" v-model="ddd.value.color"><option v-for="option in ddd.options" v-text="option" :value="option"></option></select></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\dd+(\.\dd{1,3})?$" title="必须数字" name="quantity" v-model="ddd.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="ddd.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="ddd.value.unit"></td><td style="padding: 0;"><input class="form-control" type="text" v-model="ddd.value.remark" autocomplete="off" name="remark"></td>
+                                                                                                        <td style="padding: 0;"><input class="form-control material" type="text" :disabled="ddd.type === 'MATERIAL'" :readonly="ddd.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="ddd.value.materialCode" :component_detail_id="ddd.id" :component_id="ddd.componentId" :type_instance_id="ddd.typeInstanceId" required="required" :placeholder="ddd.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="ddd.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="ddd.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="ddd.value.materialSpecification"></td><td><select class="form-control" name="color" required="required" title="请填写颜色" disabled="disabled" v-model="ddd.value.color"><option v-for="option in ddd.options" v-text="option" :value="option"></option></select></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\dd+(\.\dd{1,3})?$" title="必须数字" name="quantity" v-model="ddd.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="ddd.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="ddd.value.unit"></td><td style="padding: 0;"><input class="form-control" type="text" v-model="ddd.value.remark" autocomplete="off" name="remark"></td>
                                                                                                     </template>
 
                                                                                                     <!--第四层-->
-                                                                                                    <td colspan="6" v-if="ddd.bomTemplate">
+                                                                                                    <td colspan="7" v-if="ddd.bomTemplate">
                                                                                                         <div class="component-name2"><span v-text="ddd.value.materialText + ' ' +  ddd.value.quantity + '套'"></span></span></div>
                                                                                                         <div v-for="cccc in ddd.bomTemplate.componentList" style="padding-left: 16px">
                                                                                                             <!--                                                                                                                <div class="component-name2" v-text="cccc.description + '（' + cccc.quantity + cccc.unitText + '）'"></div>-->
@@ -200,6 +203,7 @@
                                                                                                                         <thead>
                                                                                                                         <tr>
                                                                                                                             <th style="width: 100px;"><label class="required">零部件物料</label></th>
+                                                                                                                            <th style="width: 100px;"><label>名称</label></th>
                                                                                                                             <th><label>规格</label></th>
                                                                                                                             <th style="width: 100px;"><label class="required">颜色</label></th>
                                                                                                                             <th style="width: 80px;"><label>用量</label></th>
@@ -209,9 +213,7 @@
                                                                                                                         </thead>
                                                                                                                         <tbody>
                                                                                                                         <tr v-for="dddd in cccc.componentDetailList">
-                                                                                                                            <td v-if="!dddd.bomTemplate" style="padding: 0;"><input class="form-control material" type="text" :disabled="dddd.type === 'MATERIAL'" :readonly="dddd.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="dddd.value.materialCode" :component_detail_id="dddd.id" :component_id="dddd.componentId" :type_instance_id="dddd.typeInstanceId" required="required" :placeholder="dddd.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="dddd.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialText" v-model="dddd.value.materialText"></td><td><select class="form-control" name="color" required="required" title="请填写颜色" disabled="disabled" v-model="dddd.value.color"><option v-for="option in dddd.options" v-text="option" :value="option"></option></select></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\ddd+(\.\ddd{1,3})?$" title="必须数字" name="quantity" v-model="dddd.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="dddd.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="dddd.value.unit"></td><td style="padding: 0;"><input class="form-control" type="text" v-model="dddd.value.remark" autocomplete="off" name="remark"></td>
-
-
+                                                                                                                            <td v-if="!dddd.bomTemplate" style="padding: 0;"><input class="form-control material" type="text" :disabled="dddd.type === 'MATERIAL'" :readonly="dddd.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="dddd.value.materialCode" :component_detail_id="dddd.id" :component_id="dddd.componentId" :type_instance_id="dddd.typeInstanceId" required="required" :placeholder="dddd.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="dddd.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="dddd.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="dddd.value.materialSpecification"></td><td><select class="form-control" name="color" required="required" title="请填写颜色" disabled="disabled" v-model="dddd.value.color"><option v-for="option in dddd.options" v-text="option" :value="option"></option></select></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\ddd+(\.\ddd{1,3})?$" title="必须数字" name="quantity" v-model="dddd.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="dddd.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="dddd.value.unit"></td><td style="padding: 0;"><input class="form-control" type="text" v-model="dddd.value.remark" autocomplete="off" name="remark"></td>
                                                                                                                         </tr>
                                                                                                                         </tbody>
                                                                                                                     </table>
@@ -256,8 +258,9 @@
                                 <tr>
                                     <th style="width: 50px" data-index>序号</th>
                                     <th style="width: 100px" class="sortable active asc">物料</th>
+                                    <th style="width: 100px;">名称</th>
                                     <th>规格</th>
-                                    <th>颜色</th>
+                                    <th style="width: 100px;">颜色</th>
                                     <th style="width: 100px">基本单位</th>
                                     <th style="width: 100px" class="sortable text-right">领料数量</th>
                                     <th style="width: 120px" class="sortable text-right" data-sort-type="number">已领料数量</th>
@@ -272,7 +275,8 @@
                                 <tr th:each="s: ${goodsReceiptItemList}">
                                     <td th:text="${sStat.index + 1}" data-index></td>
                                     <td th:text="${s.materialCode}" th:data-sort-value="${s.materialCode}"></td>
-                                    <td th:text="${s.materialText}" th:data-sort-value="${s.materialText}"></td>
+                                    <td th:text="${s.materialName}" th:data-sort-value="${s.materialName}"></td>
+                                    <td th:text="${s.materialSpecification}" th:data-sort-value="${s.materialSpecification}"></td>
                                     <td th:text="${s.color}" th:data-sort-value="${s.color}"></td>
                                     <td th:text="${s.unitText}" th:data-sort-value="${s.unitText}"></td>
                                     <td th:text="${#numbers.formatDecimal(s.quantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.quantity}" th:class="text-right"></td>
@@ -280,7 +284,7 @@
                                     <td th:text="${#numbers.formatDecimal(s.openQuantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.openQuantity}" th:class="text-right"></td>
                                     <td th:class="${'status-' + s.complete}" th:data-sort-value="${s.complete}" th:text="${s.complete == true ? '已完成' : '未完成'}"></td>
                                     <td>
-                                        <a href="javascript:;" th:onclick="openOnNewTab('[(${s.id})]', '[(${\'/reports/699659248728047616?root_reference_code=\'+s.produceOrderCode+\'&root_reference_item_id=\'+s.id+\'&material_id=\' + s.materialId})]', '物料凭证')">详情</a>
+                                        <a href="javascript:;" th:onclick="openOnNewTab('[(${s.rootReferenceItemId})]', '[(${\'/reports/699659248728047616?root_reference_code=\'+s.produceOrderCode+\'&root_reference_item_id=\'+s.rootReferenceItemId+\'&material_id=\' + s.materialId})]', '物料凭证')">详情</a>
                                     </td>
                                 </tr>
                                 </tbody>
@@ -316,13 +320,14 @@
         let formHeader = document.getElementById('form-header');
         let formItem = document.getElementById('form-item');
 
-        function showDetail($tr, materialId, itemId) {
+        function showBOMDetail($tr, materialId, itemId, callback) {
             if (materialId && $tr[0].form && materialId === $tr[0].form.materialId) {
                  vue.$data.form = $tr[0].form
             } else if (materialId) {
                 $.get('/produce_orders/bom?materialId=' + materialId + (itemId ? ('&itemId=' + itemId) : ''), function (res) {
                     res.materialId = materialId
                     $tr[0].form = vue.$data.form = res
+                    callback && callback($tr[0].form)
                 })
             }
         }
@@ -334,7 +339,7 @@
             allowEmpty: false, // 表格允许为空,
             highlight: true,
             rowClick: function (context, $tr, row) {
-                showDetail($tr, row.materialId, row.id)
+                showBOMDetail($tr, row.materialId, row.id)
             },
             beforeDeleteRow: function (context, $tr, row) {
                 // 删除对应的物料清单
@@ -365,13 +370,24 @@
                         $tr.find(':input[name=color]')
                             .attr('disabled', !row.batchManagement)
                             .attr('readonly', !row.batchManagement)
-
-                        showDetail($tr, row.id)
+                        // TODO 获取历史item
+                        // row.id => 改成materialId
+                        debugger
+                        showBOMDetail($tr, row.id, row.itemId, function (form) {
+                            // 清除id信息
+                            debugger
+                        })
                     }
                 },
                 {
                     type: "label",
-                    name: "materialText",
+                    name: "materialName",
+                    width: 100,
+                    title: "名称"
+                },
+                {
+                    type: "label",
+                    name: "materialSpecification",
                     title: "规格"
                 },
                 {
@@ -533,6 +549,10 @@
         function loadItem(itemList) {
             if (itemList && itemList.length > 0) {
                 $editableTable.editableTablePlus('setValue', itemList).editableTablePlus('setActiveIndex', 1)
+
+                let $trs = $editableTable.editableTablePlus('getEditRow')
+                $trs.find('[name=materialCode]').attr('disabled', true)
+                // $trs.find('td.operator').hide()
             }
         }
 
@@ -574,7 +594,8 @@
                                     d.value.is_batch = row.batchManagement
                                     d.value.materialId = row.id
                                     d.value.materialCode = row.code
-                                    d.value.materialText = context.labelDisplay(row)
+                                    d.value.materialName = row.name
+                                    d.value.materialSpecification = (!row.specification ? '' : row.specification)
                                     d.value.unit = row.base_unit
                                     d.value.unitText = row.base_unit_name
                                     d.value.componentDetailId = currentMaterialDom.getAttribute('component_detail_id')

@@ -65,7 +65,7 @@ public class PurchaseOrderController {
         List<Object[]> paramList = purchaseOrder.getItemList().stream().filter(item -> Objects.nonNull(item.getUnitPrice()))
         .map(item -> new Object[]{item.getUnitPrice(), item.getMaterialId()}).collect(Collectors.toList());
         materialDAO.updatePrice(paramList);
-
+        materialService.fillMaterialDescription(purchaseOrder.getItemList());
         return purchaseOrder;
     }
 

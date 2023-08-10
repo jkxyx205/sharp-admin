@@ -1,6 +1,7 @@
 package com.rick.admin.module.purchase.entity;
 
 import com.rick.admin.module.material.service.MaterialDescription;
+import com.rick.admin.module.material.service.MaterialDescriptionHandler;
 import com.rick.db.dto.BaseEntity;
 import com.rick.db.plugin.dao.annotation.Table;
 import com.rick.db.plugin.dao.annotation.Transient;
@@ -21,7 +22,7 @@ import javax.validation.constraints.NotNull;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "pur_source_list", comment = "货源清单")
-public class MaterialSource extends BaseEntity implements MaterialDescription {
+public class MaterialSource extends BaseEntity implements MaterialDescriptionHandler {
 
     @NotNull
     Long partnerId;
@@ -31,9 +32,6 @@ public class MaterialSource extends BaseEntity implements MaterialDescription {
     Long materialCategoryId;
 
     @Transient
-    String materialCode;
-
-    @Transient
-    String materialText;
+    MaterialDescription materialDescription;
 
 }

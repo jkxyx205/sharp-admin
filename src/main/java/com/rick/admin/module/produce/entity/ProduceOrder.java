@@ -1,7 +1,9 @@
 package com.rick.admin.module.produce.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.rick.admin.module.material.service.MaterialDescription;
+import com.rick.admin.module.material.service.MaterialDescriptionHandler;
 import com.rick.db.dto.BaseCodeEntity;
 import com.rick.db.dto.BaseEntity;
 import com.rick.db.plugin.dao.annotation.Column;
@@ -61,11 +63,15 @@ public class ProduceOrder extends BaseCodeEntity {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @SuperBuilder
     @Table(value = "produce_order_item", comment = "生产单行项目")
-    public static class Item extends BaseEntity implements MaterialDescription {
+    public static class Item extends BaseEntity implements MaterialDescriptionHandler {
 
         @NotNull
         @Column(comment = "物料")
         Long materialId;
+
+        @NotNull
+        @Column(comment = "物料Code")
+        String materialCode;
 
         @NotNull
         @Column(comment = "数量")
@@ -92,13 +98,7 @@ public class ProduceOrder extends BaseCodeEntity {
         String produceOrderCode;
 
         @Transient
-        String materialCode;
-
-        @Transient
-        String materialText;
-
-        @Transient
-        String unitText;
+        MaterialDescription materialDescription;
 
         @Valid
         @NotEmpty
@@ -112,7 +112,7 @@ public class ProduceOrder extends BaseCodeEntity {
         @FieldDefaults(level = AccessLevel.PRIVATE)
         @SuperBuilder
         @Table(value = "produce_order_item_detail", comment = "物料BOM实例详情")
-        public static class Detail extends BaseEntity implements MaterialDescription {
+        public static class Detail extends BaseEntity implements MaterialDescriptionHandler {
 
             @NotNull
             @Column(comment = "物料")
@@ -139,13 +139,8 @@ public class ProduceOrder extends BaseCodeEntity {
             Boolean complete;
 
             @Transient
-            String materialCode;
-
-            @Transient
-            String materialText;
-
-            @Transient
-            String unitText;
+            @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+            MaterialDescription materialDescription;
 
         }
     }

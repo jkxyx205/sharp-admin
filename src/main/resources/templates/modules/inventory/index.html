@@ -156,7 +156,13 @@
                 },
                 {
                     type: "label",
-                    name: "materialText",
+                    name: "materialName",
+                    width: 100,
+                    title: "名称"
+                },
+                {
+                    type: "label",
+                    name: "materialSpecification",
                     title: "规格"
                 },
                 {
@@ -300,7 +306,7 @@
                         let $tr = $("#table-container tbody tr:nth-child("+(index + 1)+")")
                         // 出库入库
                         if (!(type.value === 'INBOUND' || type.value === 'OUTBOUND')) {
-                            $tr.find('td:nth-child(5)').css('position', 'relative').append("<span style='position: absolute;top: 5px; right: 0;'>"+(item.movementType === 'OUTBOUND' ? '-' : '+')+"</span>")
+                            $tr.find('td:nth-child(6)').css('position', 'relative').append("<span style='position: absolute;top: 5px; right: 0;'>"+(item.movementType === 'OUTBOUND' ? '-' : '+')+"</span>")
                         }
                     })
 
