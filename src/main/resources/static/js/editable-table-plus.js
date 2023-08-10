@@ -108,6 +108,9 @@
                 this.options.customizeType[columnConfig.type].mounted(columnConfig)
             }
         },
+        getEditRow: function () {
+            return this.$table.find('input[name=id][value]').parent()
+        },
         getValue: function() {
             let valueList = []
             this.$table.find('tbody tr:not(:last-child)').each((index, elem) => {
