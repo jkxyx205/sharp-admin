@@ -294,7 +294,7 @@
                         }
                     } else {
                         // 单个checkbox
-                        $input.attr('type', 'checkbox').attr('class', '').parent().css('text-align', columnConfig.align ?  columnConfig.align : 'left')
+                        $input.attr('type', 'checkbox').attr('class', '').parent().css('text-align', columnConfig.align ?  columnConfig.align : 'center')
                     }
                 } else if(columnConfig.type === 'switch') {
                     let $switch = $('<label style="position: relative; top: 3px;" class="switch switch-pill switch-primary">\n' +
@@ -340,6 +340,14 @@
 
                     if (columnConfig.onchange) {
                         $radios.siblings('input').on('change', function (e) {
+                            columnConfig.onchange($tr, this.value, e)
+                        })
+                    }
+                } else if (columnConfig.type === 'group_radio') { // 单选，所有行共享name
+                    $input.attr('type', 'radio').attr('class', '').parent().css('text-align', columnConfig.align ?  columnConfig.align : 'center')
+
+                    if (columnConfig.onchange) {
+                        $input.siblings('input').on('change', function (e) {
                             columnConfig.onchange($tr, this.value, e)
                         })
                     }
