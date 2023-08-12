@@ -60,6 +60,32 @@
             opacity: 1!important;
         }
 
+        /*验证样式开始*/
+        .form-check-input.is-valid~.form-check-label, .was-validated .form-check-input:valid~.form-check-label {
+            color: inherit;
+        }
+
+        .form-control.is-valid, .was-validated .form-control:valid {
+            border-color: #e4e7ea;
+            padding-right: .75rem;
+            background: none;
+        }
+
+        .form-control.is-invalid, .was-validated .form-control:invalid {
+            padding-right: .75rem;
+        }
+
+        .table-editor .form-control.is-valid, .was-validated .table-editor .form-control:valid {
+            border-color: #e4e7ea;
+            padding-right: .5rem;
+            background: none;
+        }
+
+        .table-editor .form-control.is-invalid, .was-validated .table-editor .form-control:invalid {
+            padding-right: .5rem;
+        }
+        /*验证样式结束*/
+
         @media screen and (max-width: 768px) {
             .hidden-sm {
                 display: none;
