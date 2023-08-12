@@ -13,8 +13,9 @@
             if (this.options.showRowNumber) {
                 columnTitles.push('<th style=\"width: 50px\">序号</th>')
             }
-
+            this.nameColumnConfigsMap = {}
             for(let columnConfig of this.options.columnConfigs) {
+                this.nameColumnConfigsMap[columnConfig.name] = columnConfig
                 if (columnConfig.type === 'hidden') {
                     continue
                 }
@@ -119,13 +120,18 @@
 
             return valueList
         },
-        setValue: function (value) {
-            if (value && value.length > 0) {
-                this.clear()
-                this.appendValue(value)
+        setValue: function (value, $tr) {
+            if ($tr) { // 修改行数据
+                this._setRowValue($tr, value)
             } else {
-                // 清空表格
-                this.clear()
+                // 列表初始化
+                if (value && value.length > 0) {
+                    this.clear()
+                    this.appendValue(value)
+                } else {
+                    // 清空表格
+                    this.clear()
+                }
             }
         },
         setActiveIndex: function (index) {
@@ -142,14 +148,14 @@
                 callback(index, this, $(elem), this._getValue($(elem)))
             })
         },
-        readonly:function (readonly) {
+        readonly: function (readonly) {
             this.options.readonly = readonly
             this.$table.editableTable('readonly', this.options.readonly)
             if (this.options.readonly) {
                 this.$element.find('thead th:last-child').hide()
             } else {
                 this.$element.find('thead th:last-child').show()
-                // readonly 有 true => false, 根据 _formatTr 重新设置 readonly 和 disabled
+                // readonly 由 true => false, 根据 _formatTr 重新设置 readonly 和 disabled
                 let _this = this
                 this.$table.find('tbody tr').each(function() {
                     _this._consumeUnHiddenColumnConfig((childIndex, columnConfig) => {
@@ -162,6 +168,13 @@
                 })
             }
         },
+        edit_only: function () {
+            // 不能删除 和 添加行，只能编辑单元格
+            this.$element.find('thead th:last-child').hide()
+            if (this.$table.find('tr').length > 1) {
+                this.$table.find('tr:not(:last-child) .operator, tr:last-child').hide()
+            }
+        },
         getColumnConfigs: function () {
             return this.options.columnConfigs
         },
@@ -172,31 +185,39 @@
             }
         },
         appendValue: function (value) {
-            for (let rowValue of value) {
+            for (let row of value) {
                 this.$table.editableTable('addEmptyLine')
                 let $tr = this.$table.find("tr:last-child").prev()
-                $tr.show()
-
-                $tr.find(":input[name]").each(function () {
-                    if ($(this).attr('type') === 'switch') {
-                        $(this).prop('checked', eval(rowValue[this.name]))
-                    } if ($(this).attr('type') === 'checkbox') {
-                        if ($(this).data('type') === 'multi_checkbox') {
-                            if (rowValue[this.name] && rowValue[this.name].length > 0) {
-                                for (let id of rowValue[this.name]) {
-                                    $("input[name="+this.name+"][value=" + id + "]").prop('checked', true);
-                                }
-                            }
-                        } else {
-                            $(this).prop('checked', eval(rowValue[this.name]))
-                        }
-                    } else if ($(this).attr('type') === 'radio') {
-                        $("input[name="+this.name+"][value=" + rowValue[this.name.substring(0, this.name.lastIndexOf('-'))] + "]").prop('checked', true);
-                    } else {
-                        $(this).val(rowValue[this.name])
-                    }
-                })
+                this._setRowValue($tr, row)
             }
+        },
+        _setRowValue:function ($tr, row) {
+            $tr.show()
+            $tr.find(":input[name]").each(function () {
+                if ($(this).attr('type') === 'switch') {
+                    $(this).prop('checked', eval(row[this.name]))
+                } if ($(this).attr('type') === 'checkbox') {
+                    if ($(this).data('type') === 'multi_checkbox') {
+                        if (row[this.name] && row[this.name].length > 0) {
+                            for (let id of row[this.name]) {
+                                $("input[name="+this.name+"][value=" + id + "]").prop('checked', true);
+                            }
+                        }
+                    } else {
+                        $(this).prop('checked', eval(row[this.name]))
+                    }
+                } else if ($(this).attr('type') === 'radio') {
+                    $("input[name="+this.name+"][value=" + row[this.name.substring(0, this.name.lastIndexOf('-'))] + "]").prop('checked', true);
+                } else {
+                    $(this).val(row[this.name])
+                }
+            })
+
+            this._consumeUnHiddenColumnConfig((childIndex, columnConfig) => {
+                if (columnConfig.type === 'render') {
+                    $tr.find('td:nth-child('+childIndex+')').html(columnConfig.render(row))
+                }
+            })
         },
         _getValue: function ($tr) {
             let value = {}
@@ -346,6 +367,9 @@
                         todayHighlight: true,
                         format: 'yyyy-mm-dd'
                     })
+                } else if(columnConfig.type === 'render') {
+                    // $td.html(columnConfig.render()).css('padding', "0 8px");
+                    $td.html('').css('padding', "0 8px");
                 } else {
                     this.options.customizeType[columnConfig.type] && this.options.customizeType[columnConfig.type].formatTr($td, columnConfig)
                 }

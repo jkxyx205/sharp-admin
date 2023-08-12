@@ -22,7 +22,6 @@
                         return !row.specification ? '' : row.specification;
                     },
                     selected: function (row) {
-                        // console.log(row)
                         if ("createEvent" in document) {
                             var evt = document.createEvent("HTMLEvents");
                             evt.initEvent("input", false, true);
@@ -31,21 +30,12 @@
                         else
                             currentMaterialDom.fireEvent("input");
 
-                        currentMaterialDom.value = row.code
-                        $(currentMaterialDom).siblings().val(row.id)
-
-
-                        $(currentMaterialDom).parent().parent().find(':input[name=materialText]').val(this.labelDisplay(row))
-                        $(currentMaterialDom).parent().parent().find(':input[name=materialName]').val(row.name)
-                        $(currentMaterialDom).parent().parent().find(':input[name=materialSpecification]').val(this.specification(row))
-
-                        $(currentMaterialDom).parent().parent().find(':input[name=materialCategoryId]').val(row.category_id)
-                        $(currentMaterialDom).parent().parent().find(':input[name=unit]').val(row.base_unit)
-                        $(currentMaterialDom).parent().parent().find(':input[name=unitText]').val(row.base_unit_name)
-
                         setCaretPosition(currentMaterialDom, currentMaterialDom.value.length)
 
-                        _this.columnConfig.selected && _this.columnConfig.selected($(currentMaterialDom).parent().parent(), row)
+                        let $tr = $(currentMaterialDom).parent().parent()
+
+                        $editableTable.editableTablePlus('setValue', materialDataMap(row, this), $tr)
+                        _this.columnConfig.selected && _this.columnConfig.selected($tr, row)
                     }
                 })
 
@@ -61,22 +51,26 @@
                         return !row.specification ? '' : row.specification;
                     },
                     selected: function (rows) {
-                        $editableTable.editableTablePlus('appendValue', rows.map(row => {
-                            return {
-                                "materialId": row.id,
-                                "materialCode": row.code,
-                                "materialText": this.labelDisplay(row),
-                                "materialName": row.name,
-                                "materialSpecification": this.specification(row),
-                                "unit": row.base_unit,
-                                "unitText": row.base_unit_name,
-                                "materialCategoryId": row.category_id,
-                            }
-                        }))
+                        $editableTable.editableTablePlus('appendValue', rows.map(row => materialDataMap(row, this)))
 
                         _this.columnConfig.selected && _this.columnConfig.selected($(currentMaterialDom).parent().parent(), rows)
                     }
                 })
+
+                function materialDataMap(row, context) {
+                    return {
+                        "materialId": row.materialId ? row.materialId : row.id,
+                        "materialCode": row.code,
+                        "materialText": context.labelDisplay(row),
+                        "materialName": row.name,
+                        "materialSpecification": context.specification(row),
+                        "unit": row.base_unit,
+                        "unitText": row.base_unit_name,
+                        "materialCategoryId": row.category_id,
+                        "remark": row.remark,
+                        "color": row.color,
+                    }
+                }
 
                 function setCaretPosition(ctrl, pos) {
                     // Modern browsers
@@ -138,6 +132,16 @@
 
 
     window.customizeType = customizeType
+
+    window.showMaterialDialog = function (id) {
+        $.dialog({
+            title: '物料详情',
+            content: '/forms/page/695978675677433856/' + id + '?readonly=true',
+            class: 'modal-dialog-auto',
+            lazy: true,
+            showFooter: true
+        })
+    }
 })()
 
 
