@@ -476,12 +476,18 @@ public class MaterialTest {
                 .code("mm_material_template_search")
                 .tplName("tpl/query_list")
                 .name("bom模版物料查询")
-                .querySql("SELECT cast(mm_material.id as char(20)) id, mm_material.code, mm_material.name, specification, material_type, mm_material.category_id, mm_material.category_id as categoryText, base_unit, base_unit as base_unit_name, standard_price unitPrice, batch_management batchManagement FROM mm_material WHERE mm_material.code = :code AND (mm_material.name like :keywords or specification like :keywords or mm_material.code like :keywords) AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0 AND id = :id AND id IN (:ids) AND bom_template_id is NOT NULL")
+                .querySql("select cast(mm_material.id as char(20)) materialId, mm_material.code code, mm_material.name, mm_material.specification, batch_management batchManagement, base_unit, base_unit as base_unit_name,combine.item_id, combine.partner_id, combine.batch_code, combine.color, combine.remark, combine.create_time  from (SELECT * FROM\n" +
+                        "(select null item_id, null partner_id, id material_id, null batch_code, null color, remark, null create_time from mm_material where bom_template_id is NOT NULL) t3\n" +
+                        "UNION\n" +
+                        "SELECT * FROM\n" +
+                        "(select produce_order_item.id item_id, produce_order.partner_id, material_id, batch_code, color, produce_order_item.remark, produce_order_item.create_time  from produce_order_item inner join produce_order on produce_order_item.produce_order_id = produce_order.id order by create_time desc) t4) combine join mm_material on combine.material_id = mm_material.id where material_id = :materialId and partner_id = :partnerId")
                 .queryFieldList(Arrays.asList(
 //                        new QueryField("code", "编号", QueryField.Type.TEXT),
-                        new QueryField("keywords", "关键字", QueryField.Type.TEXT),
+//                        new QueryField("keywords", "关键字", QueryField.Type.TEXT),
 //                        new QueryField("materialType", "类型", QueryField.Type.SELECT, "material_type"),
-                        new QueryField("categoryId", "分类", QueryField.Type.GROUP_SELECT, "material_category_select_sql")
+                        new QueryField("materialId", "产成品物料", QueryField.Type.SELECT, "bom_material"),
+                        new QueryField("partnerId", "客户", QueryField.Type.SELECT, "core_partner_customer")
+//                        new QueryField("categoryId", "分类", QueryField.Type.GROUP_SELECT, "material_category_select_sql")
 //                        new QueryField("categoryId", "分类", QueryField.Type.MULTIPLE_SELECT, "core_material_category")
 //                        new QueryField("categoryId", "分类", QueryField.Type.SELECT, "core_material_category")
 
@@ -489,23 +495,25 @@ public class MaterialTest {
 
                 ))
                 .reportColumnList(Arrays.asList(
-                        new HiddenReportColumn("id"),
-                        new HiddenReportColumn("unitPrice"),
-                        new HiddenReportColumn("category_id"),
+                        new HiddenReportColumn("materialId"),
+                        new HiddenReportColumn("item_id"),
                         new HiddenReportColumn("batchManagement"),
-                        new ReportColumn("code", "编号").setColumnWidth(80),
+                        new HiddenReportColumn("remark"),
+                        new ReportColumn("code", "物料").setColumnWidth(80),
                         new ReportColumn("name", "名称").setTooltip(true),
                         new ReportColumn("specification", "规格", false, null, Arrays.asList("characteristicConverter")).setTooltip(true),
-//                        new ReportColumn("base_unit", "基本单位", false, "unit", Arrays.asList("dictConverter")),
+                        new ReportColumn("color", "颜色"),
+//                        new ReportColumn("base_unit_name", "基本单位", false, "unit", Arrays.asList("dictConverter")),
                         new HiddenReportColumn("base_unit"),
                         // String name, String label, Boolean sortable, String context, List<String> valueConverterNameList, Integer columnWidth, AlignEnum align, Boolean hidden, Boolean tooltip, TypeEnum type
-                        new HiddenReportColumn("base_unit_name", "unit", Arrays.asList("dictConverter"))
+                        new HiddenReportColumn("base_unit_name", "unit", Arrays.asList("dictConverter")),
+                        new ReportColumn("partner_id", "客户", false, "core_partner_customer", Arrays.asList("dictConverter")),
+//                        new ReportColumn("remark", "备注"),
+                        new ReportColumn("create_time", "生产时间", false,null, Arrays.asList("localDateTimeConverter")).setColumnWidth(160)
 //                        new ReportColumn("material_type", "类型", false, "material_type", Arrays.asList("dictConverter")),
 //                        new ReportColumn("categoryText", "分类", false, "core_material_category", Arrays.asList("dictConverter"))
                 ))
-                .pageable(false)
-                .sidx("id")
-                .sord(SordEnum.ASC)
+                .pageable(true)
                 .build());
     }
 

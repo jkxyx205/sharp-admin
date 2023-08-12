@@ -76,6 +76,8 @@ dict:
       sql: "select name, label from sys_dict where type = 'UNIT' order by sort asc"
     - type: material_type
       sql: "select name, label from sys_dict where type = 'MATERIAL_TYPE' order by sort asc"
+    - type: bom_material
+      sql: "select id name, name label from mm_material where bom_template_id is NOT NULL"
     - type: bol
       map: { "1": "是", "0": "否" }
     - type: mm_material

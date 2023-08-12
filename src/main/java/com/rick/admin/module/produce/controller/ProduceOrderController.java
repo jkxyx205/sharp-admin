@@ -59,7 +59,7 @@ public class ProduceOrderController {
      */
     @GetMapping("bom")
     @ResponseBody
-    public BomTemplate gotoBomForm(@RequestParam Long materialId, Long itemId) {
+    public BomTemplate gotoBomForm(@RequestParam Long materialId, Long itemId, Boolean isCopy) {
         Map<Long, ProduceOrder.Item.Detail> valueMapping = Collections.EMPTY_MAP;
 
         if (Objects.nonNull(itemId)) {
@@ -67,7 +67,7 @@ public class ProduceOrderController {
             valueMapping = item.getItemList().stream().collect(Collectors.toMap(ProduceOrder.Item.Detail::getComponentDetailId, v -> v));
         }
 
-        BomTemplate bomTemplate = bomService.getBomTemplateMaterialId(materialId, valueMapping);
+        BomTemplate bomTemplate = bomService.getBomTemplateMaterialId(materialId, valueMapping, isCopy);
 
         return bomTemplate;
     }
@@ -102,7 +102,7 @@ public class ProduceOrderController {
             Map<Long, BomTemplate> itemIdBomTemplateMap = Maps.newHashMapWithExpectedSize(produceOrder.getItemList().size());
 
             for (ProduceOrder.Item item : produceOrder.getItemList()) {
-                BomTemplate bomTemplate = gotoBomForm(item.getMaterialId(), item.getId());
+                BomTemplate bomTemplate = gotoBomForm(item.getMaterialId(), item.getId(), false);
                 itemIdBomTemplateMap.put(item.getId(), bomTemplate);
             }
 

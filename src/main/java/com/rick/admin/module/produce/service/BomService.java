@@ -7,6 +7,7 @@ import com.rick.admin.module.produce.entity.BomTemplate;
 import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.common.http.exception.BizException;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
+import com.rick.db.plugin.dao.support.BaseEntityUtils;
 import com.rick.db.service.support.Params;
 import com.rick.meta.dict.entity.Dict;
 import com.rick.meta.dict.service.DictService;
@@ -44,6 +45,10 @@ public class BomService {
     private EntityCodeDAO<BomTemplate, Long> bomTemplateDAO;
 
     public BomTemplate getBomTemplateMaterialId(Long materialId, Map<Long, ProduceOrder.Item.Detail> valueMapping) {
+        return getBomTemplateMaterialId(materialId, valueMapping, false);
+    }
+
+    public BomTemplate getBomTemplateMaterialId(Long materialId, Map<Long, ProduceOrder.Item.Detail> valueMapping, Boolean resetValueAdditionalFields) {
         Optional<Long> bomTemplateOptional = materialDAO.selectSingleValueById(materialId, "bom_template_id", Long.class);
         if (!bomTemplateOptional.isPresent()) {
             throw new BizException(500, "没有找到 bom 模版");
@@ -68,6 +73,10 @@ public class BomService {
                 ProduceOrder.Item.Detail value = valueMapping.get(componentDetail.getId());
                 if (Objects.nonNull(value)) {
                     // 实例
+                    if (Objects.equals(Boolean.TRUE, resetValueAdditionalFields)) {
+                        BaseEntityUtils.resetAdditionalFields(value);
+                    }
+
                     componentDetail.setValue(value);
                 } else if (componentDetail.getType() == BomTemplate.TypeEnum.CATEGORY) {
                     componentDetail.setValue(new ProduceOrder.Item.Detail());
@@ -84,7 +93,7 @@ public class BomService {
                     componentDetail.setValue(value);
 
                     if (material.isBomMaterial()) {
-                        componentDetail.setBomTemplate(getBomTemplateMaterialId(material.getId(), valueMapping));
+                        componentDetail.setBomTemplate(getBomTemplateMaterialId(material.getId(), valueMapping, resetValueAdditionalFields));
                     }
                 }
             }
