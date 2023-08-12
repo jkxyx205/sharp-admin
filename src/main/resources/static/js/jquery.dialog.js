@@ -2,7 +2,7 @@
     var Dialog = function(element, options) {
         this.isGlobal = (element === $) // add global dialog 20200812
 
-        this.$element = $(element);
+        this.$element = this.isGlobal ? $ : $(element);
         this.options = $.extend({},
             $.fn.dialog.defaults, options); //合并参数
 
@@ -34,23 +34,13 @@
         init: function() {
             var _this = this
             _this._bindDom()
-            this.$element.on('click', function () {
-                if (!_this.options.lazy || (_this.options.lazy && !_this.fetched)) {
-                    $.get(_this.$element.data('url') || _this.options.content, function (res) {
-                        _this.$modal.find('.modal-body').html(res)
-
-                        _this.$modal.modal({
-                            show: true,
-                            backdrop: _this.options.backdrop
-                        })
-                    })
-                } else {
-                    _this.$modal.modal('show');
-                }
-
-                _this.isGlobal && _this.$element.off('click')
-
-            })
+            if (this.isGlobal) {
+                this._fetchData()
+            } else {
+                this.$element.on('click',  () => {
+                    this._fetchData()
+                })
+            }
 
             _this.$modal.on('shown.bs.modal', function () {
                 (!_this.fetched || !_this.options.lazy) && _this.options.onload && (typeof window[_this.options.onload] === 'function') && window[_this.options.onload]()
@@ -62,6 +52,20 @@
                 _this.options.hidden && _this.options.hidden()
                 _this.isGlobal && _this.$modal.remove()
             })
+        },
+        _fetchData: function () {
+            if (!this.options.lazy || (this.options.lazy && !this.fetched)) {
+                $.get((!this.isGlobal && this.$element.data('url')) || this.options.content, res => {
+                    this.$modal.find('.modal-body').html(res)
+
+                    this.$modal.modal({
+                        show: true,
+                        backdrop: this.options.backdrop
+                    })
+                })
+            } else {
+                this.$modal.modal('show');
+            }
         },
         _bindDom: function () {
             if (!this.domBind) {
