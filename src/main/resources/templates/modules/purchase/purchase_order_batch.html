@@ -3,6 +3,7 @@
       xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
       xmlns:sp="">
 <head th:replace="includes/base :: common_header(~{},~{::link},~{::style})">
+    <base href="./purchase_order/batch">
     <link rel="stylesheet" th:href="@{/css/tab-common.css}">
     <link rel="stylesheet" th:href="@{/css/edit-table.css}">
     <link rel="stylesheet" th:href="@{/plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css}">
@@ -58,7 +59,6 @@
                 </form>
             </div>
         </div>
-
         <div id="dialogInput" style="display: none"></div>
         <div id="multipleDialogInput" style="display: none"></div>
         <sp:select class="hidden" id="color"  key="COLOR" emptyItemText/>
@@ -72,6 +72,8 @@
     <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js}"></script>
     <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.zh-CN.min.js}"></script>
     <script type="text/javascript" th:src="@{/plugins/jquery.form2json.js}"></script>
+
+    <script th:src="@{/js/jquery.dialog.js}"></script>
 
     <script th:src="@{/editable-table/editable-table.js}"></script>
     <script th:src="@{/js/jquery.table.js}"></script>
@@ -148,14 +150,18 @@
                             $tr.find(':input[name=color]')
                                 .attr('disabled', !value.batchManagement)
                                 .attr('readonly', !value.batchManagement)
+
+                            //
                         }
                     }
                 },
                 {
-                    type: "label",
+                    type: "render",
                     name: "materialName",
-                    width: 100,
-                    title: "名称"
+                    title: "名称",
+                    render: function (row) {
+                        return '<a href="javascript:;" onclick="showMaterialDialog(\''+row.materialId+'\')">'+row.materialName+'</a>'
+                    }
                 },
                 {
                     type: "label",
@@ -165,7 +171,7 @@
                 {
                     type: "select",
                     name: "color",
-                    width: 100,
+                    width: 80,
                     title: "颜色",
                     datasource: $('#color'),
                     required: true,
@@ -175,7 +181,7 @@
                     type: "decimal",
                     name: "quantity",
                     title: "数量",
-                    width: 100,
+                    width: 60,
                     required: true,
                     align: 'right',
                     keyup: function ($tr, event, value) {
@@ -186,7 +192,7 @@
                     type: "text_label",
                     name: "unit",
                     title: "单位",
-                    width: 100,
+                    width: 60,
                     disabled: true,
                     required: false,
                 },
@@ -195,7 +201,7 @@
                     name: "unitPrice",
                     title: "含税单价",
                     align: 'right',
-                    width: 100,
+                    width: 80,
                     required: true,
                     keyup: function ($tr, event, value) {
                         calcAmount($tr);
@@ -211,7 +217,7 @@
                 {
                     type: "date",
                     name: "deliveryDate",
-                    width: 150,
+                    width: 100,
                     title: "交货日期",
                     required: true,
                 },

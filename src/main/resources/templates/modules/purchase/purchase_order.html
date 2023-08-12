@@ -160,6 +160,7 @@
     <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js}"></script>
     <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.zh-CN.min.js}"></script>
     <script type="text/javascript" th:src="@{/plugins/jquery.form2json.js}"></script>
+    <script th:src="@{/js/jquery.dialog.js}"></script>
 
     <script th:src="@{/editable-table/editable-table.js}"></script>
     <script th:src="@{/js/jquery.table.js}"></script>
@@ -225,11 +226,19 @@
                         }
                     }
                 },
+                // {
+                //     type: "label",
+                //     name: "materialName",
+                //     width: 100,
+                //     title: "名称"
+                // },
                 {
-                    type: "label",
+                    type: "render",
                     name: "materialName",
-                    width: 100,
-                    title: "名称"
+                    title: "名称",
+                    render: function (row) {
+                        return '<a href="javascript:;" onclick="showMaterialDialog(\''+row.materialId+'\')">'+row.materialName+'</a>'
+                    }
                 },
                 {
                     type: "label",
@@ -239,7 +248,7 @@
                 {
                     type: "select",
                     name: "color",
-                    width: 100,
+                    width: 80,
                     title: "颜色",
                     datasource: $('#color'),
                     required: true,
@@ -249,7 +258,7 @@
                     type: "decimal",
                     name: "quantity",
                     title: "数量",
-                    width: 100,
+                    width: 60,
                     required: true,
                     align: 'right',
                     keyup: function ($tr, event, value) {
@@ -260,7 +269,7 @@
                     type: "text_label",
                     name: "unit",
                     title: "单位",
-                    width: 100,
+                    width: 60,
                     disabled: true,
                     required: false,
                 },
@@ -285,7 +294,7 @@
                 {
                     type: "date",
                     name: "deliveryDate",
-                    width: 150,
+                    width: 100,
                     title: "交货日期",
                     required: true,
                 },
