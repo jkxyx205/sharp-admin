@@ -15,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -67,7 +68,10 @@ public class BomService {
         }
 
         for (BomTemplate.Component component : bomTemplate.getComponentList()) {
-            component.setUnitText(dictService.getDictByTypeAndName("unit", component.getUnit()).get().getLabel());
+            if (StringUtils.isNotBlank(component.getUnit())) {
+                component.setUnitText(dictService.getDictByTypeAndName("unit", component.getUnit()).get().getLabel());
+            }
+
             for (BomTemplate.ComponentDetail componentDetail : component.getComponentDetailList()) {
                 componentDetail.setOptions(dictService.getDictByType("COLOR").stream().map(Dict::getLabel).collect(Collectors.toList()));
                 ProduceOrder.Item.Detail value = valueMapping.get(componentDetail.getId());

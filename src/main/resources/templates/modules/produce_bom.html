@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sp="">
+<head th:replace="includes/base :: common_header(~{},~{::link},~{::style})">
+    <link rel="stylesheet" th:href="@{/css/tab-common.css}">
+    <link rel="stylesheet" th:href="@{/css/edit-table.css}">
+    <style>
+        .operator-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: .2rem 1.25rem;
+            background: #fff;
+            border-top: 1px solid #c8ced3;
+        }
+    </style>
+</head>
+<body class="app">
+<th:block th:replace="includes/base :: common_content(~{::div})">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-body">
+                <form class="form-inline query-form-container" id="form-header">
+                    <input type="hidden" id="id" name="id">
+                    <div class="form-group">
+                        <label class="col-form-label mr-2 required" for="code">Bom编号</label>
+                        <input class="form-control" type="text" id="code" name="code" required th:value="${bomTemplate != null ? bomTemplate.code : ''}" th:attr="disabled=${bomTemplate != null}">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label mr-2 required" for="remark">描述</label>
+                        <input class="form-control" type="description" id="remark" name="description" required th:value="${bomTemplate != null ? bomTemplate.description : ''}">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <form class="form-item" id="form-item">
+                    <div id="table-container">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <sp:select class="hidden" id="core_material_category"  key="material_category_select_sql" emptyItemText group/>
+        <div id="dialogInput" style="display: none"></div>
+        <div class="operator-bar text-center" id="operator-bar">
+            <button class="btn btn-primary" type="button" name="send" onclick="send()">
+                <i class="fa fa-save"></i> 保存</button>
+        </div>
+    </div>
+</th:block>
+<th:block th:replace="includes/base :: common_js(~{::script})">
+    <script type="text/javascript" th:src="@{/plugins/jquery.form2json.js}"></script>
+
+    <script th:src="@{/editable-table/editable-table.js}"></script>
+    <script th:src="@{/js/jquery.table.js}"></script>
+    <script th:src="@{/js/editable-table-plus.js}"></script>
+
+    <script th:src="@{/js/jquery.dialogInput.js}"></script>
+    <script th:src="@{/js/editable-table-plus-customize_type.js}"></script>
+    <script th:inline="javascript">
+        let isAdd = /*[[${bomTemplate == null}]]*/
+        let formHeader = document.getElementById('form-header');
+        let formItem = document.getElementById('form-item');
+        let optionHTML = $('#core_material_category').html()
+        let categoryMap = {}
+
+        $('#core_material_category option').map((i,option) => {
+            categoryMap[option.value] = option.innerText
+        })
+
+        let $dialogInput = $('#dialogInput').dialogInput({
+            title: '选择物料',
+            reportId: '697147523487240192',
+            labelDisplay: function (row) {
+                return row.code + ' ' + row.name + ' ' + this.specification(row)
+            },
+            specification: function (row) {
+                return !row.specification ? '' : row.specification
+            },
+            selected: function (row) {
+                if ("createEvent" in document) {
+                    var evt = document.createEvent("HTMLEvents");
+                    evt.initEvent("input", false, true);
+                    currentMaterialDom.dispatchEvent(evt);
+                }
+                else
+                    currentMaterialDom.fireEvent("input");
+
+                setCaretPosition(currentMaterialDom, currentMaterialDom.value.length)
+
+                $(currentMaterialDom).val(this.labelDisplay(row))
+                $(currentMaterialDom).next().val(row.id)
+
+                // 设置单位
+                let $tr = $(currentMaterialDom).parent().parent()
+                $tr.find('input[name=unit]').val(row.base_unit)
+                $tr.find('input[name=unitText]').val(row.base_unit_name)
+            }
+        })
+
+        function setCaretPosition(ctrl, pos) {
+            // Modern browsers
+            if (ctrl.setSelectionRange) {
+                ctrl.focus();
+                ctrl.setSelectionRange(pos, pos);
+                // IE8 and below
+            } else if (ctrl.createTextRange) {
+                var range = ctrl.createTextRange();
+                range.collapse(true);
+                range.moveEnd('character', pos);
+                range.moveStart('character', pos);
+                range.select();
+            }
+        }
+
+        // 可编辑表格初始化
+        let $editableTable = $('#table-container').editableTablePlus({
+            customizeType,
+            showRowNumber: true, // 是否显示行号
+            allowEmpty: false, // 表格允许为空,
+            highlight: true,
+            rowClick: function (context, $tr, row) {
+
+            },
+            beforeDeleteRow: function (context, $tr, row) {
+                return true
+            },
+            columnConfigs: [
+                {
+                    type: "select",
+                    name: "type",
+                    title: "类别",
+                    width: 80,
+                    required: true,
+                    datasource: [
+                        {
+                            name: "",
+                            value: ""
+                        },
+                        {
+                            name: "CATEGORY",
+                            value: "分类"
+                        },
+                        {
+                            name: "MATERIAL",
+                            value: "物料"
+                        }
+                    ],
+                    onchange: function (context, value, e) {
+                        if (value === 'CATEGORY') {
+                            let $select = $('<select class="form-control" name="typeInstanceId" required="required">'+optionHTML+'</select>')
+                            context.$td.next().html($select)
+                        } else {
+                            let $input = $('<input class="form-control" type="text" value="" autocomplete="off" name="materialText" required="required" title="请填写物料" style="text-align: left;"><input class="form-control" type="hidden" name="typeInstanceId" required="required" title="请填写物料">')
+                            context.$td.next().html($input)
+                            $input.on('click keydown', function(event) {
+                                currentMaterialDom = event.target
+                                $dialogInput.dialogInput().click()
+                            })
+                        }
+                    }
+                },
+                {
+                    type: "label",
+                    name: "typeInstanceId",
+                    title: "组件",
+                    required: true
+                },
+                {
+                    type: "decimal",
+                    name: "quantity",
+                    title: "数量",
+                    width: 60,
+                    required: true,
+                    align: 'right'
+                },
+                {
+                    type: "text_label",
+                    name: "unit",
+                    title: "单位",
+                    width: 60,
+                    disabled: true,
+                    required: false,
+                },
+                {
+                    type: "checkbox",
+                    title: "可选",
+                    name: "required",
+                    width: 60,
+                    align: 'center'
+                }
+            ]
+        })
+
+        function send() {
+            if (!valid()) {
+                return
+            }
+
+            let params = $('#form-header').form2json({allowEmptyMultiVal:true})
+            params.componentList = [
+                {
+                    "description": params.description,
+                    "quantity": 1,
+                }
+            ]
+
+            params.componentList[0].componentDetailList = $editableTable.editableTablePlus('getValue')
+            for (let detail of params.componentList[0].componentDetailList) {
+                detail.required = !detail.required
+
+                if (detail.type === 'CATEGORY') {
+                    detail.placeholder = '请选择' + categoryMap[detail.typeInstanceId] + (detail.required ? '' : '(可选)')
+                }
+
+            }
+            console.log(params)
+
+            $.ajax({
+                url: '/produce_bom',
+                type: "POST",
+                data: JSON.stringify(params),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function(res){
+                    toastr.success('物料清单保存成功');
+                    if (isAdd) {
+                        window.location = '/produce_bom/'+res.data+'?readonly=true'
+                    }
+                    reloadTab('produce_bom_list')
+                }
+            });
+
+        }
+
+        function valid() {
+            let formHeaderValidity = formHeader.checkValidity()
+            let formItemValidity = formItem.checkValidity()
+            formHeader.classList.add('was-validated')
+            formItem.classList.add('was-validated')
+            return formHeaderValidity && formItemValidity;
+        }
+
+        // init
+        let bomTemplate = [[${bomTemplate}]] || {}
+        if (bomTemplate.id) {
+            $editableTable.editableTablePlus('setValue', bomTemplate.componentList[0].componentDetailList).editableTablePlus('setActiveIndex', 1)
+            let typeInstanceIdMap = {}
+            for (let detail of bomTemplate.componentList[0].componentDetailList) {
+                typeInstanceIdMap[detail.typeInstanceId] = detail
+            }
+
+            // 处理组件
+            let $trs = $editableTable.editableTablePlus('getEditRow')
+            $trs.each(function () {
+                let $type = $(this).find(':input[name=type]')
+                let $typeInstanceId = $(this).find(':input[name=typeInstanceId]')
+                let type = $type.val()
+                let value =  $typeInstanceId.val()
+                if (type === 'CATEGORY') {
+                    let $select = $('<select class="form-control" name="typeInstanceId" required="required">'+optionHTML+'</select>')
+                    $typeInstanceId.parent().html($select)
+                    $select.val(value)
+                } else {
+                    let detail = typeInstanceIdMap[value]
+                    let material = detail.materialDescription
+                    let materialText = material.code + ' ' + material.name + ' ' + (!material.specification ? '' : material.specification)
+                    let $input = $('<input class="form-control" type="text" autocomplete="off" name="materialText" value="'+materialText+'" required="required" title="请填写物料" style="text-align: left;"><input class="form-control" type="hidden" name="typeInstanceId" required="required" title="请填写物料" value="'+detail.materialId+'">')
+                    $typeInstanceId.parent().html($input)
+                    $input.on('click keydown', function(event) {
+                        currentMaterialDom = event.target
+                        $dialogInput.dialogInput().click()
+                    })
+                }
+            })
+        }
+
+    </script>
+</th:block>
+</body>
+</html>

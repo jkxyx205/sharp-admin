@@ -192,7 +192,7 @@
         let urlObject = getUrlObject();
 
         /*<![CDATA[*/
-        var fz = [[${report.queryFieldList}]]
+        var fz = [[${report.queryFieldList}]] || []
         var multipleSelect = fz.filter(f => f.type == 'MULTIPLE_SELECT')
         multipleSelect.forEach(f => {
             var value = urlObject[f.name]

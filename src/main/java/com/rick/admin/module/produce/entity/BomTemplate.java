@@ -1,6 +1,8 @@
 package com.rick.admin.module.produce.entity;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.rick.admin.module.material.service.MaterialDescription;
+import com.rick.admin.module.material.service.MaterialDescriptionHandler;
 import com.rick.db.dto.BaseCodeEntity;
 import com.rick.db.dto.BaseEntity;
 import com.rick.db.plugin.dao.annotation.Column;
@@ -64,7 +66,7 @@ public class BomTemplate extends BaseCodeEntity {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @SuperBuilder
     @Table(value = "produce_bom_template_component_detail", comment = "BOM 模版组件详情")
-    public static class ComponentDetail extends BaseEntity {
+    public static class ComponentDetail extends BaseEntity implements MaterialDescriptionHandler {
 
         TypeEnum type;
 
@@ -87,6 +89,14 @@ public class BomTemplate extends BaseCodeEntity {
 
         @Transient
         BomTemplate bomTemplate;
+
+        @Override
+        public Long getMaterialId() {
+            return type == TypeEnum.MATERIAL ? typeInstanceId : null;
+        }
+
+        @Transient
+        MaterialDescription materialDescription;
 
         public boolean hasTemplate() {
             return Objects.nonNull(bomTemplate);

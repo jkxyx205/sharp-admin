@@ -71,7 +71,7 @@ public class Material extends BaseCodeEntity {
     @JsonIgnore
     private MaterialProfile materialProfile;
 
-    @Column(comment = "BOM 模版", updatable = false)
+    @Column(comment = "BOM 模版")
     Long bomTemplateId;
 
     public String getSpecificationText() {

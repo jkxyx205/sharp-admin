@@ -141,6 +141,7 @@ public class MaterialTest {
         CpnConfigurer materialTypeCpn = CpnConfigurer.builder()
                 .cpnType(CpnTypeEnum.SELECT)
                 .name("materialType")
+                .validatorList(Arrays.asList(new Required(true)))
                 .label("物料类型")
                 .datasource("material_type")
                 .additionalInfo(Params.builder(1).pv("pane-index", "1").build())
@@ -196,6 +197,15 @@ public class MaterialTest {
                 .name("serialManagement")
                 .label("序列号管理")
                 .options(Arrays.asList(new CpnConfigurer.CpnOption("1", "")))
+                .additionalInfo(Params.builder(1).pv("pane-index", "1").build())
+                .build();
+
+        CpnConfigurer bomTemplateCpn = CpnConfigurer.builder()
+                .cpnType(CpnTypeEnum.SELECT)
+                .name("bomTemplateId")
+                .label("BOM模版")
+                .datasource("material_bom")
+                .validatorList(longTextValidatorList)
                 .additionalInfo(Params.builder(1).pv("pane-index", "1").build())
                 .build();
 
@@ -348,7 +358,7 @@ public class MaterialTest {
                 .build();
 
 
-        List<CpnConfigurer> cpnConfigurerList = Lists.newArrayList(codeCpn, materialTypeCpn, nameCpn, categoryCpn, baseUnitCpn, standardPriceCpn, batchManagementCpn, serialManagementCpn,
+        List<CpnConfigurer> cpnConfigurerList = Lists.newArrayList(codeCpn, materialTypeCpn, nameCpn, categoryCpn, baseUnitCpn, standardPriceCpn, batchManagementCpn, serialManagementCpn, bomTemplateCpn,
                 remarkCpn, grossWeightCpn, netWeightCpn, weightUnitCpn, volumeCpn, volumeUnitCpn, sizeCpn, characteristicCpn, safetyStockQuantityCpn, maximumStockQuantityCpn, attachmentCpn,
                 stockQuantityCpn, stockQuantityPriceCpn, createNameCpn, createTimeCpn, updateNameCpn, updateTimeCpn);
         return cpnConfigurerList;

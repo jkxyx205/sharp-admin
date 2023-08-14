@@ -77,10 +77,10 @@ public class PermissionTest {
 //        final Long PARENT_ID = 702223996619358208L;
 //        final int PERMISSION_ORDER = 3;
 
-        final String CODE = "produce_order";
-        final String NAME = "生产单";
+        final String CODE = "bom_list";
+        final String NAME = "物料清单";
         final Long PARENT_ID = 708744048906604544L;
-        final int PERMISSION_ORDER = 2;
+        final int PERMISSION_ORDER = 0;
 
         jdbcTemplate.execute("delete from sys_role_permission where permission_id IN (select id from sys_permission where code like'"+CODE+"%')");
 

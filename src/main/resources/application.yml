@@ -78,6 +78,8 @@ dict:
       sql: "select name, label from sys_dict where type = 'MATERIAL_TYPE' order by sort asc"
     - type: bom_material
       sql: "select id name, name label from mm_material where bom_template_id is NOT NULL"
+    - type: material_bom
+      sql: "select id name, concat(code, '-' ,description) label from produce_bom_template"
     - type: bol
       map: { "1": "是", "0": "否" }
     - type: mm_material
