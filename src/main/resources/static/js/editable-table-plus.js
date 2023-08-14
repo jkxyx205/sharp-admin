@@ -68,6 +68,7 @@
                 },
                 afterRemoveCallback: function ($parent) {
                     _this._rebuildIndex()
+                    _this._setRequired();
                     return true
                 }
             })
@@ -288,8 +289,8 @@
                         $td.html($checkboxs).css('text-align', columnConfig.align ?  columnConfig.align : 'left')
 
                         if (columnConfig.onchange) {
-                            $checkboxs.siblings('input').on('change', function () {
-                                columnConfig.onchange($tr, this.value)
+                            $checkboxs.siblings('input').on('change',  (e) => {
+                                columnConfig.onchange({editTable: this, $tr, $td}, e.target.value, e)
                             })
                         }
                     } else {
@@ -321,8 +322,8 @@
                     $td.html($select);
 
                     if (columnConfig.onchange) {
-                        $select.on('change', function (e) {
-                            columnConfig.onchange($tr, this.value, e)
+                        $select.on('change', (e) => {
+                            columnConfig.onchange({editTable: this, $tr, $td}, e.target.value, e)
                         })
                     }
                 } else if (columnConfig.type === 'radio') {
@@ -339,16 +340,16 @@
                     $td.html($radios);
 
                     if (columnConfig.onchange) {
-                        $radios.siblings('input').on('change', function (e) {
-                            columnConfig.onchange($tr, this.value, e)
+                        $radios.siblings('input').on('change', (e) => {
+                            columnConfig.onchange({editTable: this, $tr, $td}, e.target.value, e)
                         })
                     }
                 } else if (columnConfig.type === 'group_radio') { // 单选，所有行共享name
                     $input.attr('type', 'radio').attr('class', '').parent().css('text-align', columnConfig.align ?  columnConfig.align : 'center')
 
                     if (columnConfig.onchange) {
-                        $input.siblings('input').on('change', function (e) {
-                            columnConfig.onchange($tr, this.value, e)
+                        $input.siblings('input').on('change', (e) => {
+                            columnConfig.onchange({editTable: this, $tr, $td}, e.target.value, e)
                         })
                     }
                 } else if (columnConfig.type === 'decimal') {

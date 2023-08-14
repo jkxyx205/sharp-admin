@@ -96,7 +96,7 @@
 
                 // 注册事件
                 let _this = this
-                $td.find('input[type=text]').on('click keydown', function(event){
+                $td.find('input[type=text]').on('click keydown', function(event) {
                     // if ((event.keyCode && event.keyCode === 13) || !event.keyCode) {
                     if ((event.keyCode && event.keyCode !== 9) || !event.keyCode) {
                         currentMaterialDom = this
