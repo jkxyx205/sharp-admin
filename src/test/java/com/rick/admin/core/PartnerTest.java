@@ -107,6 +107,14 @@ public class PartnerTest {
                 .validatorList(textRequiredValidatorList)
                 .build();
 
+        CpnConfigurer shortNameCpn = CpnConfigurer.builder()
+                .cpnType(CpnTypeEnum.TEXT)
+                .name("shortName")
+                .label("公司简称")
+                .placeholder("请输入公司简称")
+                .validatorList(textValidatorList)
+                .build();
+
         CpnConfigurer remarkCpn = CpnConfigurer.builder()
                 .cpnType(CpnTypeEnum.TEXTAREA)
                 .name("remark")
@@ -150,15 +158,31 @@ public class PartnerTest {
         CpnConfigurer bankNameCpn = CpnConfigurer.builder()
                 .cpnType(CpnTypeEnum.TEXT)
                 .name("bankName")
-                .label("开户银行")
-                .placeholder("请输入开户银行")
+                .label("开户行")
+                .placeholder("请输入开户行")
                 .validatorList(textValidatorList)
                 .build();
 
-        CpnConfigurer bankAccountCpn = CpnConfigurer.builder()
+        CpnConfigurer bankNumberCpn = CpnConfigurer.builder()
                 .cpnType(CpnTypeEnum.TEXT)
-                .name("bankAccount")
-                .label("银行账户")
+                .name("bankNumber")
+                .label("行号")
+                .placeholder("请输入行号")
+                .validatorList(textValidatorList)
+                .build();
+
+        CpnConfigurer accountNameCpn = CpnConfigurer.builder()
+                .cpnType(CpnTypeEnum.TEXT)
+                .name("accountName")
+                .label("账户名")
+                .placeholder("请输入账户名")
+                .validatorList(textValidatorList)
+                .build();
+
+        CpnConfigurer accountNumberCpn = CpnConfigurer.builder()
+                .cpnType(CpnTypeEnum.TEXT)
+                .name("accountNumber")
+                .label("银行账号")
                 .placeholder("请输入银行账户")
                 .validatorList(textValidatorList)
                 .build();
@@ -180,8 +204,8 @@ public class PartnerTest {
                 .build();
 
 
-        List<CpnConfigurer> cpnConfigurerList = Lists.newArrayList(typeCpn, codeCpn, nameCpn, remarkCpn, contactPersonCpn, contactNumberCpn, contactMailCpn, contactFaxCpn,
-                bankNameCpn, bankAccountCpn, taxCodeCpn, addressCpn);
+        List<CpnConfigurer> cpnConfigurerList = Lists.newArrayList(typeCpn, codeCpn, nameCpn, shortNameCpn, remarkCpn, contactPersonCpn, contactNumberCpn, contactMailCpn, contactFaxCpn,
+                bankNameCpn, bankNumberCpn, accountNameCpn, accountNumberCpn, taxCodeCpn, addressCpn);
         return cpnConfigurerList;
     }
 
@@ -193,7 +217,7 @@ public class PartnerTest {
                 .tplName("tpl/list")
                 .name("合作伙伴")
                 .additionalInfo(Params.builder(1).pv("formId", "695708313425285120").build())
-                .querySql("SELECT core_partner.id, core_partner.partner_type, core_partner.code, core_partner.name, core_partner.remark, core_partner.contact_person, core_partner.contact_number, core_partner.contact_mail, contact_fax, core_partner.bank_name, core_partner.bank_account, core_partner.tax_code, core_partner.address, sys_user.name create_name,DATE_FORMAT(core_partner.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM core_partner left join sys_user on sys_user.id = core_partner.create_by WHERE core_partner.partner_type = :partnerType AND core_partner.code = :code AND core_partner.name like :name AND core_partner.is_deleted = 0")
+                .querySql("SELECT core_partner.id, core_partner.partner_type, core_partner.code, core_partner.name, core_partner.remark, core_partner.contact_person, core_partner.contact_number, core_partner.contact_mail, contact_fax, core_partner.bank_name, core_partner.account_number, core_partner.tax_code, core_partner.address, sys_user.name create_name,DATE_FORMAT(core_partner.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM core_partner left join sys_user on sys_user.id = core_partner.create_by WHERE core_partner.partner_type = :partnerType AND core_partner.code = :code AND core_partner.name like :name AND core_partner.is_deleted = 0")
                 .queryFieldList(Arrays.asList(
                         new QueryField("partnerType", "类型", QueryField.Type.SELECT, "partner_type"),
                         new QueryField("code", "编号", QueryField.Type.TEXT),

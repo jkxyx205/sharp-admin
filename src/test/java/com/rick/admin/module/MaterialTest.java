@@ -281,7 +281,7 @@ public class MaterialTest {
 
         CpnConfigurer characteristicCpn = CpnConfigurer.builder()
                 .cpnType(CpnTypeEnum.TABLE)
-                .name("specification")
+                .name("specificationList")
                 .label("规格")
                 .additionalInfo(Params.builder()
                         .pv("columns", Arrays.asList(characteristicKeyCpn, characteristicValueCpn))

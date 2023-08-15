@@ -72,10 +72,12 @@ public class MaterialFormAdvice implements FormAdvice {
         }
 
         HashMap<String, String> mrpMap = (HashMap<String, String>) values.get("mrp");
-        String safetyStockQuantity = mrpMap.get("safetyStockQuantity");
-        String maximumStockQuantity = mrpMap.get("maximumStockQuantity");
-        values.put("mrp", new Material.Mrp(StringUtils.isNotEmpty(safetyStockQuantity) ? new BigDecimal(safetyStockQuantity) : null,
-                StringUtils.isNotEmpty(maximumStockQuantity) ? new BigDecimal(maximumStockQuantity) : null));
+        if (Objects.nonNull(mrpMap)) {
+            String safetyStockQuantity = mrpMap.get("safetyStockQuantity");
+            String maximumStockQuantity = mrpMap.get("maximumStockQuantity");
+            values.put("mrp", new Material.Mrp(StringUtils.isNotEmpty(safetyStockQuantity) ? new BigDecimal(safetyStockQuantity) : null,
+                    StringUtils.isNotEmpty(maximumStockQuantity) ? new BigDecimal(maximumStockQuantity) : null));
+        }
 
     }
 

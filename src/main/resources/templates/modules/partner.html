@@ -72,6 +72,15 @@
                         </div>
                     </div>
                     <div class="form-group row">
+                        <label for="name" class="col-sm-3 col-form-label">公司简称</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="shortName" name="shortName" maxlength="16" th:value="${formBO.propertyMap.shortName.value}"
+                                   placeholder="请输入公司简称">
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">长度范围 0 - 16 个字符</div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
                         <label for="remark" class="col-sm-3 col-form-label">备注</label>
                         <div class="col-sm-9">
                 <textarea class="form-control" id="remark" name="remark" maxlength="1000" th:text="${formBO.propertyMap.remark.value}"
@@ -129,9 +138,27 @@
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label for="bankAccount" class="col-sm-3 col-form-label">银行账户</label>
+                        <label for="bankNumber" class="col-sm-3 col-form-label">行号</label>
                         <div class="col-sm-9">
-                            <input type="text" class="form-control" id="bankAccount" name="bankAccount" maxlength="16" th:value="${formBO.propertyMap.bankAccount.value}"
+                            <input type="text" class="form-control" id="bankNumber" name="bankNumber" maxlength="16" th:value="${formBO.propertyMap.bankNumber.value}"
+                                   placeholder="请输入行号" value="">
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">长度范围 0 - 16 个字符</div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="accountName" class="col-sm-3 col-form-label">账户名</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="accountName" name="accountName" maxlength="16" th:value="${formBO.propertyMap.accountName.value}"
+                                   placeholder="请输入账户名" value="">
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">长度范围 0 - 16 个字符</div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="accountNumber" class="col-sm-3 col-form-label">银行账户</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="accountNumber" name="accountNumber" maxlength="16" th:value="${formBO.propertyMap.accountNumber.value}"
                                    placeholder="请输入银行账户" value="">
                             <!--前端验证所有验证信息-->
                             <div class="invalid-feedback">长度范围 0 - 16 个字符</div>

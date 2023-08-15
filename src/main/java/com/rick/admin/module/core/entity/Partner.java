@@ -29,6 +29,8 @@ public class Partner extends BaseCodeEntity {
 
     String name;
 
+    String shortName;
+
     String remark;
 
     @Column(comment = "联系人")
@@ -43,11 +45,17 @@ public class Partner extends BaseCodeEntity {
     @Column(comment = "传真")
     String contactFax;
 
-    @Column(comment = "开户银行")
+    @Column(comment = "开户行")
     String bankName;
 
-    @Column(comment = "银行账户")
-    String bankAccount;
+    @Column(comment = "行号")
+    String bankNumber;
+
+    @Column(comment = "账户名")
+    String accountName;
+
+    @Column(comment = "银行账号")
+    String accountNumber;
 
     @Column(comment = "纳税人识别号")
     String taxCode;
