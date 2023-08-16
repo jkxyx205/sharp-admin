@@ -20,6 +20,7 @@ import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Rick.Xu
@@ -64,12 +65,15 @@ public class InventoryDocument extends BaseCodeEntity {
     @Column(comment = "备注")
     String remark;
 
+    @Column(comment = "是否已经被取消")
+    Boolean canceled;
+
+    @Column(comment = "附件", columnDefinition = "text", value = "attachment", nullable = false)
+    private List<Map<String, Object>> attachmentList;
+
     @NotEmpty
     @OneToMany(subTable = "inv_document_item", reversePropertyName = "inventoryDocumentId", cascadeInsert = true, joinValue = "inventory_document_id")
     List<Item> itemList;
-
-    @Column(comment = "是否已经被取消")
-    Boolean canceled;
 
     @Getter
     @Setter

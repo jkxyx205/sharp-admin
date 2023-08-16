@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -133,6 +134,7 @@ public class InventoryController {
                 .plantId(purchaseOrder.getPlantId())
                 .operatorId(UserContextHolder.get().getId())
                 .documentDate(LocalDate.now())
+                .attachmentList(Collections.emptyList())
                 .build();
 
         inventoryDocument.setItemList(Lists.newArrayListWithExpectedSize(purchaseOrder.getItemList().size()));
@@ -193,6 +195,7 @@ public class InventoryController {
                 .rootReferenceCode(referenceCode)
                 .operatorId(UserContextHolder.get().getId())
                 .documentDate(LocalDate.now())
+                .attachmentList(Collections.emptyList())
                 .build();
 
         inventoryDocument.setItemList(itemList);
