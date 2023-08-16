@@ -6,7 +6,7 @@
             display: inline-block!important;
         }
 
-        .attachment_delete_btn {
+        .attachment_ul .attachment_delete_btn {
             position: absolute;
             top: 6px;
             margin-left: 32px;
@@ -29,8 +29,8 @@
             <div class="tab-content">
                 <div class="tab-pane" th:classappend="${i == 1 ? 'active': ''}" th:id="${'pane-' + i}" role="tabpanel" th:each="i: ${#numbers.sequence(1, formBO.form.getAdditionalInfo().get('pane-list').size())}">
                     <div class="form-group row" th:if="${#strings.equals(p.configurer.getAdditionalInfo().get('pane-index'), #strings.toString(i))}" th:each="p : ${formBO.propertyList}" th:with="isRequired = ${p.configurer.validatorProperties.get('Required.required') eq null ? false : p.configurer.validatorProperties.get('Required.required')}">
-                        <label th:if="${!(p.name eq 'specificationList' || p.name eq 'attachment')}" th:for="${p.name}" th:class="${'col-form-label col-sm-' + col}" th:classappend="${isRequired ? 'required' : ''}" th:text="${p.configurer.label}"></label>
-                        <div th:class="${'col-sm-' + (12 - col)}" th:classappend="${(p.name eq 'specificationList' || p.name eq 'attachment') ? 'col-sm-12' : ''}">
+                        <label th:if="${!(p.name eq 'specificationList' || p.name eq 'attachmentList')}" th:for="${p.name}" th:class="${'col-form-label col-sm-' + col}" th:classappend="${isRequired ? 'required' : ''}" th:text="${p.configurer.label}"></label>
+                        <div th:class="${'col-sm-' + (12 - col)}" th:classappend="${(p.name eq 'specificationList' || p.name eq 'attachmentList') ? 'col-sm-12' : ''}">
                             <label class="col-form-label"  th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).LABEL}" th:text="${(p.configurer.options == null || p.value == null) ? p.value : p.configurer.optionMap[p.value]}"></label>
 
                             <input th:disabled="${p.configurer.disabled == true || (p.name eq 'code' && formBO.instanceId != null)}" th:attr="pattern=${p.configurer.validatorProperties.get('CustomizeRegex.regex')}" th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).TEXT}" type="text" class="form-control" th:id="${p.name}" th:name="${p.name}" th:maxlength="${p.configurer.validatorProperties.get('Length.max')}"
@@ -242,7 +242,7 @@
         $.ajaxFileUpload
         (
             {
-                url: '/documents/upload?name=' + fileElementId, //用于文件上传的服务器端请求地址
+                url: '/documents/upload?groupName=material&name=' + fileElementId, //用于文件上传的服务器端请求地址
                 secureuri: false, //是否需要安全协议，一般设置为false
                 fileElementId: fileElementId, //文件上传域的ID
                 dataType: 'json', //返回值类型 一般设置为json

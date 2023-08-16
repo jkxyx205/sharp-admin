@@ -1,8 +1,11 @@
 package com.rick.admin;
 
+import com.rick.admin.module.material.entity.Material;
+import com.rick.common.util.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,5 +30,19 @@ public class SimpleTest {
         System.out.println(collect);
 
         System.out.println();
+    }
+
+    @Test
+    public void test2() throws NoSuchFieldException {
+        Field attachmentList = ClassUtils.getField(Material.class, "attachmentList");
+        Class<?> genericClass = ClassUtils.getGenericClass(attachmentList);
+        System.out.println(genericClass);
+    }
+
+    @Test
+    public void test3() throws NoSuchFieldException {
+        Field classificationList = ClassUtils.getField(Material.class, "classificationList");
+        Class<?> genericClass = ClassUtils.getGenericClass(classificationList);
+        System.out.println(genericClass);
     }
 }

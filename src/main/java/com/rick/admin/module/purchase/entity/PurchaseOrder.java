@@ -18,6 +18,7 @@ import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -57,6 +58,9 @@ public class PurchaseOrder extends BaseCodeEntity {
     String remark;
 
     StatusEnum status;
+
+    @Column(comment = "附件", columnDefinition = "text", value = "attachment", nullable = false)
+    private List<Map<String, Object>> attachmentList;
 
     @NotEmpty
     @OneToMany(subTable = "pur_purchase_order_item", reversePropertyName = "purchaseOrderId", cascadeInsertOrUpdate = true, joinValue = "purchase_order_id")

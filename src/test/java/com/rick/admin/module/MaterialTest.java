@@ -305,7 +305,7 @@ public class MaterialTest {
 
         CpnConfigurer attachmentCpn = CpnConfigurer.builder()
                 .cpnType(CpnTypeEnum.FILE)
-                .name("attachment")
+                .name("attachmentList")
                 .label("附件")
                 .additionalInfo(Params.builder(1).pv("pane-index", "5").build())
                 .build();
@@ -457,7 +457,7 @@ public class MaterialTest {
                 .code("mm_material_source_search")
                 .tplName("tpl/query_list")
                 .name("物料供应商查询")
-                .querySql("SELECT cast(mm_material.id as char(20)) id, mm_material.code, mm_material.name, specification, material_type, mm_material.category_id, mm_material.category_id as categoryText, base_unit, base_unit as base_unit_name, standard_price unitPrice, batch_management batchManagement FROM mm_material WHERE mm_material.code = :code AND (mm_material.name like :keywords or specification like :keywords or mm_material.code like :keywords) AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0 AND id = :id AND id IN (:ids) AND exists (select 1 from pur_source_list where partner_id = :partnerId AND (mm_material.id = material_id OR mm_material.category_id = material_category_id))")
+                .querySql("SELECT cast(mm_material.id as char(20)) id, mm_material.code, mm_material.name, specification, material_type, mm_material.category_id, mm_material.category_id as categoryText, base_unit, base_unit as base_unit_name, standard_price unitPrice, batch_management batchManagement FROM mm_material WHERE mm_material.code = :code AND (mm_material.name like :keywords or specification like :keywords or mm_material.code like :keywords) AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0 AND id = :id AND id IN (:ids) AND exists (select 1 from pur_source_list where partner_id = :partnerId AND (mm_material.id = material_id OR (material_id IS NULL AND mm_material.category_id = material_category_id)))")
                 .queryFieldList(Arrays.asList(
                         new QueryField("keywords", "关键字", QueryField.Type.TEXT),
                         new QueryField("categoryId", "分类", QueryField.Type.GROUP_SELECT, "material_category_select_sql")

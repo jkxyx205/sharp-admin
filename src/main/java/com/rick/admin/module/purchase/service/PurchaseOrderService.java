@@ -147,7 +147,7 @@ public class PurchaseOrderService {
      * @return
      */
     public List<Dict> getVendorByMaterialId(Long materialId) {
-        String sql = "select id name, name label from core_partner where `partner_type` = 'VENDOR' and exists(select 1 from pur_source_list left join mm_material on mm_material.`category_id` = pur_source_list.`material_category_id` where (mm_material.id = :materialId or `material_id` = :materialId) AND core_partner.id = partner_id)";
+        String sql = "select id name, name label from core_partner where `partner_type` = 'VENDOR' and exists(select 1 from pur_source_list left join mm_material on mm_material.`category_id` = pur_source_list.`material_category_id` AND pur_source_list.material_id is null  where (mm_material.id = :materialId or `material_id` = :materialId) AND core_partner.id = partner_id)";
         return sharpService.query(sql, Params.builder(1).pv("materialId", materialId).build(), Dict.class);
     }
 
@@ -157,7 +157,7 @@ public class PurchaseOrderService {
      * @return
      */
     public Map<String, List<Dict>> getVendorByMaterialIds(Collection<Long> materialIds) {
-        String sql = "select sl.material_id, core_partner.id name, core_partner.name label from core_partner inner join (select `partner_id`, ifnull(`material_id`, mm_material.id) material_id from pur_source_list left join mm_material on mm_material.`category_id` = pur_source_list.`material_category_id` where mm_material.id IN (:materialIds) or `material_id` IN (:materialIds)) sl on sl.partner_id = core_partner.id where `partner_type` = 'VENDOR'";
+        String sql = "select sl.material_id, core_partner.id name, core_partner.name label from core_partner inner join (select `partner_id`, ifnull(`material_id`, mm_material.id) material_id from pur_source_list left join mm_material on mm_material.`category_id` = pur_source_list.`material_category_id` AND pur_source_list.material_id is null  where mm_material.id IN (:materialIds) or `material_id` IN (:materialIds)) sl on sl.partner_id = core_partner.id where `partner_type` = 'VENDOR'";
         List<Map<String, Object>> list = sharpService.query(sql, Params.builder(1).pv("materialIds", materialIds).build());
         Map<Long, List<Map<String, Object>>> map = list.stream().collect(Collectors.groupingBy(m -> (Long) m.get("material_id")));
         Map<String, List<Dict>> resultMap = Maps.newHashMapWithExpectedSize(map.size());

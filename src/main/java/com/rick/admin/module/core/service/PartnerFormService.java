@@ -8,7 +8,6 @@ import com.rick.formflow.form.service.FormAdvice;
 import com.rick.formflow.form.service.bo.FormBO;
 import com.rick.meta.dict.service.DictService;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -32,9 +31,9 @@ public class PartnerFormService implements FormAdvice {
         List<Map<String, String>> sourceList = (List<Map<String, String>>) values.get("sourceList");
         for (Map<String, String> map : sourceList) {
             Objects.requireNonNull(map.get("materialCategoryId"));
-            if (StringUtils.isNotBlank(map.get("materialId"))) {
-                map.put("materialCategoryId", null);
-            }
+//            if (StringUtils.isNotBlank(map.get("materialId"))) {
+//                map.put("materialCategoryId", null);
+//            }
         }
     }
 
