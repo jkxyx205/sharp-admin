@@ -25,4 +25,6 @@ public class Category extends BaseEntity {
 
     @NotEmpty
     private String name;
+
+    private Integer orderIndex;
 }
