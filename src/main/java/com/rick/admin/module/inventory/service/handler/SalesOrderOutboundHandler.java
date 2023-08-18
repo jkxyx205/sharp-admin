@@ -18,7 +18,7 @@ import java.util.Map;
  * @date 2023/7/12 11:42
  */
 @Component
-public class ProduceOrderOutboundHandler extends AbstractHandler {
+public class SalesOrderOutboundHandler extends AbstractHandler {
 
     @Resource
     ProduceOrderService produceOrderService;
@@ -30,12 +30,12 @@ public class ProduceOrderOutboundHandler extends AbstractHandler {
 
     @Override
     public InventoryDocument.ReferenceTypeEnum reference() {
-        return InventoryDocument.ReferenceTypeEnum.PDO;
+        return InventoryDocument.ReferenceTypeEnum.SO;
     }
 
     @Override
     public void handle0(InventoryDocument inventoryDocument) {
-        Map<Long, BigDecimal> itemOpenQuantityMap = produceOrderService.openQuantity(InventoryDocument.MovementTypeEnum.OUTBOUND, inventoryDocument.getReferenceCode());
+        Map<Long, BigDecimal> itemOpenQuantityMap = produceOrderService.saleOpenQuantity(InventoryDocument.MovementTypeEnum.OUTBOUND, inventoryDocument.getReferenceCode());
         List<Long> completeIdList = Lists.newArrayListWithExpectedSize(inventoryDocument.getItemList().size());
 
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
@@ -54,10 +54,10 @@ public class ProduceOrderOutboundHandler extends AbstractHandler {
 
         boolean complete = itemOpenQuantityMap.values().stream().allMatch(quantity -> BigDecimalUtils.le(quantity, BigDecimal.ZERO));
         if (complete) {
-            produceOrderService.setProcessingStatus(inventoryDocument.getRootReferenceCode());
+            produceOrderService.setDoneStatus(inventoryDocument.getRootReferenceCode());
         }
 
-        produceOrderService.setProcessingComplete(completeIdList);
+        produceOrderService.setIssueComplete(completeIdList);
     }
 
 }

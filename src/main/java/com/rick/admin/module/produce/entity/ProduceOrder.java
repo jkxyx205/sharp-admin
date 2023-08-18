@@ -18,7 +18,10 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Rick.Xu
@@ -56,6 +59,9 @@ public class ProduceOrder extends BaseCodeEntity {
 
     String remark;
 
+    @Column(comment = "附件", columnDefinition = "text", value = "attachment", nullable = false)
+    private List<Map<String, Object>> attachmentList;
+
     @Getter
     @Setter
     @NoArgsConstructor
@@ -81,17 +87,26 @@ public class ProduceOrder extends BaseCodeEntity {
         @Column(comment = "单位")
         String unit;
 
+        @NotNull
+        @Column(comment = "含税单价")
+        BigDecimal unitPrice;
+
+        @NotNull
+        @Column(comment = "交货日期")
+        LocalDate deliveryDate;
 
         @Column(comment = "备注")
         String remark;
 
         Long produceOrderId;
 
+        Long batchId;
+
         String batchCode;
 
         String color;
 
-        @Column(value = "is_complete", comment = "完成")
+        @Column(value = "is_complete", comment = "完成发货")
         Boolean complete;
 
         @Column(updatable = false)
@@ -104,6 +119,14 @@ public class ProduceOrder extends BaseCodeEntity {
         @NotEmpty
         @OneToMany(subTable = "produce_order_item_detail", reversePropertyName = "produceOrderItemId", cascadeInsertOrUpdate = true, joinValue = "produce_order_item_id")
         List<Detail> itemList;
+
+        public BigDecimal getAmount() {
+            if (Objects.nonNull(unitPrice)) {
+                return unitPrice.multiply(quantity);
+            }
+
+            return null;
+        }
 
         @Getter
         @Setter
@@ -150,7 +173,8 @@ public class ProduceOrder extends BaseCodeEntity {
     public enum StatusEnum {
         PLANNING("计划中"),
         PROCESSING("完成领料"),
-        DONE("生产完成");
+        PRODUCED("生产完成"),
+        DONE("订单完成");
 
         @JsonValue
         public String getCode() {

@@ -1,8 +1,10 @@
 package com.rick.admin.module.produce.service;
 
 import com.rick.admin.common.BigDecimalUtils;
+import com.rick.admin.common.exception.ResourceNotFoundException;
 import com.rick.admin.module.core.service.CodeHelper;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
+import com.rick.admin.module.material.dao.BatchDAO;
 import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
 import com.rick.db.plugin.dao.core.EntityDAO;
@@ -20,6 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Rick.Xu
@@ -35,21 +38,34 @@ public class ProduceOrderService {
 
     EntityDAO<ProduceOrder.Item.Detail, Long> produceOrderItemDetailDAO;
 
+    EntityDAO<ProduceOrder.Item, Long> produceOrderItemDAO;
+
     SharpService sharpService;
+
+    BatchDAO batchDAO;
 
     /**
      * 新增或修改
+     *
      * @param order
      */
     public void saveOrUpdate(ProduceOrder order) {
-        if (order.getId() == null && StringUtils.isBlank(order.getCode())) {
+        if (order.getId() == null) {
             order.setCode(CodeHelper.generateCode("PDO"));
-            order.getItemList().forEach(item -> {
-                item.setProduceOrderCode(order.getCode());
+        }
+
+        order.getItemList().forEach(item -> {
+            item.setProduceOrderCode(order.getCode());
+
+            if (Objects.isNull(item.getId())) {
                 item.setComplete(false);
                 item.getItemList().forEach(detail -> detail.setComplete(false));
-            });
-        }
+            }
+
+            if (StringUtils.isNotBlank(item.getBatchCode())) {
+                item.setBatchId(batchDAO.selectIdByKeyCode(item.getMaterialCode(), item.getBatchCode()).orElse(null));
+            }
+        });
 
 
         produceOrderDAO.insertOrUpdate(order);
@@ -57,6 +73,7 @@ public class ProduceOrderService {
 
     /**
      * 获取生产订单 open 的数量
+     *
      * @param movementType
      * @param rootReferenceCode
      * @return
@@ -88,11 +105,46 @@ public class ProduceOrderService {
         return histroyGoodsReceiptQuantityMap;
     }
 
-    public void setComplete(String rootReferenceCode) {
-        produceOrderDAO.update("status", new Object[]{ProduceOrder.StatusEnum.PROCESSING.getCode(), rootReferenceCode}, "code = ?");
+    public Map<Long, BigDecimal> saleOpenQuantity(InventoryDocument.MovementTypeEnum movementType, String rootReferenceCode) {
+        String sql = "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where `root_reference_code` = :rootReferenceCode group by root_reference_item_id";
+        Map<Long, BigDecimal> histroyGoodsReceiptQuantityMap = sharpService.queryForKeyValue(sql, Params.builder(1).pv("rootReferenceCode", rootReferenceCode).build());
+
+        if (movementType == InventoryDocument.MovementTypeEnum.OUTBOUND) {
+            // 同向
+            ProduceOrder produceOrder = produceOrderDAO.selectByCode(rootReferenceCode).orElseThrow(() -> new ResourceNotFoundException());
+
+            for (ProduceOrder.Item item : produceOrder.getItemList()) {
+                BigDecimal value = item.getQuantity().subtract(ObjectUtils.defaultIfNull(histroyGoodsReceiptQuantityMap.get(item.getId()), BigDecimal.ZERO));
+                histroyGoodsReceiptQuantityMap.put(item.getId(), BigDecimalUtils.lt(value, BigDecimal.ZERO) ? BigDecimal.ZERO : value);
+            }
+        }
+
+        return histroyGoodsReceiptQuantityMap;
     }
 
-    public void setComplete(List<Long> completeIdList) {
+    public Map<Long, BigDecimal> historyGoodsIssueQuantity(String rootReferenceCode) {
+        String sql = "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where `root_reference_code` = :rootReferenceCode group by root_reference_item_id";
+        Map<Long, BigDecimal> histroyGoodsIssueQuantityMap = sharpService.queryForKeyValue(sql, Params.builder(1).pv("rootReferenceCode", rootReferenceCode).build());
+
+        ProduceOrder produceOrder = produceOrderDAO.selectByCode(rootReferenceCode).orElseThrow(() -> new ResourceNotFoundException());
+
+        for (ProduceOrder.Item item : produceOrder.getItemList()) {
+            histroyGoodsIssueQuantityMap.put(item.getId(), ObjectUtils.defaultIfNull(histroyGoodsIssueQuantityMap.get(item.getId()), BigDecimal.ZERO));
+        }
+
+        return histroyGoodsIssueQuantityMap;
+    }
+
+    /**
+     * 设置状态： 领料完成
+     *
+     * @param rootReferenceCode
+     */
+    public void setProcessingStatus(String rootReferenceCode) {
+        setStatus(rootReferenceCode, ProduceOrder.StatusEnum.PROCESSING);
+    }
+
+    public void setProcessingComplete(List<Long> completeIdList) {
         // set complete = true
         if (CollectionUtils.isNotEmpty(completeIdList)) {
             produceOrderItemDetailDAO.update("is_complete"
@@ -100,4 +152,31 @@ public class ProduceOrderService {
                     "id IN (:completeIdList)");
         }
     }
+
+    /**
+     * 发货完成
+     * @param completeIdList
+     */
+    public void setIssueComplete(List<Long> completeIdList) {
+        if (CollectionUtils.isNotEmpty(completeIdList)) {
+            produceOrderItemDAO.update("is_complete"
+                    , Params.builder(2).pv("completeIdList", completeIdList).pv("is_complete", true).build(),
+                    "id IN (:completeIdList)");
+        }
+    }
+
+    /**
+     * 设置状态： 订单完成
+     *
+     * @param rootReferenceCode
+     */
+    public void setDoneStatus(String rootReferenceCode) {
+        setStatus(rootReferenceCode, ProduceOrder.StatusEnum.DONE);
+    }
+
+    private void setStatus(String rootReferenceCode, ProduceOrder.StatusEnum status) {
+        produceOrderDAO.update("status", new Object[]{status.getCode(), rootReferenceCode}, "code = ?");
+    }
+
 }
+

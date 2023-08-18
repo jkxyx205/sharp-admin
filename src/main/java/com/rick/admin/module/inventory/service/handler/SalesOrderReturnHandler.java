@@ -1,5 +1,6 @@
 package com.rick.admin.module.inventory.service.handler;
 
+import com.google.common.collect.Lists;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ExceptionCodeEnum;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
@@ -14,24 +15,22 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 /**
  * @author Rick.Xu
- * @date 2023/7/12 15:42
+ * @date 2023/6/11 11:42
  */
 @Component
-public class ProduceOrderReturnHandler extends AbstractHandler {
+public class SalesOrderReturnHandler extends AbstractHandler {
 
     @Resource
     MaterialDAO materialDAO;
 
     @Resource
     EntityCodeDAO<ProduceOrder, Long> produceOrderDAO;
-
-//    @Resource
-//    PurchaseOrderItemDAO purchaseOrderItemDAO;
 
     @Resource
     ProduceOrderService produceOrderService;
@@ -43,7 +42,7 @@ public class ProduceOrderReturnHandler extends AbstractHandler {
 
     @Override
     public InventoryDocument.ReferenceTypeEnum reference() {
-        return InventoryDocument.ReferenceTypeEnum.PDO;
+        return InventoryDocument.ReferenceTypeEnum.SO;
     }
 
     @Override
@@ -56,21 +55,24 @@ public class ProduceOrderReturnHandler extends AbstractHandler {
         ProduceOrder produceOrder = optional.get();
 
         inventoryDocument.setRootReferenceCode(produceOrder.getCode());
+
         InventoryDocument.MovementTypeEnum movementType = ObjectUtils.defaultIfNull(inventoryDocument.getItemList().get(0).getMovementType(), InventoryDocument.MovementTypeEnum.INBOUND);
 
-        Map<Long, BigDecimal> itemOpenQuantityMap = produceOrderService.openQuantity(movementType, produceOrder.getCode());
+        Map<Long, BigDecimal> itemOpenQuantityMap = produceOrderService.saleOpenQuantity(movementType, produceOrder.getCode());
 
+        List<Long> completeIdList = Lists.newArrayListWithExpectedSize(inventoryDocument.getItemList().size());
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
             item.setMovementType(ObjectUtils.defaultIfNull(item.getMovementType(), InventoryDocument.MovementTypeEnum.INBOUND));
             item.setRootReferenceCode(produceOrder.getCode());
             item.setRootReferenceItemId(ObjectUtils.defaultIfNull(item.getRootReferenceItemId(), item.getReferenceItemId()));
             checkOpenQuantity(item.getMaterialId(), item.getQuantity(), itemOpenQuantityMap.get(item.getRootReferenceItemId()));
+
+            if (item.getMovementType() == InventoryDocument.MovementTypeEnum.OUTBOUND && BigDecimalUtils.ge(item.getQuantity(), itemOpenQuantityMap.get(item.getRootReferenceItemId()))) {
+                completeIdList.add(item.getRootReferenceItemId());
+            }
         }
 
-        boolean complete = itemOpenQuantityMap.values().stream().allMatch(quantity -> BigDecimalUtils.le(quantity, BigDecimal.ZERO));
-        if (complete) {
-            produceOrderService.setProcessingStatus(inventoryDocument.getRootReferenceCode());
-        }
+        produceOrderService.setIssueComplete(completeIdList);
     }
 
     private void checkOpenQuantity(Long materialId, BigDecimal movementQuantity, BigDecimal openQuantity) {

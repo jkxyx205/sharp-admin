@@ -10,6 +10,7 @@ import com.rick.admin.module.inventory.service.HandlerManager;
 import com.rick.admin.module.inventory.service.InventoryDocumentService;
 import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.service.MaterialService;
+import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.admin.module.produce.service.ProduceOrderService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
@@ -17,6 +18,7 @@ import com.rick.admin.module.purchase.service.PurchaseOrderService;
 import com.rick.common.http.exception.BizException;
 import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
+import com.rick.db.plugin.dao.core.EntityCodeDAO;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
 import com.rick.meta.dict.service.DictService;
@@ -63,7 +65,10 @@ public class InventoryController {
 
     final ProduceOrderService produceOrderService;
 
+    final EntityCodeDAO<ProduceOrder, Long> produceOrderDAO;
+
     final MaterialService materialService;
+
 
     @GetMapping("move")
     public String gotoInventoryPage() {
@@ -100,6 +105,8 @@ public class InventoryController {
                 itemOpenQuantityMap = purchaseOrderService.openQuantity(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.OUTBOUND : InventoryDocument.MovementTypeEnum.INBOUND, inventoryDocument.getRootReferenceCode());
             } else if (inventoryDocument.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PDO && type == InventoryDocument.TypeEnum.RETURN) {
                 itemOpenQuantityMap = produceOrderService.openQuantity(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.INBOUND : InventoryDocument.MovementTypeEnum.OUTBOUND, inventoryDocument.getRootReferenceCode());
+            } else if (inventoryDocument.getReferenceType() == InventoryDocument.ReferenceTypeEnum.SO && type == InventoryDocument.TypeEnum.RETURN) {
+                itemOpenQuantityMap = produceOrderService.saleOpenQuantity(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.INBOUND : InventoryDocument.MovementTypeEnum.OUTBOUND, inventoryDocument.getRootReferenceCode());
             } else if (type == InventoryDocument.TypeEnum.RETURN) {
                 itemOpenQuantityMap = inventoryDocumentService.openQuantity(HandlerHelper.oppositeMovementType(inventoryDocument.getItemList().get(0).getMovementType()),
                         inventoryDocument.getRootReferenceCode());
@@ -118,9 +125,11 @@ public class InventoryController {
             return getDocumentFromPurchaseOrder(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.OUTBOUND : InventoryDocument.MovementTypeEnum.INBOUND, type, referenceType, referenceCode);
         } else if (referenceType == InventoryDocument.ReferenceTypeEnum.PDO) {
             return getDocumentFromProduceOrder(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.INBOUND : InventoryDocument.MovementTypeEnum.OUTBOUND, type, referenceType, referenceCode);
+        }  else if (referenceType == InventoryDocument.ReferenceTypeEnum.SO) {
+            return getDocumentFromSalesOrder(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.INBOUND : InventoryDocument.MovementTypeEnum.OUTBOUND, type, referenceType, referenceCode);
         }
 
-        return null;
+        throw new BizException("无法获取 " + referenceType.name());
     }
 
     private InventoryDocument getDocumentFromPurchaseOrder(InventoryDocument.MovementTypeEnum movementType, InventoryDocument.TypeEnum type, InventoryDocument.ReferenceTypeEnum referenceType, String referenceCode) {
@@ -216,6 +225,50 @@ public class InventoryController {
         return inventoryDocument;
     }
 
+    private InventoryDocument getDocumentFromSalesOrder(InventoryDocument.MovementTypeEnum movementType, InventoryDocument.TypeEnum type, InventoryDocument.ReferenceTypeEnum referenceType, String referenceCode) {
+        com.rick.admin.module.produce.entity.ProduceOrder produceOrder = produceOrderDAO.selectByCode(referenceCode)
+                .orElseThrow(() -> new BizException(ExceptionCodeEnum.PDO_DOCUMENT_NOT_FOUND_ERROR, new Object[]{referenceCode}));
+        InventoryDocument inventoryDocument = InventoryDocument.builder()
+                .type(type)
+                .referenceType(referenceType)
+                .referenceCode(referenceCode)
+                .rootReferenceCode(referenceCode)
+                .operatorId(UserContextHolder.get().getId())
+                .documentDate(LocalDate.now())
+                .attachmentList(Collections.emptyList())
+                .build();
+
+        inventoryDocument.setItemList(Lists.newArrayListWithExpectedSize(produceOrder.getItemList().size()));
+
+        for (ProduceOrder.Item item : produceOrder.getItemList()) {
+            inventoryDocument.getItemList()
+                    .add(InventoryDocument.Item.builder()
+                            .type(type)
+                            .referenceType(referenceType)
+                            .referenceCode(referenceCode)
+                            .referenceItemId(item.getId())
+                            .rootReferenceCode(referenceCode)
+                            .rootReferenceItemId(item.getId())
+                            .movementType(InventoryDocument.MovementTypeEnum.OUTBOUND)
+                            .batchId(item.getBatchId())
+                            .batchCode(item.getBatchCode())
+                            .color(item.getColor())
+                            .materialId(item.getMaterialId())
+                            .materialCode(item.getMaterialCode())
+                            .quantity(item.getQuantity())
+                            .unit(item.getUnit())
+                            .build());
+        }
+
+        Map<Long, BigDecimal> itemOpenQuantityMap = produceOrderService.saleOpenQuantity(movementType, referenceCode);
+        for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
+            item.setQuantity(ObjectUtils.defaultIfNull(itemOpenQuantityMap.get(item.getRootReferenceItemId()), BigDecimal.ZERO));
+        }
+        materialService.fillMaterialDescription(inventoryDocument.getItemList());
+
+        return inventoryDocument;
+    }
+
 
     @GetMapping("count")
     public String gotoInventoryCountPage() {
@@ -231,5 +284,16 @@ public class InventoryController {
         return ResultUtils.success(inventoryDocument.getCode());
     }
 
+    /**
+     * 更新备注和附件
+     * @param code
+     * @return
+     */
+    @PutMapping("{code}")
+    @ResponseBody
+    public Result update(@PathVariable String code, @RequestBody InventoryDocument inventoryDocument) {
+        inventoryDocumentService.updateInventoryDocumentByCode(code, inventoryDocument.getAttachmentList(), inventoryDocument.getRemark());
+        return ResultUtils.success();
+    }
 
 }

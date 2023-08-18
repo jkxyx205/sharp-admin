@@ -63,10 +63,11 @@
             <div class="card-body">
                 <form class="form-inline query-form-container" id="form-header">
                     <input type="hidden" id="id" th:value="${po.id}"/>
-                    <div class="form-group">
-                        <label class="col-form-label mr-2">生产单号</label>
-                        <input class="form-control" type="text" id="code" name="code" readonly th:value="${po.code}">
-                    </div>
+                    <input id="code" type="hidden" name="code" th:value="${po.code == null ? '1' : po.code}">
+<!--                    <div class="form-group">-->
+<!--                        <label class="col-form-label mr-2">生产单号</label>-->
+<!--                        <input class="form-control" type="text" id="code" name="code" readonly th:value="${po.code}">-->
+<!--                    </div>-->
                     <div class="form-group">
                         <label class="col-form-label mr-2 required" for="partnerId">客户</label>
                         <sp:select  id="partnerId" name="partnerId" key="core_partner_customer" th:value="${po.partnerId}" class="form-control" emptyItemText required th:attr="disabled=${po.id != null}"/>
@@ -95,6 +96,19 @@
                         <label class="col-form-label mr-2" for="remark">备注</label>
                         <input class="form-control" type="text" id="remark" name="remark" th:value="${po.remark}">
                     </div>
+                    <div class="form-group">
+                        <label class="col-form-label mr-2" for="remark">附件</label>
+                        <div class="attachment">
+                            <input type="file" multiple="multiple" name="attachment_file" id="attachment_file" data-group-name="sales" onchange="upload.ajaxFileUpload()" style="width: 100px;">
+                            <input type="text" style="display:none;" name="attachmentList" id="attachmentList" th:value="${po.attachmentList ne null ? T(com.rick.common.util.JsonUtils).toJson(po.attachmentList) : '[]'}">
+
+                            <th:block th:if="${po.attachmentList ne null}">
+                                <div class="item" th:each="f : ${po.attachmentList}">
+                                    <a th:text="${f.fullName}" th:href="${f.url}" target="_blank"></a><button type="button" class="btn btn-link attachment_delete_btn" th:onclick="upload.deleteAttachment([[${f.id}]], this)">删除</button>
+                                </div>
+                            </th:block>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>
@@ -104,6 +118,13 @@
                 <form class="form-item" id="form-item">
                     <div id="table-container">
                     </div>
+                    <div class="pull-right mt-2 mr-5 footer">
+                        <label>订单号：</label><span class="bold" th:text="${po.code}" id="code_text"></span>
+                        <label>创建人：</label><span class="bold" th:text="${createName}"></span>
+                        <label>创建时间：</label><span id="createTime" class="bold" th:text="${createTime}"></span>
+                        <label>预计本单应付：</label><span class="bold" id="total_amount" style="color: #f86c6b;">0</span>元
+                        <input type="hidden" name="totalAmount" id="totalAmount">
+                    </div>
                 </form>
             </div>
         </div>
@@ -112,6 +133,7 @@
             <ul class="nav nav-tabs" role="tablist">
                 <li class="nav-item"><a class="nav-link" th:classappend="${po.id == null ? 'active' :''}" data-toggle="tab" href="#tab-1" role="tab" aria-controls="home" aria-selected="false">物料清单</a></li>
                 <li class="nav-item"><a class="nav-link" th:classappend="${po.id != null ? 'active' :''}" data-toggle="tab" href="#tab-2" role="tab" aria-controls="home" aria-selected="false" th:if="${po.id != null}">领料记录</a></li>
+                <li class="nav-item" th:if="${po.id != null}"><a class="nav-link" data-toggle="tab" href="#tab-3" role="tab" aria-controls="home" aria-selected="false">出货记录</a></li>
             </ul>
             <div class="tab-content">
                 <div class="tab-pane" th:classappend="${po.id == null ? 'active' :''}" id="tab-1" role="tabpanel">
@@ -292,6 +314,48 @@
                         </div>
                     </div>
                 </div>
+                <div class="tab-pane" id="tab-3" role="tabpanel" th:if="${po.id != null}">
+                    <div id="goods_issue_container" role="tabpanel">
+                        <div class="table-fixed-container">
+                            <table class="table table-responsive-sm table-bordered table-striped table-sm table-thead" style="margin-bottom: 0">
+                                <thead>
+                                <tr>
+                                    <th style="width: 50px" data-index>序号</th>
+                                    <th style="width: 100px" class="sortable active asc">物料</th>
+                                    <th style="width: 100px;">名称</th>
+                                    <th>规格</th>
+                                    <th style="width: 100px;">颜色</th>
+                                    <th style="width: 100px">基本单位</th>
+                                    <th style="width: 100px" class="sortable text-right">订单数量</th>
+                                    <th style="width: 120px" class="sortable text-right" data-sort-type="number">已出货数量</th>
+                                    <th style="width: 120px" class="sortable text-right" data-sort-type="number">待出货数量</th>
+                                    <th style="width: 90px" class="sortable">状态</th>
+                                    <th style="width: 120px">物料凭证</th>
+                                </tr>
+                                </thead>
+                            </table>
+                            <table class="table table-responsive-sm table-bordered table-striped table-sm table-tbody" style="margin-bottom: 0">
+                                <tbody>
+                                <tr th:each="s: ${goodsIssueItemList}">
+                                    <td th:text="${sStat.index + 1}" data-index></td>
+                                    <td th:text="${s.materialCode}" th:data-sort-value="${s.materialCode}"></td>
+                                    <td th:text="${s.materialName}" th:data-sort-value="${s.materialName}"></td>
+                                    <td th:text="${s.materialSpecification}" th:data-sort-value="${s.materialSpecification}"></td>
+                                    <td th:text="${s.color}" th:data-sort-value="${s.color}"></td>
+                                    <td th:text="${s.unitText}" th:data-sort-value="${s.unitText}"></td>
+                                    <td th:text="${#numbers.formatDecimal(s.quantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.quantity}" th:class="text-right"></td>
+                                    <td th:text="${#numbers.formatDecimal(s.goodsIssueQuantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.goodsIssueQuantity}" th:class="text-right"></td>
+                                    <td th:text="${#numbers.formatDecimal(s.openQuantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.openQuantity}" th:class="text-right"></td>
+                                    <td th:class="${'status-' + s.complete}" th:data-sort-value="${s.complete}" th:text="${s.complete == true ? '已完成' : '未完成'}"></td>
+                                    <td>
+                                        <a href="javascript:;" th:onclick="openOnNewTab('[(${s.id})]', '[(${\'/reports/699659248728047616?root_reference_code=\'+s.produceOrderCode+\'&root_reference_item_id=\'+s.id+\'&material_id=\' + s.materialId})]', '物料凭证')">详情</a>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -314,6 +378,9 @@
 
     <script th:src="@{/js/jquery.dialogInput.js}"></script>
     <script th:src="@{/js/editable-table-plus-customize_type.js}"></script>
+
+    <script th:src="@{/ajaxfileupload.js}"></script>
+    <script th:src="@{/js/upload.js}"></script>
 
     <script th:inline="javascript">
         let isAdd = /*[[${po.id == null}]]*/
@@ -400,7 +467,10 @@
                     title: "数量",
                     width: 60,
                     required: true,
-                    align: 'right'
+                    align: 'right',
+                    keyup: function ($tr, event, value) {
+                        calcAmount($tr);
+                    }
                 },
                 {
                     type: "text_label",
@@ -411,10 +481,42 @@
                     required: false,
                 },
                 {
+                    type: "decimal",
+                    name: "unitPrice",
+                    title: "含税单价",
+                    align: 'right',
+                    width: 100,
+                    required: true,
+                    keyup: function ($tr, event, value) {
+                        calcAmount($tr);
+                    }
+                },
+                {
+                    type: "label",
+                    name: "amount",
+                    width: 100,
+                    title: "含税总计",
+                    required: false,
+                },
+                {
+                    type: "date",
+                    name: "deliveryDate",
+                    width: 100,
+                    title: "交货日期",
+                    required: true,
+                },
+                {
                     type: "text",
                     title: "备注",
                     name: "remark",
-                }
+                },
+                {
+                    type: isAdd ? "hidden": "checkbox",
+                    title: "出货完成",
+                    name: "complete",
+                    align: 'center',
+                    width: 100,
+                },
             ]
         })
 
@@ -517,6 +619,9 @@
             params = $.extend({},
                 params, $('#form-header').form2json({allowEmptyMultiVal:true})); //合并参数
 
+            delete params.attachment_file
+            params['attachmentList'] = JSON.parse(params['attachmentList'])
+
             $.ajax({
                 url: '/produce_orders',
                 type: "POST",
@@ -533,7 +638,7 @@
             });
         }
 
-        $('#goods_receipt_container').table({
+        $('#goods_receipt_container, #goods_issue_container').table({
             fixedHead: true
         })
 
@@ -544,11 +649,36 @@
         function loadItem(itemList) {
             if (itemList && itemList.length > 0) {
                 $editableTable.editableTablePlus('setValue', itemList).editableTablePlus('setActiveIndex', 1)
+                calcTotalAmount()
 
                 let $trs = $editableTable.editableTablePlus('getEditRow')
                 $trs.find('[name=materialCode]').attr('disabled', true)
                 // $trs.find('td.operator').hide()
             }
+        }
+
+        function calcAmount($tr) {
+            $tr.find('td input[name=amount]').val('')
+
+            let quantity = $tr.find('td input[name=quantity]').val()
+            let unitPrice = $tr.find('td input[name=unitPrice]').val()
+            if (quantity && unitPrice) {
+                let amount = math.multiply(math.bignumber(quantity), math.bignumber(unitPrice));
+                $tr.find('td input[name=amount]').val(amount)
+            }
+
+            calcTotalAmount()
+        }
+
+        function calcTotalAmount() {
+            let totalAmount = 0
+            $('#table-container tbody input[name=amount]').each(function () {
+                if ($(this).val()) {
+                    totalAmount = math.add(math.bignumber(totalAmount), math.bignumber($(this).val()));
+                }
+            })
+            $('#total_amount').text(totalAmount)
+            $('#totalAmount').text(totalAmount)
         }
 
         // 物料清单选择 detail

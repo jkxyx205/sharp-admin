@@ -8,6 +8,7 @@ import com.rick.admin.module.core.dao.PartnerDAO;
 import com.rick.admin.module.core.entity.Partner;
 import com.rick.admin.module.core.service.CodeHelper;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
+import com.rick.admin.module.material.dao.BatchDAO;
 import com.rick.admin.module.material.service.MaterialDescription;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
@@ -67,6 +68,8 @@ public class PurchaseOrderService {
 
     MaterialService materialService;
 
+    BatchDAO batchDAO;
+
     /**
      * 新增或修改
      * @param order
@@ -78,6 +81,10 @@ public class PurchaseOrderService {
 
         order.getItemList().forEach(item -> {
             item.setPurchaseOrderCode(order.getCode());
+
+            if (StringUtils.isNotBlank(item.getBatchCode())) {
+                item.setBatchId(batchDAO.selectIdByKeyCode(item.getMaterialCode(), item.getBatchCode()).orElse(null));
+            }
         });
 
         purchaseOrderDAO.insertOrUpdate(order);

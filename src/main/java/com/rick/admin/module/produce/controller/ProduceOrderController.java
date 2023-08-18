@@ -1,5 +1,6 @@
 package com.rick.admin.module.produce.controller;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
@@ -22,6 +23,8 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -111,6 +114,21 @@ public class ProduceOrderController {
 
             // 领料记录
             model.addAttribute("goodsReceiptItemList", getGoodsReceiptItemList(produceOrder.getCode()));
+
+            // 发货记录
+            List<ProduceOrderController.GoodsIssueItem> goodsIssueItemList = Lists.newArrayListWithExpectedSize(produceOrder.getItemList().size());
+
+            Map<Long, BigDecimal> historyGoodsIssueQuantityMap = produceOrderService.historyGoodsIssueQuantity(produceOrder.getCode());
+
+            for (ProduceOrder.Item item : produceOrder.getItemList()) {
+                ProduceOrderController.GoodsIssueItem goodsIssueItem = new ProduceOrderController.GoodsIssueItem();
+                BeanUtils.copyProperties(item, goodsIssueItem);
+                goodsIssueItem.goodsIssueQuantity = historyGoodsIssueQuantityMap.get(item.getId());
+                goodsIssueItemList.add(goodsIssueItem);
+            }
+            model.addAttribute("goodsIssueItemList", goodsIssueItemList);
+
+
         } else {
             model.addAttribute("po", new ProduceOrder());
             model.addAttribute("bomTemplate", Collections.emptyMap());
@@ -199,6 +217,10 @@ public class ProduceOrderController {
         }
 
         materialService.fillMaterialDescription(itemList);
+        itemList.forEach(item -> {
+            item.setMaterialCode(item.getMaterialDescription().getCode());
+            item.setUnit(item.getMaterialDescription().getUnit());
+        });
 
         model.addAttribute("itemList", itemList);
         return "modules/purchase/purchase_order_batch";
@@ -238,6 +260,21 @@ public class ProduceOrderController {
 
         public Boolean getComplete() {
             return BigDecimalUtils.eq(openQuantity, BigDecimal.ZERO);
+        }
+
+    }
+
+    class GoodsIssueItem extends ProduceOrder.Item {
+
+        private BigDecimal goodsIssueQuantity;
+
+        public BigDecimal getGoodsIssueQuantity() {
+            return goodsIssueQuantity;
+        }
+
+        public BigDecimal getOpenQuantity() {
+            BigDecimal value = getQuantity().subtract(ObjectUtils.defaultIfNull(goodsIssueQuantity, BigDecimal.ZERO));
+            return BigDecimalUtils.lt(value, BigDecimal.ZERO) ? BigDecimal.ZERO : value;
         }
 
     }

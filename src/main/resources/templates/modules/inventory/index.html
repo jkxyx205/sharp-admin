@@ -43,7 +43,8 @@
                             <option value="OTHER" hidden>无</option>
                             <option value="MATERIAL_DOCUMENT" hidden>物料凭证</option>
                             <option value="PO" hidden>采购订单</option>
-                            <option value="PDO" hidden>生产单</option>
+                            <option value="PDO" hidden>生产单领料</option>
+                            <option value="SO" hidden>生产单出货</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -97,8 +98,11 @@
         <div id="multipleDialogInput" style="display: none"></div>
         <sp:select class="hidden" id="color"  key="COLOR" emptyItemText/>
         <div class="operator-bar text-center" id="operator-bar">
-            <button class="btn btn-primary" type="button" name="send" onclick="send()">
+            <button class="btn btn-primary" type="button" id="send-btn" onclick="send()">
                 <i class="fa fa-send"></i> 提交</button>
+
+            <button class="btn btn-primary" type="button" id="update-btn" onclick="update()">
+                <i class="fa fa-send"></i> 保存</button>
         </div>
     </div>
 </th:block>
@@ -218,7 +222,7 @@
 
         let selectMapping = {
             "INBOUND": ["OTHER", "PO"],
-            "OUTBOUND": ["OTHER", "PDO"],
+            "OUTBOUND": ["OTHER", "PDO", "SO"],
             "RETURN": ["MATERIAL_DOCUMENT", "PO", "PDO"],
             "CANCEL": ["MATERIAL_DOCUMENT"],
             "DISPLAY": ["MATERIAL_DOCUMENT"]
@@ -259,9 +263,15 @@
             }
 
             if (select.value === 'DISPLAY') {
-                $operatorBar.hide()
+                // $operatorBar.hide()
+                $('#documentDate, #plantId, #operatorId').attr('disabled', true)
+                $("#send-btn").hide()
+                $("#update-btn").show()
             } else {
-                $operatorBar.show()
+                $('#documentDate, #plantId, #operatorId').attr('disabled', false)
+                // $operatorBar.show()
+                $("#send-btn").show()
+                $("#update-btn").hide()
             }
 
             type = select
@@ -300,18 +310,10 @@
                 $editableTable.editableTablePlus('clear')
                 // ajax
                 $.get("/inventory/documents", {type: type.value, referenceType:referenceTypeDom.value, referenceCode: $referenceCode.val()},function (res) {
+                    referenceCode = $referenceCode.val()
                     console.log(res)
-                    $documentDate.val(res.documentDate)
-                    if (res.plantId) {
-                        $plantId.val(res.plantId)
-                    }
-
-                    $operatorId.val(res.operatorId)
-                    $remark.val(res.remark)
 
                     $editableTable.editableTablePlus('setValue', res.itemList)
-
-                    upload.appendAttachment(res.attachmentList)
 
                     res.itemList.forEach((item, index) => {
                         let $tr = $("#table-container tbody tr:nth-child("+(index + 1)+")")
@@ -323,6 +325,16 @@
 
                     if (type.value === 'DISPLAY') {
                         $editableTable.editableTablePlus('readonly', true)
+
+                        $documentDate.val(res.documentDate)
+                        if (res.plantId) {
+                            $plantId.val(res.plantId)
+                        }
+
+                        $operatorId.val(res.operatorId)
+                        $remark.val(res.remark)
+
+                        upload.setAttachment(res.attachmentList)
                     } else if (type.value === 'CANCEL') {
                         if (res.canceled) {
                             toastr.warning('物料凭证已经被取消了，不能重复取消!')
@@ -422,6 +434,25 @@
                     toastr.success('提交成功! ' + msg);
                     reset()
                     reloadTab('inventory_list')
+                }
+            });
+        }
+
+        function update() {
+            let params = $.extend({},
+                $('#form-operator').form2json({allowEmptyMultiVal:true}), $('#form-header').form2json({allowEmptyMultiVal:true})); //合并参数
+
+            delete params.attachment_file
+            params['attachmentList'] = JSON.parse(params['attachmentList'])
+
+            $.ajax({
+                url: '/inventory/' + referenceCode,
+                type: "PUT",
+                data: JSON.stringify(params),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function(){
+                    toastr.success('更新成功! ' );
                 }
             });
         }
