@@ -216,7 +216,7 @@ public class UserTest {
 
         CpnConfigurer availableCpn = CpnConfigurer.builder()
                 .cpnType(CpnTypeEnum.SWITCH)
-                .name("is_available")
+                .name("available")
                 .label("可用")
                 .defaultValue("1")
                 .build();

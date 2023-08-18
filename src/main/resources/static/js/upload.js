@@ -15,14 +15,6 @@ head.appendChild(style)
                     fileElementId: 'attachment_file', //文件上传域的ID
                     dataType: 'json', //返回值类型 一般设置为json
                     success: function (data, status) { //服务器成功响应处理函数
-                        let jsonString = $('#attachmentList').val()
-                        if(!jsonString) {
-                            jsonString = '[]'
-                        }
-
-                        let json = JSON.parse(jsonString);
-                        $("#attachment_file").next("input[type=text]").val(JSON.stringify(json.concat(data.data)))
-
                         upload.appendAttachment(data.data)
                     },
                     error: function (data, status, e) { //服务器响应失败处理函数
@@ -31,6 +23,16 @@ head.appendChild(style)
                 }
             )
             return false;
+        },
+        setAttachment: function(attachments) {
+            if (!attachments) {
+                return
+            }
+
+            $('#attachmentList').val('[]')
+            $('.attachment .item').remove()
+
+            this.appendAttachment(attachments)
         },
         appendAttachment: function(attachments) {
             if (!attachments) {
@@ -42,6 +44,13 @@ head.appendChild(style)
                     "<a href=\""+attachment.url+"\" target=\"_blank\">"+attachment.fullName+"</a><button type=\"button\" class=\"btn btn-link attachment_delete_btn\" onclick=\"upload.deleteAttachment("+attachment.id+", this)\">删除</button>\n" +
                     "</div>")
             }
+
+            let jsonString = $('#attachmentList').val()
+            if(!jsonString) {
+                jsonString = '[]'
+            }
+            let json = JSON.parse(jsonString);
+            $("#attachment_file").next("input[type=text]").val(JSON.stringify(json.concat(attachments)))
         },
         deleteAttachment: function (attachmentId, obj) {
             let jsonString = $('#attachmentList').val()
