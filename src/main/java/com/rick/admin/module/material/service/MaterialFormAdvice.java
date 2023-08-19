@@ -2,7 +2,6 @@ package com.rick.admin.module.material.service;
 
 import com.rick.admin.module.inventory.dao.StockDAO;
 import com.rick.admin.module.material.dao.MaterialDAO;
-import com.rick.admin.module.material.entity.CharacteristicValue;
 import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.entity.Material;
 import com.rick.db.service.SharpService;
@@ -79,6 +78,15 @@ public class MaterialFormAdvice implements FormAdvice {
                     StringUtils.isNotEmpty(maximumStockQuantity) ? new BigDecimal(maximumStockQuantity) : null));
         }
 
+        // 显示特征分类
+        String classification = (String) values.get("classification");
+        if (StringUtils.isNotBlank(classification)) {
+            values.put("classificationList", Arrays.asList(
+                    Classification.builder()
+                            .classificationCode(classification)
+                            .build()));
+        }
+
     }
 
     @Override
@@ -97,23 +105,29 @@ public class MaterialFormAdvice implements FormAdvice {
         if (Objects.nonNull(standardPrice)) {
             valueMap.put("stockQuantityPrice", numbers.formatDecimal(stockQuantity.multiply(standardPrice), 1, "COMMA", 2, "POINT") + " 元");
         }
+
+        // 显示特征分类
+        List<Classification> classificationList = (List<Classification>) valueMap.get("classificationList");
+        if (CollectionUtils.isNotEmpty(classificationList)) {
+            valueMap.put("classification", classificationList.get(0).getClassificationCode());
+        }
     }
 
     @Override
     public boolean insertOrUpdate(Map<String, Object> values) {
         Material material = materialDAO.mapToEntity(values);
-        if (Objects.equals(material.getBatchManagement(), Boolean.TRUE)) {
-            // 批次物料加上颜色特征
-            material.setClassificationList(Arrays.asList(
-                    Classification.builder()
-                            .classificationCode("COLOR")
-                            .characteristicValueList(Arrays.asList(
-                                    CharacteristicValue.builder()
-                                            .characteristicCode("COLOR")
-                                            .build()
-                            ))
-                            .build()));
-        }
+//        if (Objects.equals(material.getBatchManagement(), Boolean.TRUE)) {
+//            // 批次物料加上颜色特征
+//            material.setClassificationList(Arrays.asList(
+//                    Classification.builder()
+//                            .classificationCode("COLOR")
+//                            .characteristicValueList(Arrays.asList(
+//                                    CharacteristicValue.builder()
+//                                            .characteristicCode("COLOR")
+//                                            .build()
+//                            ))
+//                            .build()));
+//        }
 
 
         materialService.saveOrUpdate(material);

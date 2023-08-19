@@ -1,6 +1,7 @@
 package com.rick.admin.module.material.service;
 
 import com.rick.admin.module.core.entity.Characteristic;
+import com.rick.admin.module.core.service.ClassificationService;
 import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.entity.CharacteristicValue;
 import com.rick.admin.module.material.entity.Classification;
@@ -48,6 +49,8 @@ public class MaterialService {
     CharacteristicHelper characteristicHelper;
 
     EntityCodeIdFillService entityCodeIdFillService;
+
+    ClassificationService classificationService;
 
     MaterialProfileService materialProfileService;
 
@@ -123,6 +126,15 @@ public class MaterialService {
     private void handleClassification(List<Classification> classificationList) {
         if (CollectionUtils.isNotEmpty(classificationList)) {
             Map<String, com.rick.admin.module.core.entity.Classification> codeClassificationMap = classificationDAO.selectByCodesAsMap(classificationList.stream().map(Classification::getClassificationCode).collect(Collectors.toSet()));
+
+            for (Classification classification : classificationList) {
+                if (CollectionUtils.isEmpty(classification.getCharacteristicValueList())) {
+                    Optional<com.rick.admin.module.core.entity.Classification> optional = classificationService.findByCode(classification.getClassificationCode());
+                    classification.setCharacteristicValueList(optional.get().getCharacteristicList().stream()
+                            .map(characteristic -> CharacteristicValue.builder().characteristicCode(characteristic.getCode()).characteristicId(characteristic.getId()).build()).collect(Collectors.toList()));
+                }
+            }
+
             Map<String, Long> codeCharacteristicMap = characteristicDAO.selectCodeIdMap(classificationList.stream().flatMap(classification -> classification.getCharacteristicValueList().stream()).map(CharacteristicValue::getCharacteristicCode).collect(Collectors.toSet()));
 
             for (Classification classification : classificationList) {

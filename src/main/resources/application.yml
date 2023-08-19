@@ -80,6 +80,8 @@ dict:
       sql: "select id name, name label from mm_material where bom_template_id is NOT NULL"
     - type: material_bom
       sql: "select id name, concat(code, '-' ,description) label from produce_bom_template"
+    - type: core_classification
+      sql: "select code, description from `core_classification`"
     - type: bol
       map: { "1": "是", "0": "否" }
     - type: mm_material
