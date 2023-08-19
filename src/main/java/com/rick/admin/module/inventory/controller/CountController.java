@@ -50,22 +50,23 @@ public class CountController {
         ExcelWriter excelWriter = new ExcelWriter(fileName);
         float heightInPoints = 30F;
 
-        ExcelCell title = new ExcelCell(1, 1, "盘点单", 1, 6);
+        ExcelCell title = new ExcelCell(1, 1, "盘点单", 1, 7);
         title.setHeightInPoints(heightInPoints);
         title.setStyle(createTitleStyle(excelWriter.getBook()));
         excelWriter.writeCell(title);
 
-        ExcelRow label = new ExcelRow(1, 2, new Object[]{"分类", "物料编号", "名称", "规格", "单位", "数量"});
+        ExcelRow label = new ExcelRow(1, 2, new Object[]{"分类", "物料编号", "名称", "规格", "特征值", "单位", "数量"});
         label.setHeightInPoints(heightInPoints);
         label.setStyle(createLabelStyle(excelWriter.getBook()));
         excelWriter.writeRow(label);
 
-        excelWriter.getActiveSheet().setColumnWidth(0, 5000);
+        excelWriter.getActiveSheet().setColumnWidth(0, 4000);
         excelWriter.getActiveSheet().setColumnWidth(1, 3000);
         excelWriter.getActiveSheet().setColumnWidth(2, 6000);
-        excelWriter.getActiveSheet().setColumnWidth(3, 8000);
-        excelWriter.getActiveSheet().setColumnWidth(4, 3000);
+        excelWriter.getActiveSheet().setColumnWidth(3, 6000);
+        excelWriter.getActiveSheet().setColumnWidth(4, 6000);
         excelWriter.getActiveSheet().setColumnWidth(5, 3000);
+        excelWriter.getActiveSheet().setColumnWidth(6, 3000);
 
         String sql = "select core_material_category.order_index, core_material_category.name categoryName, mm_material.code, mm_material.name, mm_material.`specification`, mm_material.base_unit  from core_material_category left join mm_material on core_material_category.id = mm_material.category_id where mm_material.code is not null order by order_index asc";
         List<Map<String, Object>> list = sharpService.query(sql, null);
@@ -83,7 +84,7 @@ public class CountController {
             for (int i = 0; i < valueSize; i++) {
                 Map<String, Object> value = valueList.get(i);
                 ExcelRow dataRow = new ExcelRow(2, y, new Object[]{
-                        value.get("code"), value.get("name"), getSpecificationText((String) value.get("specification")), dictService.getDictByTypeAndName("unit", (String) value.get("base_unit")).get().getLabel(), ""
+                        value.get("code"), value.get("name"), getSpecificationText((String) value.get("specification")), "", dictService.getDictByTypeAndName("unit", (String) value.get("base_unit")).get().getLabel(), ""
                 });
                 dataRow.setHeightInPoints(heightInPoints);
                 dataRow.setStyle(createCellStyle(excelWriter.getBook()));

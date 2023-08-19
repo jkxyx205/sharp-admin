@@ -35,14 +35,14 @@ public class SimpleTest {
     @Test
     public void test2() throws NoSuchFieldException {
         Field attachmentList = ClassUtils.getField(Material.class, "attachmentList");
-        Class<?> genericClass = ClassUtils.getGenericClass(attachmentList);
+        Class<?> genericClass = ClassUtils.getFieldGenericClass(attachmentList);
         System.out.println(genericClass);
     }
 
     @Test
     public void test3() throws NoSuchFieldException {
         Field classificationList = ClassUtils.getField(Material.class, "classificationList");
-        Class<?> genericClass = ClassUtils.getGenericClass(classificationList);
+        Class<?> genericClass = ClassUtils.getFieldGenericClass(classificationList);
         System.out.println(genericClass);
     }
 }

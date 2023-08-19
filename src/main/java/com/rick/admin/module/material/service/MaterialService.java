@@ -49,6 +49,8 @@ public class MaterialService {
 
     EntityCodeIdFillService entityCodeIdFillService;
 
+    MaterialProfileService materialProfileService;
+
     public void saveOrUpdate(Material material) {
         handleClassification(material.getClassificationList());
         handleMaterialProfile(material);
@@ -99,6 +101,7 @@ public class MaterialService {
                     materialDescription.setUnitText(dictService.getDictByTypeAndName("unit", material.getBaseUnit()).get().getLabel());
                     materialDescription.setCategoryId(material.getCategoryId());
                     materialDescription.setUnitPrice(material.getStandardPrice());
+                    materialDescription.setCharacteristic(materialProfileService.getCharacteristicText(material.getId(), handler.getBatchId()));
                 }
             });
         }

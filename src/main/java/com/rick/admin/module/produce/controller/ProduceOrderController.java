@@ -6,6 +6,7 @@ import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
 import com.rick.admin.module.material.service.MaterialDescription;
 import com.rick.admin.module.material.service.MaterialDescriptionHandler;
+import com.rick.admin.module.material.service.MaterialProfileService;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.produce.entity.BomTemplate;
 import com.rick.admin.module.produce.entity.ProduceOrder;
@@ -54,6 +55,8 @@ public class ProduceOrderController {
     MaterialService materialService;
 
     BomService bomService;
+
+    MaterialProfileService materialProfileService;
 
     /**
      * 根据物料 ID 获取 bom
@@ -168,6 +171,7 @@ public class ProduceOrderController {
         if (CollectionUtils.isNotEmpty(goodsReceiptItemList)) {
             for (GoodsReceiptItem item : goodsReceiptItemList) {
                 item.setOpenQuantity(BigDecimalUtils.lt(item.getOpenQuantity(), BigDecimal.ZERO) ? BigDecimal.ZERO : item.getOpenQuantity());
+                item.setCharacteristic(materialProfileService.getCharacteristicText(item.getMaterialId(), item.getBatchId()));
             }
         }
 
@@ -207,7 +211,6 @@ public class ProduceOrderController {
                                 .ifPresent(map -> {
                                     item.setBatchCode(split[1]);
                                     item.setBatchId((Long) map.get("id"));
-                                    item.setColor((String) map.get("value"));
                                 });
             }
 
@@ -248,8 +251,6 @@ public class ProduceOrderController {
 
         private String materialCode;
 
-        private String color;
-
         private BigDecimal quantity;
 
         private BigDecimal goodsReceiptQuantity;
@@ -257,6 +258,10 @@ public class ProduceOrderController {
         private BigDecimal openQuantity;
 
         private MaterialDescription materialDescription;
+
+        private Long batchId;
+
+        private String characteristic;
 
         public Boolean getComplete() {
             return BigDecimalUtils.eq(openQuantity, BigDecimal.ZERO);

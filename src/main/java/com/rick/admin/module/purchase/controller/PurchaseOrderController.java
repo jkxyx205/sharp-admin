@@ -7,6 +7,9 @@ import com.rick.admin.common.exception.ResourceNotFoundException;
 import com.rick.admin.module.core.dao.PartnerDAO;
 import com.rick.admin.module.core.entity.Partner;
 import com.rick.admin.module.material.dao.MaterialDAO;
+import com.rick.admin.module.material.service.BatchService;
+import com.rick.admin.module.material.service.CharacteristicHelper;
+import com.rick.admin.module.material.service.MaterialProfileService;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
@@ -55,6 +58,12 @@ public class PurchaseOrderController {
 
     final PartnerDAO partnerDAO;
 
+    final BatchService batchService;
+
+    final CharacteristicHelper characteristicHelper;
+
+    final MaterialProfileService materialProfileService;
+
     @PostMapping
     @ResponseBody
     @Transactional(rollbackFor = Exception.class)
@@ -66,6 +75,7 @@ public class PurchaseOrderController {
         .map(item -> new Object[]{item.getUnitPrice(), item.getMaterialId()}).collect(Collectors.toList());
         materialDAO.updatePrice(paramList);
         materialService.fillMaterialDescription(purchaseOrder.getItemList());
+
         return purchaseOrder;
     }
 
@@ -121,6 +131,7 @@ public class PurchaseOrderController {
         if (id != null) {
             purchaseOrder = purchaseOrderDAO.selectById(id).orElseThrow(() -> new ResourceNotFoundException());
             materialService.fillMaterialDescription(purchaseOrder.getItemList());
+
             model.addAttribute("po", purchaseOrder);
 
             // 收货记录
@@ -133,7 +144,10 @@ public class PurchaseOrderController {
                 BeanUtils.copyProperties(item, goodsReceiptItem);
                 goodsReceiptItem.goodsReceiptQuantity = historyGoodsReceiptQuantityMap.get(item.getId());
                 goodsReceiptItemList.add(goodsReceiptItem);
+
             }
+
+            batchService.fillCharacteristicValue(purchaseOrder.getItemList());
             model.addAttribute("goodsReceiptItemList", goodsReceiptItemList);
         } else {
             purchaseOrder = new PurchaseOrder();

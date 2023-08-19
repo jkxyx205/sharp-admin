@@ -2,14 +2,12 @@ package com.rick.admin.module.produce.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.service.MaterialDescription;
 import com.rick.admin.module.material.service.MaterialDescriptionHandler;
 import com.rick.db.dto.BaseCodeEntity;
 import com.rick.db.dto.BaseEntity;
-import com.rick.db.plugin.dao.annotation.Column;
-import com.rick.db.plugin.dao.annotation.OneToMany;
-import com.rick.db.plugin.dao.annotation.Table;
-import com.rick.db.plugin.dao.annotation.Transient;
+import com.rick.db.plugin.dao.annotation.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
@@ -104,7 +102,12 @@ public class ProduceOrder extends BaseCodeEntity {
 
         String batchCode;
 
-        String color;
+        /**
+         * 特征值
+         */
+        @Transient
+        @Select(table = "mm_classification", joinValue = "material_id", referencePropertyName = "materialId")
+        private List<Classification> classificationList;
 
         @Column(value = "is_complete", comment = "完成发货")
         Boolean complete;
@@ -152,9 +155,16 @@ public class ProduceOrder extends BaseCodeEntity {
             @NotNull
             Long componentDetailId;
 
+            Long batchId;
+
             String batchCode;
 
-            String color;
+            /**
+             * 特征值
+             */
+            @Transient
+            @Select(table = "mm_classification", joinValue = "material_id", referencePropertyName = "materialId")
+            private List<Classification> classificationList;
 
             Long produceOrderItemId;
 

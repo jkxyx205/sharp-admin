@@ -50,6 +50,38 @@ public class BatchService {
 
     EntityDAO<MaterialProfile, Long> materialProfileDAO;
 
+    MaterialProfileService materialProfileService;
+
+    public void fillCharacteristicValue(List<? extends BatchHandler> batchHandlerList) {
+        // 获取特征值
+        for (BatchHandler item : batchHandlerList) {
+            if (CollectionUtils.isNotEmpty(item.getClassificationList())) {
+                if (CollectionUtils.isNotEmpty(item.getClassificationList())) {
+                    characteristicHelper.fillValueToClassification(item.getClassificationList().stream().map(classification -> classification.getClassification()).collect(Collectors.toList()),
+                            materialProfileService.getMaterialProfile(item.getMaterialId(), item.getBatchId()).get().getCharacteristicValueList());
+                }
+            }
+        }
+    }
+
+    public void saveBatch(List<? extends BatchHandler> batchHandlerList) {
+        // 处理批次物料
+        for (BatchHandler item : batchHandlerList) {
+            if (CollectionUtils.isNotEmpty(item.getClassificationList())) {
+                Batch batch = Batch.builder()
+                        .code(BatchSupport.characteristicToCode(item.getClassificationList().stream().flatMap(p -> p.getCharacteristicValueList().stream()).map(CharacteristicValue::getValue).collect(Collectors.toList())))
+                        .materialCode(item.getMaterialCode())
+                        .materialId(item.getMaterialId())
+                        .classificationList(item.getClassificationList())
+                        .build();
+                saveOrUpdate(batch);
+
+                item.setBatchId(batch.getId());
+                item.setBatchCode(batch.getCode());
+            }
+        }
+    }
+
     @Transactional(rollbackFor = Exception.class)
     public void saveOrUpdate(Batch batch) {
         boolean batchUpdate = true;
@@ -77,7 +109,6 @@ public class BatchService {
         characteristicHelper.validValueToClassification(classificationList, characteristicValueList);
 
         batch.setMaterialId(entityIdFillService.fill(Material.class, batch.getMaterialId(), batch.getMaterialCode()));
-
 
         Long profileId;
         Optional<Long> profileIdOptional = materialProfileDAO.selectIdByParams(MaterialProfile.builder().batchCode(batch.getCode()).materialCode(batch.getMaterialCode()).build());

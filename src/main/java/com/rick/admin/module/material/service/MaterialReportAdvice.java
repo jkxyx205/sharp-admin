@@ -25,6 +25,8 @@ public class MaterialReportAdvice implements ReportAdvice {
 
     private final StockDAO stockDAO;
 
+    private final MaterialProfileService materialProfileService;
+
     @Override
     public void beforeSetRow(Report report, List<Map<String, Object>> rows) {
 //        Map<Long, BigDecimal> materialIdQuantityMap = stockDAO.getStockQuantityByMaterialId(rows.stream().map(m -> (Long) m.get("id")).collect(Collectors.toSet()));
@@ -42,6 +44,7 @@ public class MaterialReportAdvice implements ReportAdvice {
             }
 
             row.put("category_path", categoryService.getPathById((Long) row.get("category_id")));
+            row.put("characteristic", materialProfileService.getCharacteristicText((Long) row.get("id"), (Long) row.get("batch_id")));
 
             // 可以做一些权限处理，比如将库存金额设置为空； 删选某些数据
         }

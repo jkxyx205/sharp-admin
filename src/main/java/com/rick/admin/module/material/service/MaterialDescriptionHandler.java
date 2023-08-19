@@ -32,4 +32,12 @@ public interface MaterialDescriptionHandler {
         return getMaterialDescription() == null ? "" : getMaterialDescription().getUnitText();
     }
 
+    default String getCharacteristic() {
+        return getMaterialDescription() == null ? "" : getMaterialDescription().getCharacteristic();
+    }
+
+    default Long getBatchId() {
+        return getMaterialDescription() == null ? null : getMaterialDescription().getBatchId();
+    }
+
 }

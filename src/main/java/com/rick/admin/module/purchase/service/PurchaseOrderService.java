@@ -8,8 +8,9 @@ import com.rick.admin.module.core.dao.PartnerDAO;
 import com.rick.admin.module.core.entity.Partner;
 import com.rick.admin.module.core.service.CodeHelper;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
-import com.rick.admin.module.material.dao.BatchDAO;
+import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.material.service.MaterialDescription;
+import com.rick.admin.module.material.service.MaterialProfileService;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
 import com.rick.admin.module.purchase.dao.PurchaseOrderItemDAO;
@@ -31,6 +32,7 @@ import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import javax.imageio.ImageIO;
@@ -68,7 +70,9 @@ public class PurchaseOrderService {
 
     MaterialService materialService;
 
-    BatchDAO batchDAO;
+    BatchService batchService;
+
+    MaterialProfileService materialProfileService;
 
     /**
      * 新增或修改
@@ -81,15 +85,14 @@ public class PurchaseOrderService {
 
         order.getItemList().forEach(item -> {
             item.setPurchaseOrderCode(order.getCode());
-
-            if (StringUtils.isNotBlank(item.getBatchCode())) {
-                item.setBatchId(batchDAO.selectIdByKeyCode(item.getMaterialCode(), item.getBatchCode()).orElse(null));
-            }
         });
 
+        batchService.saveBatch(order.getItemList());
         purchaseOrderDAO.insertOrUpdate(order);
+
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void save(List<PurchaseOrder> list) {
         for (int i = 0; i < list.size(); i++) {
             PurchaseOrder purchaseOrder = list.get(i);
@@ -104,6 +107,11 @@ public class PurchaseOrderService {
                 item.setPurchaseOrderCode(purchaseOrder.getCode());
             });
         }
+
+        for (PurchaseOrder purchaseOrder : list) {
+            batchService.saveBatch(purchaseOrder.getItemList());
+        }
+
         purchaseOrderDAO.insert(list);
     }
 
@@ -221,7 +229,7 @@ public class PurchaseOrderService {
             MaterialDescription materialDescription = item.getMaterialDescription();
             //        data.add(new Object[]{1, "资材编号1", "品 名", "型号规格", 3, "单位", 1, 11, "2022-11-16"});
             data.add(new Object[] {i + 1, materialDescription.getCode(), materialDescription.getName(),
-                    materialDescription.getSpecification() + (StringUtils.isBlank(item.getColor()) ? "" : " " + item.getColor()),
+                    materialDescription.getSpecification() + materialProfileService.getCharacteristicText(item.getMaterialId(), item.getBatchId()),
                     item.getQuantity(), materialDescription.getUnitText(), item.getUnitPrice(), item.getAmount(),
                     StringUtils.isNotBlank(item.getRemark()) ? item.getRemark() : Time2StringUtils.format(item.getDeliveryDate())
             });
@@ -289,4 +297,7 @@ public class PurchaseOrderService {
 
         excelWriter.toFile(os);
     }
+
+
+
 }

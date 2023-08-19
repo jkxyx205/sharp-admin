@@ -9,6 +9,7 @@ import com.rick.admin.module.inventory.service.HandlerHelper;
 import com.rick.admin.module.inventory.service.HandlerManager;
 import com.rick.admin.module.inventory.service.InventoryDocumentService;
 import com.rick.admin.module.material.dao.MaterialDAO;
+import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.admin.module.produce.service.ProduceOrderService;
@@ -19,6 +20,7 @@ import com.rick.common.http.exception.BizException;
 import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
+import com.rick.db.plugin.dao.core.EntityDAO;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
 import com.rick.meta.dict.service.DictService;
@@ -36,6 +38,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author Rick.Xu
@@ -69,6 +72,9 @@ public class InventoryController {
 
     final MaterialService materialService;
 
+    final BatchService batchService;
+
+    final EntityDAO<ProduceOrder.Item.Detail, Long> produceOrderItemDetailDAO;
 
     @GetMapping("move")
     public String gotoInventoryPage() {
@@ -85,6 +91,7 @@ public class InventoryController {
     @GetMapping("documents")
     @ResponseBody
     public InventoryDocument getInventoryDocument(InventoryDocument.TypeEnum type, InventoryDocument.ReferenceTypeEnum referenceType, String referenceCode) {
+        InventoryDocument inventoryDocument;
         if (referenceType == InventoryDocument.ReferenceTypeEnum.MATERIAL_DOCUMENT) {
             Optional<InventoryDocument> optional = inventoryDocumentDAO.selectByCode(referenceCode);
 
@@ -92,7 +99,7 @@ public class InventoryController {
                 throw new BizException(ExceptionCodeEnum.MATERIAL_DOCUMENT_NOT_FOUND_ERROR, new Object[]{referenceCode});
             }
 
-            InventoryDocument inventoryDocument = optional.get();
+            inventoryDocument = optional.get();
 
             if (inventoryDocument.getType() == InventoryDocument.TypeEnum.COUNT && type != InventoryDocument.TypeEnum.DISPLAY) {
                 throw new BizException(ExceptionCodeEnum.COUNT_MATERIAL_DOCUMENT_REF_ERROR);
@@ -101,7 +108,6 @@ public class InventoryController {
             Map<Long, BigDecimal> itemOpenQuantityMap = null;
 
             if (inventoryDocument.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PO && type == InventoryDocument.TypeEnum.RETURN) {
-//                return getDocument(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.OUTBOUND : InventoryDocument.MovementTypeEnum.INBOUND, type, referenceType, inventoryDocument.getRootReferenceCode());
                 itemOpenQuantityMap = purchaseOrderService.openQuantity(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.OUTBOUND : InventoryDocument.MovementTypeEnum.INBOUND, inventoryDocument.getRootReferenceCode());
             } else if (inventoryDocument.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PDO && type == InventoryDocument.TypeEnum.RETURN) {
                 itemOpenQuantityMap = produceOrderService.openQuantity(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.INBOUND : InventoryDocument.MovementTypeEnum.OUTBOUND, inventoryDocument.getRootReferenceCode());
@@ -120,16 +126,20 @@ public class InventoryController {
             }
 
             materialService.fillMaterialDescription(inventoryDocument.getItemList());
-            return inventoryDocument;
+
         } else if (referenceType == InventoryDocument.ReferenceTypeEnum.PO) {
-            return getDocumentFromPurchaseOrder(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.OUTBOUND : InventoryDocument.MovementTypeEnum.INBOUND, type, referenceType, referenceCode);
+            inventoryDocument = getDocumentFromPurchaseOrder(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.OUTBOUND : InventoryDocument.MovementTypeEnum.INBOUND, type, referenceType, referenceCode);
         } else if (referenceType == InventoryDocument.ReferenceTypeEnum.PDO) {
-            return getDocumentFromProduceOrder(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.INBOUND : InventoryDocument.MovementTypeEnum.OUTBOUND, type, referenceType, referenceCode);
+            inventoryDocument = getDocumentFromProduceOrder(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.INBOUND : InventoryDocument.MovementTypeEnum.OUTBOUND, type, referenceType, referenceCode);
         }  else if (referenceType == InventoryDocument.ReferenceTypeEnum.SO) {
-            return getDocumentFromSalesOrder(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.INBOUND : InventoryDocument.MovementTypeEnum.OUTBOUND, type, referenceType, referenceCode);
+            inventoryDocument =  getDocumentFromSalesOrder(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.INBOUND : InventoryDocument.MovementTypeEnum.OUTBOUND, type, referenceType, referenceCode);
+        } else {
+            throw new BizException("无法获取 " + referenceType.name());
         }
 
-        throw new BizException("无法获取 " + referenceType.name());
+        materialService.fillMaterialDescription(inventoryDocument.getItemList());
+        batchService.fillCharacteristicValue(inventoryDocument.getItemList());
+        return inventoryDocument;
     }
 
     private InventoryDocument getDocumentFromPurchaseOrder(InventoryDocument.MovementTypeEnum movementType, InventoryDocument.TypeEnum type, InventoryDocument.ReferenceTypeEnum referenceType, String referenceCode) {
@@ -161,7 +171,7 @@ public class InventoryController {
                             .plantId(purchaseOrder.getPlantId())
                             .batchId(item.getBatchId())
                             .batchCode(item.getBatchCode())
-                            .color(item.getColor())
+                            .classificationList(item.getClassificationList())
                             .materialId(item.getMaterialId())
                             .materialCode(item.getMaterialCode())
                             .quantity(item.getQuantity())
@@ -173,7 +183,6 @@ public class InventoryController {
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
             item.setQuantity(ObjectUtils.defaultIfNull(itemOpenQuantityMap.get(item.getRootReferenceItemId()), BigDecimal.ZERO));
         }
-        materialService.fillMaterialDescription(inventoryDocument.getItemList());
 
         return inventoryDocument;
     }
@@ -183,7 +192,6 @@ public class InventoryController {
                 "       mm_material.code material_code," +
                 "       produce_order_item_detail.`id`                               referenceItemId,\n" +
                 "       produce_order_item_detail.`id`                               rootReferenceItemId,\n" +
-                "       produce_order_item_detail.color,\n" +
                 "       produce_order_item_detail.quantity * produce_order_item.quantity quantity,\n" +
                 "       mm_material.base_unit                                          unit\n" +
                 "from produce_order\n" +
@@ -211,6 +219,9 @@ public class InventoryController {
 
         Map<Long, BigDecimal> itemOpenQuantityMap = produceOrderService.openQuantity(movementType, referenceCode);
 
+        Map<Long, ProduceOrder.Item.Detail> idDetailMap = produceOrderItemDetailDAO.selectByIdsAsMap(itemList.stream().map(InventoryDocument.Item::getReferenceItemId).collect(Collectors.toSet()));
+
+
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
             item.setType(type);
             item.setReferenceType(referenceType);
@@ -218,9 +229,8 @@ public class InventoryController {
             item.setRootReferenceCode(referenceCode);
             item.setMovementType(InventoryDocument.MovementTypeEnum.OUTBOUND);
             item.setQuantity(ObjectUtils.defaultIfNull(itemOpenQuantityMap.get(item.getRootReferenceItemId()), BigDecimal.ZERO));
+            item.setClassificationList(idDetailMap.get(item.getReferenceItemId()).getClassificationList());
         }
-
-        materialService.fillMaterialDescription(inventoryDocument.getItemList());
 
         return inventoryDocument;
     }
@@ -252,7 +262,7 @@ public class InventoryController {
                             .movementType(InventoryDocument.MovementTypeEnum.OUTBOUND)
                             .batchId(item.getBatchId())
                             .batchCode(item.getBatchCode())
-                            .color(item.getColor())
+                            .classificationList(item.getClassificationList())
                             .materialId(item.getMaterialId())
                             .materialCode(item.getMaterialCode())
                             .quantity(item.getQuantity())
@@ -264,7 +274,6 @@ public class InventoryController {
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
             item.setQuantity(ObjectUtils.defaultIfNull(itemOpenQuantityMap.get(item.getRootReferenceItemId()), BigDecimal.ZERO));
         }
-        materialService.fillMaterialDescription(inventoryDocument.getItemList());
 
         return inventoryDocument;
     }

@@ -360,7 +360,6 @@
         </div>
 
         <div id="dialogInput" style="display: none"></div>
-        <sp:select class="hidden" id="color"  key="COLOR" emptyItemText/>
         <div class="operator-bar text-center" id="operator-bar">
             <button class="btn btn-primary" type="button" name="send" onclick="send()">
                 <i class="fa fa-save"></i> 保存</button>
@@ -630,9 +629,9 @@
                 contentType: "application/json; charset=utf-8",
                 success: function(res){
                     toastr.success('生产单保存成功');
-                    if (isAdd) {
+                    // if (isAdd) {
                         window.location = '/produce_orders/'+res.id+'?readonly=true'
-                    }
+                    // }
                     reloadTab('produce_order_list')
                 }
             });

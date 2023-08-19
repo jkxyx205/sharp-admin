@@ -122,7 +122,7 @@
                                     <th style="width: 100px" class="sortable active asc">物料</th>
                                     <th style="width: 100px;">名称</th>
                                     <th>规格</th>
-                                    <th style="width: 100px;">颜色</th>
+                                    <th>特征值</th>
                                     <th style="width: 100px">基本单位</th>
                                     <th style="width: 100px" class="sortable text-right">订单数量</th>
                                     <th style="width: 120px" class="sortable text-right" data-sort-type="number">已收货数量</th>
@@ -139,7 +139,7 @@
                                     <td th:text="${s.materialCode}" th:data-sort-value="${s.materialCode}"></td>
                                     <td th:text="${s.materialName}" th:data-sort-value="${s.materialName}"></td>
                                     <td th:text="${s.materialSpecification}" th:data-sort-value="${s.materialSpecification}"></td>
-                                    <td th:text="${s.color}" th:data-sort-value="${s.color}"></td>
+                                    <td th:text="${s.characteristic}" th:data-sort-value="${s.characteristic}"></td>
                                     <td th:text="${s.unitText}" th:data-sort-value="${s.unitText}"></td>
                                     <td th:text="${#numbers.formatDecimal(s.quantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.quantity}" th:class="text-right"></td>
                                     <td th:text="${#numbers.formatDecimal(s.goodsReceiptQuantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.goodsReceiptQuantity}" th:class="text-right"></td>
@@ -159,7 +159,6 @@
 
         <div id="dialogInput" style="display: none"></div>
         <div id="multipleDialogInput" style="display: none"></div>
-        <sp:select class="hidden" id="color"  key="COLOR" emptyItemText/>
         <div class="operator-bar text-center" id="operator-bar" sec:authorize="${hasAuthority('pur_purchase_order_add') or hasAuthority('pur_purchase_order_edit')}">
             <button class="btn btn-primary" type="button" name="send" onclick="send()">
                 <i class="fa fa-send"></i> 提交</button>
@@ -228,18 +227,7 @@
                         return true;
                     },
                     selected: function ($tr, value) {
-                        if (Array.isArray(value)) {
-                            for (let row of value) {
-                                $tr.find(':input[name=color]')
-                                    .attr('disabled', !row.batchManagement)
-                                    .attr('readonly', !row.batchManagement)
-                                $tr = $tr.next()
-                            }
-                        } else {
-                            $tr.find(':input[name=color]')
-                                .attr('disabled', !value.batchManagement)
-                                .attr('readonly', !value.batchManagement)
-                        }
+                        characteristic.selectedCharacteristic($tr, value);
                     }
                 },
                 // {
@@ -262,11 +250,10 @@
                     title: "规格"
                 },
                 {
-                    type: "select",
-                    name: "color",
-                    width: 80,
-                    title: "颜色",
-                    datasource: $('#color'),
+                    type: "characteristic",
+                    name: "characteristic",
+                    // width: 80,
+                    title: "特征值",
                     required: true,
                     disabled: true
                 },
@@ -420,18 +407,9 @@
             params['attachmentList'] = JSON.parse(params['attachmentList'])
 
             params['itemList'] = $editableTable.editableTablePlus('getValue')
-            for (let item of params['itemList']) {
-                if (item.color) {
-                    let res = [];
-                    for (let i = 0; i < item.color.length; i++) {
-                        res[i] = ("00" + item.color.charCodeAt(i).toString(16)).slice(-4);
-                    }
 
-                    item.batchCode = res.join("")
-                } else {
-                    item.batchCode = null
-                }
-            }
+            characteristic.getCharacteristicParams($editableTable, params['itemList'])
+
             console.log(params)
 
             $.ajax({
@@ -441,14 +419,20 @@
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
                 success: function(res){
-                    $('#code').val(res.code)
-                    $('#code_text').text(res.code)
-                    $('#id').val(res.id)
-                    $('#createTime').text(res.createTime)
+                    // $('#code').val(res.code)
+                    // $('#code_text').text(res.code)
+                    // $('#id').val(res.id)
+                    // $('#createTime').text(res.createTime)
+                    //
+                    // removeValidClass();
+                    // loadItem(res.itemList)
+                    // toastr.success('订单提交成功！' + res.code);
+                    // reloadTab('purchase_order_list')
 
-                    removeValidClass();
-                    loadItem(res.itemList)
-                    toastr.success('订单提交成功！' + res.code);
+                    toastr.success('订单提交成功');
+                    // if (isAdd) {
+                        window.location = '/purchase_order/'+res.id+'?readonly=true'
+                    // }
                     reloadTab('purchase_order_list')
                 }
             });
@@ -468,7 +452,8 @@
 
         function loadItem(itemList) {
             if (itemList) {
-                $editableTable.editableTablePlus('setValue', itemList)
+                characteristic.loadCharacteristic($editableTable, itemList)
+
                 calcTotalAmount()
 
                 // 历史的不能修改物料和删除

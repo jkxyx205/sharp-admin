@@ -57,6 +57,27 @@ public class MaterialTest {
     private MaterialService materialService;
 
     @Test
+    public void addClassificationList() {
+        Material pc = materialDAO.selectByCode("R00001").get();
+        pc.setClassificationList(Arrays.asList(
+                Classification.builder()
+                        .classificationCode("PC")
+                        .characteristicValueList(Arrays.asList(
+                                CharacteristicValue.builder()
+                                        .characteristicCode("COLOR2")
+                                        .val("亚黑")
+                                        .build(),
+                                CharacteristicValue.builder()
+                                        .characteristicCode("SIZE")
+                                        .val("中")
+                                        .build()
+                        ))
+                        .build()));
+
+        materialService.saveOrUpdate(pc);
+    }
+
+    @Test
     public void testSaveOrUpdate() {
         // 分类
         materialService.saveOrUpdate(Material.builder()
@@ -375,8 +396,39 @@ public class MaterialTest {
                 .additionalInfo(Params.builder(1).pv("formId", "695978675677433856").build())
                 .reportAdviceName("materialReportAdvice")
 //                .querySql("SELECT mm_material.id, mm_material.code, mm_material.name, specification, case when attachment is null or length(attachment) <= 2 then '无' else '有' end  attachment, material_type, mm_material.category_id, base_unit, standard_price, sys_user.name create_name,DATE_FORMAT(mm_material.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM mm_material left join sys_user on sys_user.id = mm_material.create_by WHERE mm_material.code = :code AND mm_material.name like :name AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0")
-                .querySql("SELECT mm_material.id, mm_material.code, mm_material.name, specification, color, case when attachment is null or length(attachment) <= 2 then '无' else '有' end  attachment, material_type, mm_material.category_id, base_unit, standard_price, batch_management batchManagement, sys_user.name create_name,DATE_FORMAT(mm_material.create_time, '%Y-%m-%d %H:%i:%s') create_time,stock.quantity stock_quantity, standard_price * stock.quantity stock_quantity_standard_price FROM mm_material left join sys_user on sys_user.id = mm_material.create_by left join (select stock.*, characteristic.color from (\n" +
-                        " select material_id, batch_id, sum(quantity) quantity from inv_stock group by material_id, batch_id) stock left join (  select mm_profile.material_id, mm_profile.batch_id, mm_characteristic_value.value color from mm_profile, mm_characteristic_value where category = 'BATCH' AND mm_profile.id = mm_characteristic_value.`reference_id`) characteristic on characteristic.material_id = stock.material_id AND characteristic.batch_id = stock.batch_id ) stock on stock.material_id = mm_material.id\n WHERE mm_material.code = :code AND mm_material.name like :name AND material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0")
+                .querySql("SELECT mm_material.id,\n" +
+                        "       mm_material.code,\n" +
+                        "       mm_material.name,\n" +
+                        "       specification,\n" +
+                        "       batch_id,\n" +
+                        "       case when attachment is null or length(attachment) <= 2 then '无' else '有' end attachment,\n" +
+                        "       material_type,\n" +
+                        "       mm_material.category_id,\n" +
+                        "       base_unit,\n" +
+                        "       standard_price,\n" +
+                        "       batch_management                                                                batchManagement,\n" +
+                        "       sys_user.name                                                                   create_name,\n" +
+                        "       DATE_FORMAT(mm_material.create_time, '%Y-%m-%d %H:%i:%s')                       create_time,\n" +
+                        "       stock.quantity                                                                  stock_quantity,\n" +
+                        "       standard_price * stock.quantity                                                 stock_quantity_standard_price\n" +
+                        "FROM mm_material\n" +
+                        "         left join sys_user on sys_user.id = mm_material.create_by\n" +
+                        "         left join (select stock.*\n" +
+                        "                    from (select material_id, batch_id, sum(quantity) quantity\n" +
+                        "                          from inv_stock\n" +
+                        "                          group by material_id, batch_id) stock\n" +
+                        "                             left join (select mm_profile.material_id,\n" +
+                        "                                               mm_profile.batch_id\n" +
+                        "                                        from mm_profile\n" +
+                        "                                        where category = 'BATCH') characteristic\n" +
+                        "                                       on characteristic.material_id = stock.material_id AND\n" +
+                        "                                          characteristic.batch_id = stock.batch_id) stock\n" +
+                        "                   on stock.material_id = mm_material.id\n" +
+                        "WHERE mm_material.code = :code\n" +
+                        "  AND mm_material.name like :name\n" +
+                        "  AND material_type = :materialType\n" +
+                        "  AND category_id = :categoryId\n" +
+                        "  AND mm_material.is_deleted = 0\n")
                 .queryFieldList(Arrays.asList(
                         new QueryField("code", "编号", QueryField.Type.TEXT),
                         new QueryField("name", "名称", QueryField.Type.TEXT),
@@ -390,7 +442,7 @@ public class MaterialTest {
                         new ReportColumn("code", "编号"),
                         new ReportColumn("name", "名称", true),
                         new ReportColumn("specification", "规格", false, null, Arrays.asList("characteristicConverter")),
-                        new ReportColumn("color", "颜色"),
+                        new ReportColumn("characteristic", "特征值"),
                         new ReportColumn("material_type", "类型", false, "material_type", Arrays.asList("dictConverter")),
 //                        new ReportColumn("category_id", "分类", false, "core_material_category", Arrays.asList("dictConverter")),
                         new ReportColumn("category_path", "分类", false),
@@ -512,7 +564,7 @@ public class MaterialTest {
                         new ReportColumn("code", "物料").setColumnWidth(80),
                         new ReportColumn("name", "名称").setTooltip(true),
                         new ReportColumn("specification", "规格", false, null, Arrays.asList("characteristicConverter")).setTooltip(true),
-                        new ReportColumn("color", "颜色"),
+                        new ReportColumn("characteristic", "特征值"),
 //                        new ReportColumn("base_unit_name", "基本单位", false, "unit", Arrays.asList("dictConverter")),
                         new HiddenReportColumn("base_unit"),
                         // String name, String label, Boolean sortable, String context, List<String> valueConverterNameList, Integer columnWidth, AlignEnum align, Boolean hidden, Boolean tooltip, TypeEnum type

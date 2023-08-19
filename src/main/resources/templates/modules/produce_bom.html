@@ -226,9 +226,9 @@
                 contentType: "application/json; charset=utf-8",
                 success: function(res){
                     toastr.success('物料清单保存成功');
-                    if (isAdd) {
+                    // if (isAdd) {
                         window.location = '/produce_bom/'+res.data+'?readonly=true'
-                    }
+                    // }
                     reloadTab('produce_bom_list')
                 }
             });

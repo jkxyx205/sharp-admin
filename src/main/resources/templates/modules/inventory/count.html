@@ -61,7 +61,6 @@
         </div>
         <div id="dialogInput" style="display: none"></div>
         <div id="multipleDialogInput" style="display: none"></div>
-        <sp:select class="hidden" id="color"  key="COLOR" emptyItemText/>
         <div class="operator-bar text-center" id="operator-bar">
             <button class="btn btn-primary" type="button" name="send" onclick="send()">
                 <i class="fa fa-send"></i> 提交</button>
@@ -104,18 +103,7 @@
                     required: true,
                     mode: 'multiple', // 多选
                     selected: function ($tr, value) {
-                        if (Array.isArray(value)) {
-                            for (let row of value) {
-                                $tr.find(':input[name=color]')
-                                    .attr('disabled', !row.batchManagement)
-                                    .attr('readonly', !row.batchManagement)
-                                $tr = $tr.next()
-                            }
-                        } else {
-                            $tr.find(':input[name=color]')
-                                .attr('disabled', !value.batchManagement)
-                                .attr('readonly', !value.batchManagement)
-                        }
+                        characteristic.selectedCharacteristic($tr, value)
                     }
                 },
                 {
@@ -129,11 +117,10 @@
                     title: "规格"
                 },
                 {
-                    type: "select",
-                    name: "color",
-                    width: 80,
-                    title: "颜色",
-                    datasource: $('#color'),
+                    type: "characteristic",
+                    name: "characteristic",
+                    // width: 80,
+                    title: "特征值",
                     required: true,
                     disabled: true
                 },
@@ -199,18 +186,8 @@
             params = $.extend({},
                 params, $('#form-header').form2json({allowEmptyMultiVal:true})); //合并参数
 
-            for (let item of params['itemList']) {
-                if (item.color) {
-                    let res = [];
-                    for (let i = 0; i < item.color.length; i++) {
-                        res[i] = ("00" + item.color.charCodeAt(i).toString(16)).slice(-4);
-                    }
+            characteristic.getCharacteristicParams($editableTable, params['itemList'])
 
-                    item.batchCode = res.join("")
-                } else {
-                    item.batchCode = null
-                }
-            }
             console.log(params)
 
             params.code = '1' // 临时code

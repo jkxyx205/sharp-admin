@@ -3,14 +3,13 @@ package com.rick.admin.module.inventory.entity;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.rick.admin.module.material.entity.Classification;
+import com.rick.admin.module.material.service.BatchHandler;
 import com.rick.admin.module.material.service.MaterialDescription;
 import com.rick.admin.module.material.service.MaterialDescriptionHandler;
 import com.rick.db.dto.BaseCodeEntity;
 import com.rick.db.dto.BaseEntity;
-import com.rick.db.plugin.dao.annotation.Column;
-import com.rick.db.plugin.dao.annotation.OneToMany;
-import com.rick.db.plugin.dao.annotation.Table;
-import com.rick.db.plugin.dao.annotation.Transient;
+import com.rick.db.plugin.dao.annotation.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
@@ -82,7 +81,7 @@ public class InventoryDocument extends BaseCodeEntity {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @SuperBuilder
     @Table(value = "inv_document_item", comment = "物料凭证行项目")
-    public static class Item extends BaseEntity implements MaterialDescriptionHandler {
+    public static class Item extends BaseEntity implements MaterialDescriptionHandler, BatchHandler {
 
         @Column(comment = "场景")
         TypeEnum type;
@@ -138,14 +137,19 @@ public class InventoryDocument extends BaseCodeEntity {
 
         String batchCode;
 
-        String color;
-
         Long inventoryDocumentId;
 
         String inventoryDocumentCode;
 
         @Transient
         MaterialDescription materialDescription;
+
+        /**
+         * 特征值
+         */
+        @Transient
+        @Select(table = "mm_classification", joinValue = "material_id", referencePropertyName = "materialId")
+        private List<Classification> classificationList;
     }
 
     @AllArgsConstructor

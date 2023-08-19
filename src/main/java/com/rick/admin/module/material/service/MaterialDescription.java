@@ -27,6 +27,10 @@ public class MaterialDescription {
 
     BigDecimal unitPrice;
 
+    Long batchId;
+
+    String characteristic;
+
     public MaterialDescription(Long id) {
         this.id = id;
     }

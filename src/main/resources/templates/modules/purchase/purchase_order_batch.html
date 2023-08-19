@@ -61,7 +61,6 @@
         </div>
         <div id="dialogInput" style="display: none"></div>
         <div id="multipleDialogInput" style="display: none"></div>
-        <sp:select class="hidden" id="color"  key="COLOR" emptyItemText/>
         <div class="operator-bar text-center" id="operator-bar" sec:authorize="${hasAuthority('pur_purchase_order_add') or hasAuthority('pur_purchase_order_edit')}">
             <button class="btn btn-primary" type="button" name="send" onclick="send()">
                 <i class="fa fa-send"></i> 提交</button>
@@ -122,21 +121,19 @@
                     required: true,
                     mode: 'multiple', // 多选
                     selected: function ($tr, value) {
+                        characteristic.selectedCharacteristic($tr, value);
+
                         if (Array.isArray(value)) {
                             // 获取供应商
                             $.get("/purchase_order/materials/vendors?materialIds=" + value.map(row => row.id).join(','), (res) => {
+                                let $cursorTr = $tr
                                 for (let row of value) {
                                     if (res[row.id]) {
-                                        $tr.find(':input[name=partnerId]').html(res[row.id].map(d => {
+                                        $cursorTr.find(':input[name=partnerId]').html(res[row.id].map(d => {
                                             return '<option value="'+d.name+'">'+d.label+'</option>'
                                         }).join(''))
                                     }
-
-                                    $tr.find(':input[name=color]')
-                                        .attr('disabled', !row.batchManagement)
-                                        .attr('readonly', !row.batchManagement)
-
-                                    $tr = $tr.next()
+                                    $cursorTr = $cursorTr.next()
                                 }
                             })
                         } else {
@@ -146,12 +143,6 @@
                                     return '<option value="'+d.name+'">'+d.label+'</option>'
                                 }).join(''))
                             })
-
-                            $tr.find(':input[name=color]')
-                                .attr('disabled', !value.batchManagement)
-                                .attr('readonly', !value.batchManagement)
-
-                            //
                         }
                     }
                 },
@@ -169,11 +160,10 @@
                     title: "规格"
                 },
                 {
-                    type: "select",
-                    name: "color",
-                    width: 80,
-                    title: "颜色",
-                    datasource: $('#color'),
+                    type: "characteristic",
+                    name: "characteristic",
+                    // width: 80,
+                    title: "特征值",
                     required: true,
                     disabled: true
                 },
@@ -286,18 +276,9 @@
 
             var params = $('#form-header').form2json({allowEmptyMultiVal:true})
             params['itemList'] = $editableTable.editableTablePlus('getValue')
-            for (let item of params['itemList']) {
-                if (item.color) {
-                    let res = [];
-                    for (let i = 0; i < item.color.length; i++) {
-                        res[i] = ("00" + item.color.charCodeAt(i).toString(16)).slice(-4);
-                    }
 
-                    item.batchCode = res.join("")
-                } else {
-                    item.batchCode = null
-                }
-            }
+            characteristic.getCharacteristicParams($editableTable, params['itemList'])
+
             console.log(params)
 
             $.ajax({
