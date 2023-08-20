@@ -131,12 +131,12 @@
 
         <div class="nav-tabs-boxed">
             <ul class="nav nav-tabs" role="tablist">
-                <li class="nav-item"><a class="nav-link" th:classappend="${po.id == null ? 'active' :''}" data-toggle="tab" href="#tab-1" role="tab" aria-controls="home" aria-selected="false">物料清单</a></li>
-                <li class="nav-item"><a class="nav-link" th:classappend="${po.id != null ? 'active' :''}" data-toggle="tab" href="#tab-2" role="tab" aria-controls="home" aria-selected="false" th:if="${po.id != null}">领料记录</a></li>
+                <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#tab-1" role="tab" aria-controls="home" aria-selected="false">物料清单</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-2" role="tab" aria-controls="home" aria-selected="false" th:if="${po.id != null}">领料记录</a></li>
                 <li class="nav-item" th:if="${po.id != null}"><a class="nav-link" data-toggle="tab" href="#tab-3" role="tab" aria-controls="home" aria-selected="false">出货记录</a></li>
             </ul>
             <div class="tab-content">
-                <div class="tab-pane" th:classappend="${po.id == null ? 'active' :''}" id="tab-1" role="tabpanel">
+                <div class="tab-pane active" id="tab-1" role="tabpanel">
                     <div id="form-detail">
                         <div v-show="form.id" v-cloak>
                             <div class="card-body-scroll-panel">
@@ -150,7 +150,7 @@
                                                     <th style="width: 100px;"><label class="required">零部件物料</label></th>
                                                     <th style="width: 100px;"><label>名称</label></th>
                                                     <th><label>规格</label></th>
-                                                    <th style="width: 100px;"><label class="required">颜色</label></th>
+                                                    <th><label class="required">特征值</label></th>
                                                     <th style="width: 80px;"><label>用量</label></th>
                                                     <th style="width: 80px;"><label>单位</label></th>
                                                     <th><label>备注</label></th>
@@ -159,7 +159,7 @@
                                                 <tbody>
                                                 <tr v-for="d in c.componentDetailList">
                                                     <template v-if="!d.bomTemplate">
-                                                        <td style="padding: 0;"><input class="form-control material" type="text" :disabled="d.type === 'MATERIAL'" :readonly="d.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="d.value.materialCode" :component_detail_id="d.id" :component_id="d.componentId" :type_instance_id="d.typeInstanceId" required="required" :placeholder="d.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="d.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="d.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="d.value.materialSpecification"></td><td><select class="form-control" name="color" required="required" title="请填写颜色" :disabled="d.value.color ? false : true" v-model="d.value.color"><option v-for="option in d.options" v-text="option" :value="option"></option></select></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="d.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="d.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="d.value.unit"></td><td v-if="!d.bomTemplate" style="padding: 0;"><input class="form-control" type="text" v-model="d.value.remark" autocomplete="off" name="remark"></td>
+                                                        <td style="padding: 0;"><input class="form-control material" type="text" :disabled="d.type === 'MATERIAL'" :readonly="d.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="d.value.materialCode" :component_detail_id="d.id" :component_id="d.componentId" :type_instance_id="d.typeInstanceId" required="required" :placeholder="d.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="d.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="d.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="d.value.materialSpecification"></td><td class="characteristic-td"><input class="form-control" type="text" value="" autocomplete="off" name="characteristic" required="required" title="请填写特征值" @click="show" :value="d.classificationList.length > 0 ? d.classificationList[0].classification.characteristicValue.map(c => c.value).join(' ') : ''" style="text-align: left;" :disabled="!(d.value.materialCode && d.classificationList.length > 0)" :readonly="!(d.value.materialCode && d.classificationList.length > 0)"><div class="characteristic-popup" style="position: fixed; padding: 12px; background: #ffffff; z-index: 999; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.12); display: none;"><div class="items"><template v-for="classification in d.classificationList"><div :data-classification_code="classification.classification.code"><div class="mb-2" v-for="characteristic in classification.classification.characteristicValue"><label style="width: 50px; text-align: right" :for="characteristic.code" v-text="characteristic.description + '：'"></label><select class="form-control" style="display: inline-block; width: auto;border-width: 1px;" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value"><option value=""></option><option v-for="option in characteristic.options" :name="option.name" v-text="option.label"></option></select></div></div></template></div></div></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="d.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="d.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="d.value.unit"></td><td v-if="!d.bomTemplate" style="padding: 0;"><input class="form-control" type="text" v-model="d.value.remark" autocomplete="off" name="remark"></td>
                                                     </template>
 
                                                     <!--第二层-->
@@ -176,7 +176,7 @@
                                                                             <th style="width: 100px;"><label class="required">零部件物料</label></th>
                                                                             <th style="width: 100px;"><label>名称</label></th>
                                                                             <th><label>规格</label></th>
-                                                                            <th style="width: 100px;"><label class="required">颜色</label></th>
+                                                                            <th><label class="required">特征值</label></th>
                                                                             <th style="width: 80px;"><label>用量</label></th>
                                                                             <th style="width: 80px;"><label>单位</label></th>
                                                                             <th><label>备注</label></th>
@@ -185,7 +185,7 @@
                                                                         <tbody>
                                                                         <tr v-for="dd in cc.componentDetailList">
                                                                             <template v-if="!dd.bomTemplate">
-                                                                                <td style="padding: 0;"><input class="form-control material" type="text" :disabled="dd.type === 'MATERIAL'" :readonly="dd.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="dd.value.materialCode" :component_detail_id="dd.id" :component_id="dd.componentId" :type_instance_id="dd.typeInstanceId" required="required" :placeholder="dd.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="dd.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="dd.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="dd.value.materialSpecification"></td><td><select class="form-control" name="color" required="required" title="请填写颜色" :disabled="d.value.color ? false : true" v-model="dd.value.color"><option v-for="option in dd.options" v-text="option" :value="option"></option></select></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="dd.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="dd.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="dd.value.unit"></td><td style="padding: 0;"><input class="form-control" type="text" v-model="dd.value.remark" autocomplete="off" name="remark"></td>
+                                                                                <td style="padding: 0;"><input class="form-control material" type="text" :disabled="dd.type === 'MATERIAL'" :readonly="dd.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="dd.value.materialCode" :component_detail_id="dd.id" :component_id="dd.componentId" :type_instance_id="dd.typeInstanceId" required="required" :placeholder="dd.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="dd.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="dd.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="dd.value.materialSpecification"></td><td class="characteristic-td"><input class="form-control" type="text" value="" autocomplete="off" name="characteristic" required="required" title="请填写特征值" @click="show" :value="dd.classificationList.length > 0 ? dd.classificationList[0].classification.characteristicValue.map(c => c.value).join(' ') : ''" style="text-align: left;" :disabled="!(dd.value.materialCode && dd.classificationList.length > 0)" :readonly="!(dd.value.materialCode && dd.classificationList.length > 0)"><div class="characteristic-popup" style="position: fixed; padding: 12px; background: #ffffff; z-index: 999; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.12); display: none;"><div class="items"><template v-for="classification in dd.classificationList"><div :data-classification_code="classification.classification.code"><div class="mb-2" v-for="characteristic in classification.classification.characteristicValue"><label style="width: 50px; text-align: right" :for="characteristic.code" v-text="characteristic.description + '：'"></label><select class="form-control" style="display: inline-block; width: auto;border-width: 1px;" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value"><option value=""></option><option v-for="option in characteristic.options" :name="option.name" v-text="option.label"></option></select></div></div></template></div></div></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="dd.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="dd.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="dd.value.unit"></td><td v-if="!dd.bomTemplate" style="padding: 0;"><input class="form-control" type="text" v-model="dd.value.remark" autocomplete="off" name="remark"></td>
                                                                             </template>
                                                                             <!--第三层-->
                                                                             <td colspan="7" v-if="dd.bomTemplate">
@@ -201,7 +201,7 @@
                                                                                                     <th style="width: 100px;"><label class="required">零部件物料</label></th>
                                                                                                     <th style="width: 100px;"><label>名称</label></th>
                                                                                                     <th><label>规格</label></th>
-                                                                                                    <th style="width: 100px;"><label class="required">颜色</label></th>
+                                                                                                    <th><label class="required">特征值</label></th>
                                                                                                     <th style="width: 80px;"><label>用量</label></th>
                                                                                                     <th style="width: 80px;"><label>单位</label></th>
                                                                                                     <th><label>备注</label></th>
@@ -210,7 +210,7 @@
                                                                                                 <tbody>
                                                                                                 <tr v-for="ddd in ccc.componentDetailList">
                                                                                                     <template  v-if="!ddd.bomTemplate">
-                                                                                                        <td style="padding: 0;"><input class="form-control material" type="text" :disabled="ddd.type === 'MATERIAL'" :readonly="ddd.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="ddd.value.materialCode" :component_detail_id="ddd.id" :component_id="ddd.componentId" :type_instance_id="ddd.typeInstanceId" required="required" :placeholder="ddd.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="ddd.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="ddd.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="ddd.value.materialSpecification"></td><td><select class="form-control" name="color" required="required" title="请填写颜色" :disabled="d.value.color ? false : true" v-model="ddd.value.color"><option v-for="option in ddd.options" v-text="option" :value="option"></option></select></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\dd+(\.\dd{1,3})?$" title="必须数字" name="quantity" v-model="ddd.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="ddd.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="ddd.value.unit"></td><td style="padding: 0;"><input class="form-control" type="text" v-model="ddd.value.remark" autocomplete="off" name="remark"></td>
+                                                                                                        <td style="padding: 0;"><input class="form-control material" type="text" :disabled="ddd.type === 'MATERIAL'" :readonly="ddd.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="ddd.value.materialCode" :component_detail_id="ddd.id" :component_id="ddd.componentId" :type_instance_id="ddd.typeInstanceId" required="required" :placeholder="ddd.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="ddd.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="ddd.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="ddd.value.materialSpecification"></td><td class="characteristic-td"><input class="form-control" type="text" value="" autocomplete="off" name="characteristic" required="required" title="请填写特征值" @click="show" :value="ddd.classificationList.length > 0 ? ddd.classificationList[0].classification.characteristicValue.map(c => c.value).join(' ') : ''" style="text-align: left;" :disabled="!(ddd.value.materialCode && ddd.classificationList.length > 0)" :readonly="!(ddd.value.materialCode && ddd.classificationList.length > 0)"><div class="characteristic-popup" style="position: fixed; padding: 12px; background: #ffffff; z-index: 999; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.12); display: none;"><div class="items"><template v-for="classification in ddd.classificationList"><div :data-classification_code="classification.classification.code"><div class="mb-2" v-for="characteristic in classification.classification.characteristicValue"><label style="width: 50px; text-align: right" :for="characteristic.code" v-text="characteristic.description + '：'"></label><select class="form-control" style="display: inline-block; width: auto;border-width: 1px;" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value"><option value=""></option><option v-for="option in characteristic.options" :name="option.name" v-text="option.label"></option></select></div></div></template></div></div></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="ddd.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="ddd.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="ddd.value.unit"></td><td v-if="!ddd.bomTemplate" style="padding: 0;"><input class="form-control" type="text" v-model="ddd.value.remark" autocomplete="off" name="remark"></td>
                                                                                                     </template>
 
                                                                                                     <!--第四层-->
@@ -227,7 +227,7 @@
                                                                                                                             <th style="width: 100px;"><label class="required">零部件物料</label></th>
                                                                                                                             <th style="width: 100px;"><label>名称</label></th>
                                                                                                                             <th><label>规格</label></th>
-                                                                                                                            <th style="width: 100px;"><label class="required">颜色</label></th>
+                                                                                                                            <th><label class="required">特征值</label></th>
                                                                                                                             <th style="width: 80px;"><label>用量</label></th>
                                                                                                                             <th style="width: 80px;"><label>单位</label></th>
                                                                                                                             <th><label>备注</label></th>
@@ -235,7 +235,7 @@
                                                                                                                         </thead>
                                                                                                                         <tbody>
                                                                                                                         <tr v-for="dddd in cccc.componentDetailList">
-                                                                                                                            <td v-if="!dddd.bomTemplate" style="padding: 0;"><input class="form-control material" type="text" :disabled="dddd.type === 'MATERIAL'" :readonly="dddd.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="dddd.value.materialCode" :component_detail_id="dddd.id" :component_id="dddd.componentId" :type_instance_id="dddd.typeInstanceId" required="required" :placeholder="dddd.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="dddd.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="dddd.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="dddd.value.materialSpecification"></td><td><select class="form-control" name="color" required="required" title="请填写颜色" :disabled="d.value.color ? false : true" v-model="dddd.value.color"><option v-for="option in dddd.options" v-text="option" :value="option"></option></select></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\ddd+(\.\ddd{1,3})?$" title="必须数字" name="quantity" v-model="dddd.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="dddd.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="dddd.value.unit"></td><td style="padding: 0;"><input class="form-control" type="text" v-model="dddd.value.remark" autocomplete="off" name="remark"></td>
+                                                                                                                            <td style="padding: 0;"><input class="form-control material" type="text" :disabled="dddd.type === 'MATERIAL'" :readonly="dddd.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="dddd.value.materialCode" :component_detail_id="dddd.id" :component_id="dddd.componentId" :type_instance_id="dddd.typeInstanceId" required="required" :placeholder="dddd.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="dddd.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="dddd.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="dddd.value.materialSpecification"></td><td class="characteristic-td"><input class="form-control" type="text" value="" autocomplete="off" name="characteristic" required="required" title="请填写特征值" @click="show" :value="dddd.classificationList.length > 0 ? dddd.classificationList[0].classification.characteristicValue.map(c => c.value).join(' ') : ''" style="text-align: left;" :disabled="!(dddd.value.materialCode && dddd.classificationList.length > 0)" :readonly="!(dddd.value.materialCode && dddd.classificationList.length > 0)"><div class="characteristic-popup" style="position: fixed; padding: 12px; background: #ffffff; z-index: 999; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.12); display: none;"><div class="items"><template v-for="classification in dddd.classificationList"><div :data-classification_code="classification.classification.code"><div class="mb-2" v-for="characteristic in classification.classification.characteristicValue"><label style="width: 50px; text-align: right" :for="characteristic.code" v-text="characteristic.description + '：'"></label><select class="form-control" style="display: inline-block; width: auto;border-width: 1px;" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value"><option value=""></option><option v-for="option in characteristic.options" :name="option.name" v-text="option.label"></option></select></div></div></template></div></div></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="dddd.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="dddd.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="dddd.value.unit"></td><td v-if="!dddd.bomTemplate" style="padding: 0;"><input class="form-control" type="text" v-model="dddd.value.remark" autocomplete="off" name="remark"></td>
                                                                                                                         </tr>
                                                                                                                         </tbody>
                                                                                                                     </table>
@@ -272,7 +272,7 @@
                         <div id="materialDetailInput" style="display: none"></div>
                     </div>
                 </div>
-                <div class="tab-pane"  th:classappend="${po.id != null ? 'active' :''}" id="tab-2" role="tabpanel">
+                <div class="tab-pane" id="tab-2" role="tabpanel">
                     <div id="goods_receipt_container" role="tabpanel">
                         <div class="table-fixed-container">
                             <table class="table table-responsive-sm table-bordered table-striped table-sm table-thead">
@@ -282,7 +282,7 @@
                                     <th style="width: 100px" class="sortable active asc">物料</th>
                                     <th style="width: 100px;">名称</th>
                                     <th>规格</th>
-                                    <th style="width: 100px;">颜色</th>
+                                    <th style="width: 100px;">特征值</th>
                                     <th style="width: 100px">基本单位</th>
                                     <th style="width: 100px" class="sortable text-right">领料数量</th>
                                     <th style="width: 120px" class="sortable text-right" data-sort-type="number">已领料数量</th>
@@ -299,7 +299,7 @@
                                     <td th:text="${s.materialCode}" th:data-sort-value="${s.materialCode}"></td>
                                     <td th:text="${s.materialName}" th:data-sort-value="${s.materialName}"></td>
                                     <td th:text="${s.materialSpecification}" th:data-sort-value="${s.materialSpecification}"></td>
-                                    <td th:text="${s.color}" th:data-sort-value="${s.color}"></td>
+                                    <td th:text="${s.characteristic}" th:data-sort-value="${s.characteristic}"></td>
                                     <td th:text="${s.unitText}" th:data-sort-value="${s.unitText}"></td>
                                     <td th:text="${#numbers.formatDecimal(s.quantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.quantity}" th:class="text-right"></td>
                                     <td th:text="${#numbers.formatDecimal(s.goodsReceiptQuantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.goodsReceiptQuantity}" th:class="text-right"></td>
@@ -324,7 +324,7 @@
                                     <th style="width: 100px" class="sortable active asc">物料</th>
                                     <th style="width: 100px;">名称</th>
                                     <th>规格</th>
-                                    <th style="width: 100px;">颜色</th>
+                                    <th>特征值</th>
                                     <th style="width: 100px">基本单位</th>
                                     <th style="width: 100px" class="sortable text-right">订单数量</th>
                                     <th style="width: 120px" class="sortable text-right" data-sort-type="number">已出货数量</th>
@@ -341,7 +341,7 @@
                                     <td th:text="${s.materialCode}" th:data-sort-value="${s.materialCode}"></td>
                                     <td th:text="${s.materialName}" th:data-sort-value="${s.materialName}"></td>
                                     <td th:text="${s.materialSpecification}" th:data-sort-value="${s.materialSpecification}"></td>
-                                    <td th:text="${s.color}" th:data-sort-value="${s.color}"></td>
+                                    <td th:text="${s.characteristic}" th:data-sort-value="${s.characteristic}"></td>
                                     <td th:text="${s.unitText}" th:data-sort-value="${s.unitText}"></td>
                                     <td th:text="${#numbers.formatDecimal(s.quantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.quantity}" th:class="text-right"></td>
                                     <td th:text="${#numbers.formatDecimal(s.goodsIssueQuantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.goodsIssueQuantity}" th:class="text-right"></td>
@@ -391,9 +391,15 @@
                  vue.$data.form = $tr[0].form
             } else if (materialId) {
                 $.get('/produce_orders/bom?materialId=' + materialId + (itemId ? ('&itemId=' + itemId) : '') + (isCopy != undefined ? ('&isCopy=' + isCopy) : ''), function (res) {
-                    res.materialId = materialId
-                    $tr[0].form = vue.$data.form = res
+                    let bomTemplate = res.bomTemplate
+
+                    bomTemplate.materialId = materialId
+                    $tr[0].form = vue.$data.form = bomTemplate
                     callback && callback($tr[0].form)
+
+                    if (itemId) {
+                        characteristic.setCharacteristic($tr, res.item)
+                    }
                 })
             }
         }
@@ -417,10 +423,6 @@
             },
             columnConfigs: [
                 {
-                    type: "hidden",
-                    name: "batchCode"
-                },
-                {
                     type: "material",
                     name: "materialId",
                     title: "产成品物料",
@@ -433,12 +435,10 @@
                         return true;
                     },
                     selected: function ($tr, row) {
-                        $tr.find(':input[name=color]')
-                            .attr('disabled', !row.batchManagement)
-                            .attr('readonly', !row.batchManagement)
+                        row.id = row.materialId
+                        characteristic.selectedCharacteristic($tr, row);
 
-                        showBOMDetail($tr, row.materialId, row.item_id, true, function (form) {
-                        })
+                        showBOMDetail($tr, row.materialId, row.item_id, true, function (form) {})
                     }
                 },
                 {
@@ -452,11 +452,10 @@
                     title: "规格"
                 },
                 {
-                    type: "select",
-                    name: "color",
-                    width: 80,
-                    title: "颜色",
-                    datasource: $('#color'),
+                    type: "characteristic",
+                    name: "characteristic",
+                    // width: 80,
+                    title: "特征值",
                     required: true,
                     disabled: true
                 },
@@ -547,19 +546,10 @@
             let params = {}
 
             params['itemList'] = $editableTable.editableTablePlus('getValue')
+            characteristic.getCharacteristicParams($editableTable, params['itemList'])
 
             for (let index in params['itemList']) {
                 let item = params['itemList'][index]
-
-                if (item.color) {
-                    let res = [];
-                    for (let i = 0; i < item.color.length; i++) {
-                        res[i] = ("00" + item.color.charCodeAt(i).toString(16)).slice(-4);
-                    }
-                    item.batchCode = res.join("")
-                } else {
-                    item.batchCode = null
-                }
 
                 // 获取value
                 let valueList = []
@@ -585,29 +575,26 @@
                                 return
                             }
 
-                            if (componentDetail.value.is_batch && !componentDetail.value.color) {
-                                toastr.error('第 '+(index + 1)+' 行产成品的物料清单有物料没有填写【颜色】！')
-                                detailValid = false
-                                return
-                            }
-
-                            if (componentDetail.value.color) {
-                                let res = [];
-                                for (let i = 0; i < componentDetail.value.color.length; i++) {
-                                    res[i] = ("00" + componentDetail.value.color.charCodeAt(i).toString(16)).slice(-4);
-                                }
-
-                                componentDetail.value.batchCode = res.join("")
-                            } else {
-                                componentDetail.value.batchCode = null
-                            }
-
-
                             if (componentDetail.bomTemplate) {
                                 checkAndGetValueList(componentDetail.bomTemplate, valueList, index)
                             } else {
                                 if (componentDetail.value.materialId) {
-                                    valueList.push({...componentDetail.value, ...{quantity: componentDetail.quantity}})
+                                    let item = {...componentDetail.value, ...{quantity: componentDetail.quantity}}
+
+                                    // 特征值
+                                    item.classificationList = componentDetail.classificationList.map(c => {return {materialId: item.materialId, classificationCode: c.classification.code, characteristicValueList: c.classification.characteristicValue.map(ch => {return {characteristicCode: ch.code, val: ch.value}})}})
+
+                                    for (let classification of item.classificationList) {
+                                        for (let characteristic of classification.characteristicValueList) {
+                                            if (!characteristic.val) {
+                                                toastr.error('第 '+(index + 1)+' 行产成品的物料清单有【特征值】没有填写！')
+                                                detailValid = false
+                                                return
+                                            }
+                                        }
+                                    }
+
+                                    valueList.push(item)
                                 }
                             }
                         }
@@ -620,6 +607,8 @@
 
             delete params.attachment_file
             params['attachmentList'] = JSON.parse(params['attachmentList'])
+
+            console.log(params)
 
             $.ajax({
                 url: '/produce_orders',
@@ -647,7 +636,9 @@
         loadItem(itemList)
         function loadItem(itemList) {
             if (itemList && itemList.length > 0) {
-                $editableTable.editableTablePlus('setValue', itemList).editableTablePlus('setActiveIndex', 1)
+                characteristic.loadCharacteristic($editableTable, itemList)
+                $editableTable.editableTablePlus('setActiveIndex', 1)
+
                 calcTotalAmount()
 
                 let $trs = $editableTable.editableTablePlus('getEditRow')
@@ -723,6 +714,15 @@
                                     d.value.unit = row.base_unit
                                     d.value.unitText = row.base_unit_name
                                     d.value.componentDetailId = currentMaterialDom.getAttribute('component_detail_id')
+                                    d.test = 'aa'
+                                    console.log('1111')
+                                    // 设置特征值
+                                    $.ajaxSettings.async = false
+                                    $.get(`/materials/${row.id}/classifications`, (res) => {
+                                        d.classificationList = res.map(c => { return {"classification": c}})
+                                    })
+                                    $.ajaxSettings.async = true
+
                                     // d.options = [...document.getElementById('color').options].map(o => o.text)
                                     break_flag = true
                                     break
@@ -738,10 +738,6 @@
                 }
 
                 vue.form = form_data
-
-                $(currentMaterialDom).parent().parent().find(':input[name=color]')
-                    .attr('disabled', !row.batchManagement)
-                    .attr('readonly', !row.batchManagement)
             }
         })
 
@@ -755,7 +751,7 @@
             mounted: function () {
                 if (itemList && itemList.length > 0) {
                     $editableTable
-                        .editableTablePlus('each',  (index, context, $tr, row) => {
+                        .editableTablePlus('each', (index, context, $tr, row) => {
                             let value = valueMap[row.id]
                             if(index === 0) {
                                 this.form = value
@@ -772,7 +768,8 @@
                     materialDetailInput.click();
                     currentMaterialDom = e.target
                 },
-                send() {
+                show(e) {
+                    $(e.target).next().css('display', 'block').css('top', ($(e.target).offset().top + 32) + 'px')
                 }
             }
         })

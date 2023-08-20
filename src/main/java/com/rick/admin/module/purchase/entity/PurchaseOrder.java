@@ -3,6 +3,7 @@ package com.rick.admin.module.purchase.entity;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.service.BatchHandler;
+import com.rick.admin.module.material.service.CharacteristicHelper;
 import com.rick.admin.module.material.service.MaterialDescription;
 import com.rick.admin.module.material.service.MaterialDescriptionHandler;
 import com.rick.db.dto.BaseCodeEntity;
@@ -67,6 +68,11 @@ public class PurchaseOrder extends BaseCodeEntity {
 
     public BigDecimal getAmount() {
         return itemList.stream().map(PurchaseOrder.Item::getAmount).reduce(BigDecimal.ZERO, (a1, a2) -> a1.add(a2));
+    }
+
+    public void setItemList(List<Item> itemList) {
+        CharacteristicHelper.handlerSameReference(itemList);
+        this.itemList = itemList;
     }
 
     @Getter

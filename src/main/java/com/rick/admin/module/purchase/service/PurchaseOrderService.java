@@ -229,7 +229,7 @@ public class PurchaseOrderService {
             MaterialDescription materialDescription = item.getMaterialDescription();
             //        data.add(new Object[]{1, "资材编号1", "品 名", "型号规格", 3, "单位", 1, 11, "2022-11-16"});
             data.add(new Object[] {i + 1, materialDescription.getCode(), materialDescription.getName(),
-                    materialDescription.getSpecification() + materialProfileService.getCharacteristicText(item.getMaterialId(), item.getBatchId()),
+                    materialDescription.getSpecification() + " " + item.getMaterialDescription().getCharacteristic(),
                     item.getQuantity(), materialDescription.getUnitText(), item.getUnitPrice(), item.getAmount(),
                     StringUtils.isNotBlank(item.getRemark()) ? item.getRemark() : Time2StringUtils.format(item.getDeliveryDate())
             });

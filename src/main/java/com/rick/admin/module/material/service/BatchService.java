@@ -12,6 +12,8 @@ import com.rick.common.util.IdGenerator;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
 import com.rick.db.plugin.dao.core.EntityDAO;
 import com.rick.db.plugin.dao.support.EntityCodeIdFillService;
+import com.rick.db.service.SharpService;
+import com.rick.db.service.support.Params;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -20,10 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -42,8 +41,6 @@ public class BatchService {
 
     EntityCodeDAO<Characteristic, Long> characteristicDAO;
 
-    CharacteristicHelper characteristicHelper;
-
     EntityCodeIdFillService entityIdFillService;
 
     ClassificationDAO materialClassificationDAO;
@@ -52,32 +49,54 @@ public class BatchService {
 
     MaterialProfileService materialProfileService;
 
-    public void fillCharacteristicValue(List<? extends BatchHandler> batchHandlerList) {
-        // 获取特征值
-        for (BatchHandler item : batchHandlerList) {
-            if (CollectionUtils.isNotEmpty(item.getClassificationList())) {
+    SharpService sharpService;
+
+    public void fillCharacteristicValue(Collection<? extends BatchHandler> batchHandlerList) {
+        if (CollectionUtils.isNotEmpty(batchHandlerList)) {
+            Map<String, MaterialProfile> materialProfileMap = materialProfileService.getMaterialProfile(batchHandlerList.stream()
+                    .map(batchHandler -> MaterialProfileSupport.materialIdBatchIdString(batchHandler.getMaterialId(), batchHandler.getBatchId())).collect(Collectors.toSet()));
+
+            // 获取特征值
+            for (BatchHandler item : batchHandlerList) {
                 if (CollectionUtils.isNotEmpty(item.getClassificationList())) {
-                    characteristicHelper.fillValueToClassification(item.getClassificationList().stream().map(classification -> classification.getClassification()).collect(Collectors.toList()),
-                            materialProfileService.getMaterialProfile(item.getMaterialId(), item.getBatchId()).get().getCharacteristicValueList());
+                    if (CollectionUtils.isNotEmpty(item.getClassificationList())) {
+                        CharacteristicHelper.fillValueToClassification(item.getClassificationList().stream().map(classification -> classification.getClassification()).collect(Collectors.toList()),
+                                materialProfileMap.get(MaterialProfileSupport.materialIdBatchIdString(item.getMaterialId(), item.getBatchId())).getCharacteristicValueList());
+                    }
                 }
             }
         }
+
     }
 
-    public void saveBatch(List<? extends BatchHandler> batchHandlerList) {
+    public void saveBatch(Collection<? extends BatchHandler> batchHandlerList) {
         // 处理批次物料
+        if (CollectionUtils.isEmpty(batchHandlerList)) {
+            return;
+        }
+        Set<String> materialIdBatchCodeStringCollection = batchHandlerList.stream().map(batchHandler -> batchHandler.getMaterialId() + BatchSupport.characteristicToCode(batchHandler.getClassificationList().stream().flatMap(p -> p.getCharacteristicValueList().stream()).map(CharacteristicValue::getValue).collect(Collectors.toList()))).collect(Collectors.toSet());
+
+        Map<String, Long> materialIdBatchCodeStringBatchIdMap = getMaterialIdBatchCodeStringBatchIdMap(materialIdBatchCodeStringCollection);
+
         for (BatchHandler item : batchHandlerList) {
             if (CollectionUtils.isNotEmpty(item.getClassificationList())) {
-                Batch batch = Batch.builder()
-                        .code(BatchSupport.characteristicToCode(item.getClassificationList().stream().flatMap(p -> p.getCharacteristicValueList().stream()).map(CharacteristicValue::getValue).collect(Collectors.toList())))
-                        .materialCode(item.getMaterialCode())
-                        .materialId(item.getMaterialId())
-                        .classificationList(item.getClassificationList())
-                        .build();
-                saveOrUpdate(batch);
+                String batchCode = BatchSupport.characteristicToCode(item.getClassificationList().stream().flatMap(p -> p.getCharacteristicValueList().stream()).map(CharacteristicValue::getValue).collect(Collectors.toList()));
+                Long batchId = materialIdBatchCodeStringBatchIdMap.get(item.getMaterialId() + batchCode);
+                if (batchId == null) {
+                    Batch batch = Batch.builder()
+                            .code(batchCode)
+                            .materialCode(item.getMaterialCode())
+                            .materialId(item.getMaterialId())
+                            .classificationList(item.getClassificationList())
+                            .build();
+                    saveOrUpdate(batch);
 
-                item.setBatchId(batch.getId());
-                item.setBatchCode(batch.getCode());
+                    item.setBatchId(batch.getId());
+                    item.setBatchCode(batchCode);
+                } else {
+                    item.setBatchId(batchId);
+                    item.setBatchCode(batchCode);
+                }
             }
         }
     }
@@ -106,7 +125,7 @@ public class BatchService {
         // valid value
         List<Classification> classificationList
                 = batch.getClassificationList().stream().map(com.rick.admin.module.material.entity.Classification::getClassification).collect(Collectors.toList());
-        characteristicHelper.validValueToClassification(classificationList, characteristicValueList);
+        CharacteristicHelper.validValueToClassification(classificationList, characteristicValueList);
 
         batch.setMaterialId(entityIdFillService.fill(Material.class, batch.getMaterialId(), batch.getMaterialCode()));
 
@@ -130,6 +149,11 @@ public class BatchService {
         materialClassificationDAO.insertOrUpdate("material_id",  batch.getMaterialId(), batch.getClassificationList());
 
         handleMaterialProfile(batch, characteristicValueList, profileUpdate);
+    }
+
+    public Map<String, Long> getMaterialIdBatchCodeStringBatchIdMap(Collection<String> materialIdBatchCodeStringCollection) {
+        return sharpService.queryForKeyValue("select concat(material_id, code), id from mm_batch where concat(material_id, code) IN (:materialIdBatchCodeStringCollection)"
+                , Params.builder(1).pv("materialIdBatchCodeStringCollection", materialIdBatchCodeStringCollection).build());
     }
 
     private void handleClassification(List<com.rick.admin.module.material.entity.Classification> classificationList, Long batchId) {

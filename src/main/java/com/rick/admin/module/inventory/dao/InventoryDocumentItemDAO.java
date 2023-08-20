@@ -3,6 +3,7 @@ package com.rick.admin.module.inventory.dao;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.db.plugin.dao.core.ColumnFillType;
 import com.rick.db.plugin.dao.core.EntityDAOImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
  * @date 2023/6/7 15:51
  */
 @Repository
+@RequiredArgsConstructor
 public class InventoryDocumentItemDAO extends EntityDAOImpl<InventoryDocument.Item, Long> {
 
     @Override

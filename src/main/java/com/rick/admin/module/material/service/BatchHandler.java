@@ -10,7 +10,9 @@ import java.util.List;
  */
 public interface BatchHandler {
 
-    List<Classification>  getClassificationList();
+    List<Classification> getClassificationList();
+
+    void setClassificationList(List<Classification> classificationList);
 
     void setBatchId(Long batchId);
 

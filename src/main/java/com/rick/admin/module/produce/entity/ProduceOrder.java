@@ -3,6 +3,8 @@ package com.rick.admin.module.produce.entity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.rick.admin.module.material.entity.Classification;
+import com.rick.admin.module.material.service.BatchHandler;
+import com.rick.admin.module.material.service.CharacteristicHelper;
 import com.rick.admin.module.material.service.MaterialDescription;
 import com.rick.admin.module.material.service.MaterialDescriptionHandler;
 import com.rick.db.dto.BaseCodeEntity;
@@ -60,6 +62,11 @@ public class ProduceOrder extends BaseCodeEntity {
     @Column(comment = "附件", columnDefinition = "text", value = "attachment", nullable = false)
     private List<Map<String, Object>> attachmentList;
 
+    public void setItemList(List<Item> itemList) {
+        CharacteristicHelper.handlerSameReference(itemList);
+        this.itemList = itemList;
+    }
+
     @Getter
     @Setter
     @NoArgsConstructor
@@ -67,7 +74,7 @@ public class ProduceOrder extends BaseCodeEntity {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @SuperBuilder
     @Table(value = "produce_order_item", comment = "生产单行项目")
-    public static class Item extends BaseEntity implements MaterialDescriptionHandler {
+    public static class Item extends BaseEntity implements MaterialDescriptionHandler, BatchHandler {
 
         @NotNull
         @Column(comment = "物料")
@@ -131,6 +138,11 @@ public class ProduceOrder extends BaseCodeEntity {
             return null;
         }
 
+        public void setItemList(List<Detail> itemList) {
+            CharacteristicHelper.handlerSameReference(itemList);
+            this.itemList = itemList;
+        }
+
         @Getter
         @Setter
         @NoArgsConstructor
@@ -138,11 +150,13 @@ public class ProduceOrder extends BaseCodeEntity {
         @FieldDefaults(level = AccessLevel.PRIVATE)
         @SuperBuilder
         @Table(value = "produce_order_item_detail", comment = "物料BOM实例详情")
-        public static class Detail extends BaseEntity implements MaterialDescriptionHandler {
+        public static class Detail extends BaseEntity implements MaterialDescriptionHandler, BatchHandler {
 
             @NotNull
             @Column(comment = "物料")
             Long materialId;
+
+            String materialCode;
 
             @NotNull
             BigDecimal quantity;

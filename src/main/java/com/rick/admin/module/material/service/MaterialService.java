@@ -46,8 +46,6 @@ public class MaterialService {
 
     EntityCodeDAO<com.rick.admin.module.core.entity.Classification, Long> classificationDAO;
 
-    CharacteristicHelper characteristicHelper;
-
     EntityCodeIdFillService entityCodeIdFillService;
 
     ClassificationService classificationService;
@@ -104,8 +102,9 @@ public class MaterialService {
                     materialDescription.setUnitText(dictService.getDictByTypeAndName("unit", material.getBaseUnit()).get().getLabel());
                     materialDescription.setCategoryId(material.getCategoryId());
                     materialDescription.setUnitPrice(material.getStandardPrice());
-                    materialDescription.setCharacteristic(materialProfileService.getCharacteristicText(material.getId(), handler.getBatchId()));
                 }
+
+                fillCharacteristicText(materialDescriptionList.stream().filter(materialDescriptionHandler -> Objects.nonNull(materialDescriptionHandler.getMaterialId())).collect(Collectors.toSet()));
             });
         }
     }
@@ -201,7 +200,15 @@ public class MaterialService {
                 = material.getClassificationList().stream().map(Classification::getClassification).collect(Collectors.toList());
 
         if (CollectionUtils.isNotEmpty(classificationList)) {
-            characteristicHelper.fillValueToClassification(classificationList, material.getMaterialProfile().getCharacteristicValueList());
+            CharacteristicHelper.fillValueToClassification(classificationList, material.getMaterialProfile().getCharacteristicValueList());
+        }
+    }
+
+    private void fillCharacteristicText(Collection<? extends MaterialDescriptionHandler> materialDescriptionHandlerList) {
+        Collection<String> materialIdBatchIdStringCollection = materialDescriptionHandlerList.stream().map(materialDescriptionHandler -> MaterialProfileSupport.materialIdBatchIdString(materialDescriptionHandler.getMaterialId(), materialDescriptionHandler.getBatchId())).collect(Collectors.toSet());
+        Map<String, String> characteristicTextMap = materialProfileService.getCharacteristicText(materialIdBatchIdStringCollection);
+        for (MaterialDescriptionHandler handler : materialDescriptionHandlerList) {
+            handler.getMaterialDescription().setCharacteristic(characteristicTextMap.get(MaterialProfileSupport.materialIdBatchIdString(handler.getMaterialId(), handler.getBatchId())));
         }
     }
 }

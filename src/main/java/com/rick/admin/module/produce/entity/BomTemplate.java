@@ -1,14 +1,12 @@
 package com.rick.admin.module.produce.entity;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.service.MaterialDescription;
 import com.rick.admin.module.material.service.MaterialDescriptionHandler;
 import com.rick.db.dto.BaseCodeEntity;
 import com.rick.db.dto.BaseEntity;
-import com.rick.db.plugin.dao.annotation.Column;
-import com.rick.db.plugin.dao.annotation.OneToMany;
-import com.rick.db.plugin.dao.annotation.Table;
-import com.rick.db.plugin.dao.annotation.Transient;
+import com.rick.db.plugin.dao.annotation.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
@@ -85,9 +83,6 @@ public class BomTemplate extends BaseCodeEntity {
         ProduceOrder.Item.Detail value;
 
         @Transient
-        List<String> options;
-
-        @Transient
         BomTemplate bomTemplate;
 
         @Override
@@ -97,6 +92,12 @@ public class BomTemplate extends BaseCodeEntity {
 
         @Transient
         MaterialDescription materialDescription;
+
+        /**
+         * 物料特征值
+         */
+        @Select(table = "mm_classification", joinValue = "material_id", referencePropertyName = "typeInstanceId")
+        private List<Classification> classificationList;
 
         public boolean hasTemplate() {
             return Objects.nonNull(bomTemplate);

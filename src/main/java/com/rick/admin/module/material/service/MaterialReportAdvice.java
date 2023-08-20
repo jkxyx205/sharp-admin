@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Rick.Xu
@@ -31,6 +33,9 @@ public class MaterialReportAdvice implements ReportAdvice {
     public void beforeSetRow(Report report, List<Map<String, Object>> rows) {
 //        Map<Long, BigDecimal> materialIdQuantityMap = stockDAO.getStockQuantityByMaterialId(rows.stream().map(m -> (Long) m.get("id")).collect(Collectors.toSet()));
 
+        Set<String> materialIdBatchIdStringCollection = rows.stream().map(row -> MaterialProfileSupport.materialIdBatchIdString((Long) row.get("id"), (Long) row.get("batch_id"))).collect(Collectors.toSet());
+        Map<String, String> characteristicTextMap = materialProfileService.getCharacteristicText(materialIdBatchIdStringCollection);
+
         for (Map<String, Object> row : rows) {
             BigDecimal standardPrice = (BigDecimal) row.get("standard_price");
 //
@@ -44,7 +49,7 @@ public class MaterialReportAdvice implements ReportAdvice {
             }
 
             row.put("category_path", categoryService.getPathById((Long) row.get("category_id")));
-            row.put("characteristic", materialProfileService.getCharacteristicText((Long) row.get("id"), (Long) row.get("batch_id")));
+            row.put("characteristic", characteristicTextMap.get(MaterialProfileSupport.materialIdBatchIdString((Long) row.get("id"), (Long) row.get("batch_id"))));
 
             // 可以做一些权限处理，比如将库存金额设置为空； 删选某些数据
         }

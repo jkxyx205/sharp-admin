@@ -9,7 +9,6 @@ import com.rick.common.http.exception.BizException;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
 import com.rick.db.plugin.dao.support.BaseEntityUtils;
 import com.rick.db.service.support.Params;
-import com.rick.meta.dict.entity.Dict;
 import com.rick.meta.dict.service.DictService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +24,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Rick.Xu
@@ -73,7 +73,6 @@ public class BomService {
             }
 
             for (BomTemplate.ComponentDetail componentDetail : component.getComponentDetailList()) {
-                componentDetail.setOptions(dictService.getDictByType("COLOR").stream().map(Dict::getLabel).collect(Collectors.toList()));
                 ProduceOrder.Item.Detail value = valueMapping.get(componentDetail.getId());
                 if (Objects.nonNull(value)) {
                     // 实例
@@ -82,6 +81,7 @@ public class BomService {
                     }
 
                     componentDetail.setValue(value);
+                    componentDetail.setClassificationList(value.getClassificationList());
                 } else if (componentDetail.getType() == BomTemplate.TypeEnum.CATEGORY) {
                     componentDetail.setValue(new ProduceOrder.Item.Detail());
                 } else if (componentDetail.getType() == BomTemplate.TypeEnum.MATERIAL) {
@@ -89,6 +89,7 @@ public class BomService {
 
                     value = ProduceOrder.Item.Detail.builder()
                             .materialId(material.getId())
+                            .materialCode(material.getCode())
                             .quantity(componentDetail.getQuantity())
                             .unit(material.getBaseUnit())
                             .remark("")
@@ -108,7 +109,11 @@ public class BomService {
                 .map(BomTemplate.ComponentDetail::getValue)
                 .collect(Collectors.toSet());
 
-        materialService.fillMaterialDescription(values);
+        Set<BomTemplate.ComponentDetail> componentDetails = bomTemplate.getComponentList().stream().flatMap(component -> component.getComponentDetailList().stream())
+                .filter(componentDetail -> Objects.nonNull(componentDetail.getValue().getMaterialId()))
+                .collect(Collectors.toSet());
+
+        materialService.fillMaterialDescription(Stream.concat(values.stream(), componentDetails.stream()).collect(Collectors.toSet()));
         return bomTemplate;
     }
 

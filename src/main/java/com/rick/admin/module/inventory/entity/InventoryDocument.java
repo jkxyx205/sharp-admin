@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.service.BatchHandler;
+import com.rick.admin.module.material.service.CharacteristicHelper;
 import com.rick.admin.module.material.service.MaterialDescription;
 import com.rick.admin.module.material.service.MaterialDescriptionHandler;
 import com.rick.db.dto.BaseCodeEntity;
@@ -73,6 +74,11 @@ public class InventoryDocument extends BaseCodeEntity {
     @NotEmpty
     @OneToMany(subTable = "inv_document_item", reversePropertyName = "inventoryDocumentId", cascadeInsert = true, joinValue = "inventory_document_id")
     List<Item> itemList;
+
+    public void setItemList(List<Item> itemList) {
+        CharacteristicHelper.handlerSameReference(itemList);
+        this.itemList = itemList;
+    }
 
     @Getter
     @Setter

@@ -167,7 +167,6 @@
                     "</div>").addClass('characteristic-td')
 
                 $td.find('input').on('click', function (e) {
-                    // debugger
                     $(this).next().css('display', 'block').css('top', ($(e.target).offset().top + 32) + 'px')
                 })
 
@@ -221,6 +220,19 @@
                 })
             }
         },
+        setCharacteristic: function ($tr, value) {
+            let characteristic = []
+
+            this._render($tr, value.classificationList.map(classification => classification.classification), (characteristicValue) => {
+                value[characteristicValue.code] = characteristicValue.value
+                characteristic.push(characteristicValue.value)
+            })
+            if (value.classificationList.length > 0) {
+                value.characteristic = characteristic.join(' ')
+            }
+
+            $editableTable.editableTablePlus('setValue', value, $tr)
+        },
         loadCharacteristic: function ($editableTable, itemList) {
             // 获取特征值
             let $cursorTr = $editableTable.find("tbody tr:eq(0)")
@@ -272,7 +284,7 @@
             for (let classification of classificationList) {
                 for (let characteristicValue of classification.characteristicValue) {
                     let item = "<div class='mb-2'>\n" +
-                        "            <label style='width: 60px; text-align: right' for=\"" + characteristicValue.code + "\">" + characteristicValue.description + "：</label>\n" +
+                        "            <label style='width: 50px; text-align: right' for=\"" + characteristicValue.code + "\">" + characteristicValue.description + "：</label>\n" +
                         "            <select class='form-control' style='display: inline-block; width: auto;border-width: 1px;' id=\"" + characteristicValue.code + "\" name=\"" + characteristicValue.code + "\" " + (characteristicValue.required ? 'required = "required"' : '') + ">\n" +
                         "<option value=''></option>" +
                         "" + characteristicValue.options.map(d => {

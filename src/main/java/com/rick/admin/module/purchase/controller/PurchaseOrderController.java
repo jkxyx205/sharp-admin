@@ -8,8 +8,6 @@ import com.rick.admin.module.core.dao.PartnerDAO;
 import com.rick.admin.module.core.entity.Partner;
 import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.service.BatchService;
-import com.rick.admin.module.material.service.CharacteristicHelper;
-import com.rick.admin.module.material.service.MaterialProfileService;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
@@ -59,10 +57,6 @@ public class PurchaseOrderController {
     final PartnerDAO partnerDAO;
 
     final BatchService batchService;
-
-    final CharacteristicHelper characteristicHelper;
-
-    final MaterialProfileService materialProfileService;
 
     @PostMapping
     @ResponseBody

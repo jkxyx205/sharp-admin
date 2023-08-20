@@ -11,6 +11,7 @@ import com.rick.admin.module.inventory.service.InventoryDocumentService;
 import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.material.service.MaterialService;
+import com.rick.admin.module.produce.dao.ProduceOrderItemDetailDAO;
 import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.admin.module.produce.service.ProduceOrderService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
@@ -20,7 +21,6 @@ import com.rick.common.http.exception.BizException;
 import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
-import com.rick.db.plugin.dao.core.EntityDAO;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
 import com.rick.meta.dict.service.DictService;
@@ -74,7 +74,7 @@ public class InventoryController {
 
     final BatchService batchService;
 
-    final EntityDAO<ProduceOrder.Item.Detail, Long> produceOrderItemDetailDAO;
+    final ProduceOrderItemDetailDAO produceOrderItemDetailDAO;
 
     @GetMapping("move")
     public String gotoInventoryPage() {

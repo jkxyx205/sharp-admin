@@ -4,10 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
-import com.rick.admin.module.material.service.MaterialDescription;
-import com.rick.admin.module.material.service.MaterialDescriptionHandler;
-import com.rick.admin.module.material.service.MaterialProfileService;
-import com.rick.admin.module.material.service.MaterialService;
+import com.rick.admin.module.material.service.*;
+import com.rick.admin.module.produce.dao.ProduceOrderItemDAO;
 import com.rick.admin.module.produce.entity.BomTemplate;
 import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.admin.module.produce.service.BomService;
@@ -16,7 +14,7 @@ import com.rick.admin.module.purchase.entity.PurchaseOrder;
 import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
-import com.rick.db.plugin.dao.core.EntityDAO;
+import com.rick.db.plugin.dao.support.BaseEntityUtils;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
 import lombok.AccessLevel;
@@ -33,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Rick.Xu
@@ -46,7 +45,7 @@ public class ProduceOrderController {
 
     EntityCodeDAO<ProduceOrder, Long> produceOrderDAO;
 
-    EntityDAO<ProduceOrder.Item, Long> produceOrderItemDAO;
+    ProduceOrderItemDAO produceOrderItemDAO;
 
     ProduceOrderService produceOrderService;
 
@@ -58,6 +57,8 @@ public class ProduceOrderController {
 
     MaterialProfileService materialProfileService;
 
+    BatchService batchService;
+
     /**
      * 根据物料 ID 获取 bom
      * @param materialId
@@ -65,17 +66,21 @@ public class ProduceOrderController {
      */
     @GetMapping("bom")
     @ResponseBody
-    public BomTemplate gotoBomForm(@RequestParam Long materialId, Long itemId, Boolean isCopy) {
-        Map<Long, ProduceOrder.Item.Detail> valueMapping = Collections.EMPTY_MAP;
-
+    public Map<String, Object> gotoBomForm(@RequestParam Long materialId, Long itemId, Boolean isCopy) {
+        ProduceOrder.Item item = null;
         if (Objects.nonNull(itemId)) {
-            ProduceOrder.Item item = produceOrderItemDAO.selectById(itemId).get();
-            valueMapping = item.getItemList().stream().collect(Collectors.toMap(ProduceOrder.Item.Detail::getComponentDetailId, v -> v));
+            item = produceOrderItemDAO.selectById(itemId).get();
         }
 
-        BomTemplate bomTemplate = bomService.getBomTemplateMaterialId(materialId, valueMapping, isCopy);
-
-        return bomTemplate;
+        BomTemplate bomTemplate = gotoBomForm(materialId, item, isCopy);
+        if (isCopy && Objects.nonNull(item)) {
+            materialService.fillMaterialDescription(Stream.of(item).collect(Collectors.toSet()));
+            item.setUnitPrice(null);
+            item.setQuantity(null);
+            item.setDeliveryDate(null);
+            BaseEntityUtils.resetAdditionalFields(item);
+        }
+        return Params.builder(2).pv("bomTemplate", bomTemplate).pv("item", item).build();
     }
 
     @GetMapping("code/{code}")
@@ -103,12 +108,10 @@ public class ProduceOrderController {
     public String gotoDetailPageById(@PathVariable Long id, Model model) {
         if (Objects.nonNull(id)) {
             ProduceOrder produceOrder = produceOrderDAO.selectById(id).orElseThrow(() -> new ResourceNotFoundException());
-
-            materialService.fillMaterialDescription(produceOrder.getItemList());
             Map<Long, BomTemplate> itemIdBomTemplateMap = Maps.newHashMapWithExpectedSize(produceOrder.getItemList().size());
 
             for (ProduceOrder.Item item : produceOrder.getItemList()) {
-                BomTemplate bomTemplate = gotoBomForm(item.getMaterialId(), item.getId(), false);
+                BomTemplate bomTemplate = gotoBomForm(item.getMaterialId(), item, false);
                 itemIdBomTemplateMap.put(item.getId(), bomTemplate);
             }
 
@@ -116,12 +119,15 @@ public class ProduceOrderController {
             model.addAttribute("bomTemplate", itemIdBomTemplateMap);
 
             // 领料记录
-            model.addAttribute("goodsReceiptItemList", getGoodsReceiptItemList(produceOrder.getCode()));
+            List<GoodsReceiptItem> goodsReceiptItemList = getGoodsReceiptItemList(produceOrder.getCode());
+            model.addAttribute("goodsReceiptItemList", goodsReceiptItemList);
+
+            materialService.fillMaterialDescription(Stream.concat(produceOrder.getItemList().stream(), goodsReceiptItemList.stream()).collect(Collectors.toSet()));
 
             // 发货记录
             List<ProduceOrderController.GoodsIssueItem> goodsIssueItemList = Lists.newArrayListWithExpectedSize(produceOrder.getItemList().size());
 
-            Map<Long, BigDecimal> historyGoodsIssueQuantityMap = produceOrderService.historyGoodsIssueQuantity(produceOrder.getCode());
+            Map<Long, BigDecimal> historyGoodsIssueQuantityMap = produceOrderService.historyGoodsIssueQuantity(produceOrder.getCode(), produceOrder.getItemList().stream().map(ProduceOrder.Item::getId).collect(Collectors.toSet()));
 
             for (ProduceOrder.Item item : produceOrder.getItemList()) {
                 ProduceOrderController.GoodsIssueItem goodsIssueItem = new ProduceOrderController.GoodsIssueItem();
@@ -130,8 +136,6 @@ public class ProduceOrderController {
                 goodsIssueItemList.add(goodsIssueItem);
             }
             model.addAttribute("goodsIssueItemList", goodsIssueItemList);
-
-
         } else {
             model.addAttribute("po", new ProduceOrder());
             model.addAttribute("bomTemplate", Collections.emptyMap());
@@ -145,7 +149,8 @@ public class ProduceOrderController {
         String sql = "select '${produceOrderCode}'                    produceOrderCode,\n" +
                 "       mm_material.id                         material_id,\n" +
                 "       mm_material.code                       materialCode,\n" +
-                "       t1.color,\n" +
+                "       t1.batch_id,\n" +
+                "       t1.batch_code,\n" +
                 "       t1.id rootReferenceItemId," +
                 "       mm_material.base_unit                  unitText,\n" +
                 "       t1.quantity,\n" +
@@ -153,6 +158,7 @@ public class ProduceOrderController {
                 "       (t1.quantity - IFNULL(t2.quantity, 0)) openQuantity\n" +
                 "from (select produce_order_item_detail.`id`,\n" +
                 "             produce_order_item_detail.material_id,\n" +
+                "             produce_order_item_detail.batch_id,\n" +
                 "             produce_order_item_detail.batch_code,\n" +
                 "             produce_order_item_detail.color,\n" +
                 "             produce_order_item_detail.quantity * produce_order_item.quantity quantity\n" +
@@ -167,11 +173,12 @@ public class ProduceOrderController {
                 "         left join `mm_material` on mm_material.id = t1.material_id";
 
         List<GoodsReceiptItem> goodsReceiptItemList = sharpService.query(sql, Params.builder(1).pv("produceOrderCode", produceOrderCode).build(), GoodsReceiptItem.class);
-        materialService.fillMaterialDescription(goodsReceiptItemList);
         if (CollectionUtils.isNotEmpty(goodsReceiptItemList)) {
+//            Set<String> materialIdBatchIdStringCollection = goodsReceiptItemList.stream().map(goodsReceiptItem -> MaterialProfileSupport.materialIdBatchIdString(goodsReceiptItem.getMaterialId(), goodsReceiptItem.getBatchId())).collect(Collectors.toSet());
+//            Map<String, String> characteristicTextMap = materialProfileService.getCharacteristicText(materialIdBatchIdStringCollection);
             for (GoodsReceiptItem item : goodsReceiptItemList) {
                 item.setOpenQuantity(BigDecimalUtils.lt(item.getOpenQuantity(), BigDecimal.ZERO) ? BigDecimal.ZERO : item.getOpenQuantity());
-                item.setCharacteristic(materialProfileService.getCharacteristicText(item.getMaterialId(), item.getBatchId()));
+//                item.setCharacteristic(characteristicTextMap.get(MaterialProfileSupport.materialIdBatchIdString(item.getMaterialId(), item.getBatchId())));
             }
         }
 
@@ -231,7 +238,7 @@ public class ProduceOrderController {
 
     /**
      * 逻辑删除
-     * @param id 
+     * @param id
      * @return
      */
     @DeleteMapping("{id}")
@@ -261,8 +268,6 @@ public class ProduceOrderController {
 
         private Long batchId;
 
-        private String characteristic;
-
         public Boolean getComplete() {
             return BigDecimalUtils.eq(openQuantity, BigDecimal.ZERO);
         }
@@ -282,5 +287,18 @@ public class ProduceOrderController {
             return BigDecimalUtils.lt(value, BigDecimal.ZERO) ? BigDecimal.ZERO : value;
         }
 
+    }
+
+    private BomTemplate gotoBomForm(@RequestParam Long materialId, ProduceOrder.Item item, Boolean isCopy) {
+        Map<Long, ProduceOrder.Item.Detail> valueMapping = Collections.EMPTY_MAP;
+
+        if (Objects.nonNull(item)) {
+            batchService.fillCharacteristicValue(Stream.concat(item.getItemList().stream(), Stream.of(item)).collect(Collectors.toSet()));
+            valueMapping = item.getItemList().stream().collect(Collectors.toMap(ProduceOrder.Item.Detail::getComponentDetailId, v -> v));
+        }
+
+        BomTemplate bomTemplate = bomService.getBomTemplateMaterialId(materialId, valueMapping, isCopy);
+
+        return bomTemplate;
     }
 }

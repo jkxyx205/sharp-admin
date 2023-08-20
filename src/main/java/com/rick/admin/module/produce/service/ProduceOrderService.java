@@ -4,10 +4,11 @@ import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
 import com.rick.admin.module.core.service.CodeHelper;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
-import com.rick.admin.module.material.dao.BatchDAO;
+import com.rick.admin.module.material.service.BatchService;
+import com.rick.admin.module.produce.dao.ProduceOrderItemDAO;
+import com.rick.admin.module.produce.dao.ProduceOrderItemDetailDAO;
 import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
-import com.rick.db.plugin.dao.core.EntityDAO;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
 import lombok.AccessLevel;
@@ -15,14 +16,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Rick.Xu
@@ -36,13 +39,13 @@ public class ProduceOrderService {
 
     EntityCodeDAO<ProduceOrder, Long> produceOrderDAO;
 
-    EntityDAO<ProduceOrder.Item.Detail, Long> produceOrderItemDetailDAO;
+    ProduceOrderItemDetailDAO produceOrderItemDetailDAO;
 
-    EntityDAO<ProduceOrder.Item, Long> produceOrderItemDAO;
+    ProduceOrderItemDAO produceOrderItemDAO;
 
     SharpService sharpService;
 
-    BatchDAO batchDAO;
+    BatchService batchService;
 
     /**
      * 新增或修改
@@ -61,13 +64,9 @@ public class ProduceOrderService {
                 item.setComplete(false);
                 item.getItemList().forEach(detail -> detail.setComplete(false));
             }
-
-            if (StringUtils.isNotBlank(item.getBatchCode())) {
-                item.setBatchId(batchDAO.selectIdByKeyCode(item.getMaterialCode(), item.getBatchCode()).orElse(null));
-            }
         });
 
-
+        batchService.saveBatch(Stream.concat(order.getItemList().stream(), order.getItemList().stream().flatMap(item -> item.getItemList().stream())).collect(Collectors.toSet()));
         produceOrderDAO.insertOrUpdate(order);
     }
 
@@ -123,13 +122,16 @@ public class ProduceOrderService {
     }
 
     public Map<Long, BigDecimal> historyGoodsIssueQuantity(String rootReferenceCode) {
+        return historyGoodsIssueQuantity(rootReferenceCode,
+                produceOrderItemDAO.selectIdsByParams(ProduceOrder.Item.builder().produceOrderCode(rootReferenceCode).build()));
+    }
+
+    public Map<Long, BigDecimal> historyGoodsIssueQuantity(String rootReferenceCode, Collection<Long> itemIdsList) {
         String sql = "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where `root_reference_code` = :rootReferenceCode group by root_reference_item_id";
         Map<Long, BigDecimal> histroyGoodsIssueQuantityMap = sharpService.queryForKeyValue(sql, Params.builder(1).pv("rootReferenceCode", rootReferenceCode).build());
 
-        ProduceOrder produceOrder = produceOrderDAO.selectByCode(rootReferenceCode).orElseThrow(() -> new ResourceNotFoundException());
-
-        for (ProduceOrder.Item item : produceOrder.getItemList()) {
-            histroyGoodsIssueQuantityMap.put(item.getId(), ObjectUtils.defaultIfNull(histroyGoodsIssueQuantityMap.get(item.getId()), BigDecimal.ZERO));
+        for (Long itemId : itemIdsList) {
+            histroyGoodsIssueQuantityMap.put(itemId, ObjectUtils.defaultIfNull(histroyGoodsIssueQuantityMap.get(itemId), BigDecimal.ZERO));
         }
 
         return histroyGoodsIssueQuantityMap;

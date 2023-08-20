@@ -2,6 +2,7 @@ package com.rick.admin.module.material.dao;
 
 import com.rick.admin.module.material.entity.Material;
 import com.rick.db.plugin.SQLUtils;
+import com.rick.db.plugin.dao.core.ColumnFillType;
 import com.rick.db.plugin.dao.core.EntityCodeDAOImpl;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Repository;
@@ -26,5 +27,13 @@ public class MaterialDAO extends EntityCodeDAOImpl<Material, Long> {
         }
 
         return SQLUtils.update(getTableName(), "standard_price", paramsList, "id = ?");
+    }
+
+    @Override
+    protected Object[] handleAutoFill(Object t, Object[] params, List<String> columnNameList, ColumnFillType fillType) {
+        Object[] objects = super.handleAutoFill(t, params, columnNameList, fillType);
+        Material material = (Material)t;
+        material.getMaterialProfile().setMaterialId(material.getId());
+        return objects;
     }
 }

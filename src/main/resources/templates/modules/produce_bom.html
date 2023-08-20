@@ -246,6 +246,10 @@
         // init
         let bomTemplate = [[${bomTemplate}]] || {}
         if (bomTemplate.id) {
+            for (let detail of bomTemplate.componentList[0].componentDetailList) {
+                detail.required = !detail.required
+            }
+
             $editableTable.editableTablePlus('setValue', bomTemplate.componentList[0].componentDetailList).editableTablePlus('setActiveIndex', 1)
             let typeInstanceIdMap = {}
             for (let detail of bomTemplate.componentList[0].componentDetailList) {

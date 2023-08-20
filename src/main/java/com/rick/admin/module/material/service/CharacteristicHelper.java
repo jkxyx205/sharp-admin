@@ -1,6 +1,7 @@
 package com.rick.admin.module.material.service;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.rick.admin.module.core.entity.Characteristic;
 import com.rick.admin.module.core.entity.Classification;
 import com.rick.admin.module.material.entity.CharacteristicValue;
@@ -10,12 +11,11 @@ import com.rick.formflow.form.cpn.core.CpnManager;
 import com.rick.formflow.form.cpn.core.CpnTypeEnum;
 import com.rick.formflow.form.service.bo.FormBO;
 import com.rick.formflow.form.valid.core.Validator;
-import lombok.AllArgsConstructor;
+import lombok.experimental.UtilityClass;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
 import org.springframework.validation.MapBindingResult;
 
 import java.util.*;
@@ -25,9 +25,25 @@ import java.util.stream.Collectors;
  * @author Rick
  * @createdAt 2023-02-23 17:56:00
  */
-@Component
-@AllArgsConstructor
+@UtilityClass
 public class CharacteristicHelper {
+
+    public void handlerSameReference(List<? extends BatchHandler> batchHandlerList) {
+        Set<List<com.rick.admin.module.material.entity.Classification>> container = Sets.newHashSetWithExpectedSize(batchHandlerList.size());
+
+        // 处理分类的重复引用问题
+        for (BatchHandler batchHandler : batchHandlerList) {
+            if (container.contains(batchHandler.getClassificationList())) {
+                List<com.rick.admin.module.material.entity.Classification> newClassification = Lists.newArrayListWithExpectedSize(batchHandler.getClassificationList().size());
+                for (com.rick.admin.module.material.entity.Classification classification : batchHandler.getClassificationList()) {
+                    newClassification.add(SerializationUtils.clone(classification));
+                }
+                batchHandler.setClassificationList(newClassification);
+            } else {
+                container.add(batchHandler.getClassificationList());
+            }
+        }
+    }
 
     public void validValueToClassification(List<Classification> classificationList, List<CharacteristicValue> characteristicValueList) {
         if (CollectionUtils.isEmpty(classificationList)) {
@@ -92,6 +108,11 @@ public class CharacteristicHelper {
 
     }
 
+    /**
+     * 注意 不能有相同的引用
+     * @param classificationList
+     * @param characteristicValueList
+     */
     public void fillValueToClassification(List<Classification> classificationList, List<CharacteristicValue> characteristicValueList) {
         if (CollectionUtils.isNotEmpty(characteristicValueList)) {
             MultiKeyMap map = new MultiKeyMap();
