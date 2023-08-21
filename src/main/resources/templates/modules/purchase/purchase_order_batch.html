@@ -90,14 +90,14 @@
         if (value) {
             // 获取供应商
             $.get("/purchase_order/materials/vendors?materialIds=" + value.map(row => row.materialId).join(','), (res) => {
-                let $tr = $('#table-container table.table-tbody tr:first-child')
+                let $tr = $editableTable.find("tbody tr:eq(0)")
                 for (let row of value) {
                     if (res[row.materialId]) {
                         $tr.find(':input[name=partnerId]').html(res[row.materialId].map(d => {
                             return '<option value="'+d.name+'">'+d.label+'</option>'
                         }).join(''))
-                        $tr = $tr.next()
                     }
+                    $tr = $tr.next()
                 }
             })
         }
@@ -221,6 +221,13 @@
             ],
             value,
         })
+
+        if (value) {
+            value.forEach((row, i) => {
+                let $input = $editableTable.find("tbody tr:eq("+(i++)+") input[name=characteristic]")
+                characteristic.setInputCharacteristic($input, row.classificationList)
+            })
+        }
 
         // end
         $('#deliveryDate').datepicker({

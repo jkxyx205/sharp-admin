@@ -56,7 +56,7 @@ public class MaterialProfileService {
     public Map<String, String> getCharacteristicText(Collection<String> materialIdBatchIdStringCollection) {
         Assert.notEmpty(materialIdBatchIdStringCollection, "不能为空");
         String sql = "select concat(material_id, ifnull(batch_id, '')) materialIdBatchIdString, group_concat(mm_characteristic_value.value SEPARATOR ' ') characteristicText from mm_profile left join mm_characteristic_value on mm_profile.id = mm_characteristic_value.reference_id where concat(material_id, ifnull(batch_id, '')) IN (:materialIdBatchIdString)\n" +
-                " group by concat(material_id, ifnull(batch_id, '')) order by mm_characteristic_value.id asc";
+                " group by concat(material_id, ifnull(batch_id, ''))";
         return sharpService.queryForKeyValue(sql, Params.builder(1).pv("materialIdBatchIdString", materialIdBatchIdStringCollection).build());
     }
 

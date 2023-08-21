@@ -32,4 +32,10 @@ public class ClassificationDAO extends EntityDAOImpl<Classification, Long> {
                 "material_id IN (:materialIds)").stream()
                 .collect(Collectors.groupingBy(Classification::getMaterialId, Collectors.mapping(Classification::getClassification, Collectors.toList())));
     }
+
+    public Map<Long, List<Classification>> findMaterialClassificationByMaterialIds(Collection<Long> materialIds) {
+        return selectByParams(Params.builder(1).pv("materialIds", materialIds).build(),
+                "material_id IN (:materialIds)").stream()
+                .collect(Collectors.groupingBy(Classification::getMaterialId));
+    }
 }

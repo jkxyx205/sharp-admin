@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
+import com.rick.admin.module.material.dao.ClassificationDAO;
+import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.service.*;
 import com.rick.admin.module.produce.dao.ProduceOrderItemDAO;
 import com.rick.admin.module.produce.entity.BomTemplate;
@@ -23,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -58,6 +61,8 @@ public class ProduceOrderController {
     MaterialProfileService materialProfileService;
 
     BatchService batchService;
+
+    ClassificationDAO materialClassificationDAO;
 
     /**
      * 根据物料 ID 获取 bom
@@ -160,7 +165,6 @@ public class ProduceOrderController {
                 "             produce_order_item_detail.material_id,\n" +
                 "             produce_order_item_detail.batch_id,\n" +
                 "             produce_order_item_detail.batch_code,\n" +
-                "             produce_order_item_detail.color,\n" +
                 "             produce_order_item_detail.quantity * produce_order_item.quantity quantity\n" +
                 "      from produce_order\n" +
                 "               inner join produce_order_item on produce_order_item.`produce_order_id` = produce_order.id\n" +
@@ -203,7 +207,7 @@ public class ProduceOrderController {
 
         String[] quantityArr = quantity.split(",");
         String[] materialIdArr = materialIds.split(",");
-
+                
         for (int i = 0; i < materialIdArr.length; i++) {
             String mc = materialIdArr[i];
             String[] split = mc.split("@");
@@ -211,27 +215,36 @@ public class ProduceOrderController {
             PurchaseOrder.Item item = new PurchaseOrder.Item();
             item.setMaterialId(materialId);
             if (split.length > 1) {
-                sharpService.queryForObject("select mm_batch.id, mm_batch.code, mm_characteristic_value.`value` from mm_profile left join mm_batch on code = `mm_profile`.batch_code and mm_batch.`material_id` = mm_profile.`material_id`\n" +
-                                "left join `mm_characteristic_value` on mm_profile.id = mm_characteristic_value.`reference_id`\n" +
-                                "where mm_profile.material_id = :materialId and mm_profile.batch_code = :batchCode",
-                        Params.builder(2).pv("materialId", materialId).pv("batchCode", split[1]).build())
-                                .ifPresent(map -> {
-                                    item.setBatchCode(split[1]);
-                                    item.setBatchId((Long) map.get("id"));
-                                });
+                item.setBatchId(Long.parseLong(split[1]));
             }
 
             item.setQuantity(new BigDecimal(quantityArr[i]));
-
             itemList.add(item);
         }
 
+        Map<Long, List<com.rick.admin.module.material.entity.Classification>> materialIdClassificationMap = materialClassificationDAO.findMaterialClassificationByMaterialIds(itemList.stream().map(PurchaseOrder.Item::getMaterialId).collect(Collectors.toSet()));
+
         materialService.fillMaterialDescription(itemList);
+
         itemList.forEach(item -> {
             item.setMaterialCode(item.getMaterialDescription().getCode());
             item.setUnit(item.getMaterialDescription().getUnit());
+            List<Classification> classificationList = materialIdClassificationMap.get(item.getMaterialId());
+            if (CollectionUtils.isNotEmpty(classificationList)) {
+                // 拷贝
+                List<Classification> newclassificationList = Lists.newArrayListWithExpectedSize(classificationList.size());
+                for (Classification classification : classificationList) {
+                    newclassificationList.add(SerializationUtils.clone(classification));
+                }
+                classificationList = newclassificationList;
+            } else {
+                classificationList =  Collections.emptyList();
+            }
+
+            item.setClassificationList(classificationList);
         });
 
+        batchService.fillCharacteristicValue(itemList);
         model.addAttribute("itemList", itemList);
         return "modules/purchase/purchase_order_batch";
     }

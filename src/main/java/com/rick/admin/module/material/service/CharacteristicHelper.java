@@ -33,14 +33,19 @@ public class CharacteristicHelper {
 
         // 处理分类的重复引用问题
         for (BatchHandler batchHandler : batchHandlerList) {
-            if (container.contains(batchHandler.getClassificationList())) {
-                List<com.rick.admin.module.material.entity.Classification> newClassification = Lists.newArrayListWithExpectedSize(batchHandler.getClassificationList().size());
-                for (com.rick.admin.module.material.entity.Classification classification : batchHandler.getClassificationList()) {
+            List<com.rick.admin.module.material.entity.Classification> classificationList = batchHandler.getClassificationList();
+            if (CollectionUtils.isEmpty(classificationList)) {
+                continue;
+            }
+
+            if (container.contains(classificationList)) {
+                List<com.rick.admin.module.material.entity.Classification> newClassification = Lists.newArrayListWithExpectedSize(classificationList.size());
+                for (com.rick.admin.module.material.entity.Classification classification : classificationList) {
                     newClassification.add(SerializationUtils.clone(classification));
                 }
                 batchHandler.setClassificationList(newClassification);
             } else {
-                container.add(batchHandler.getClassificationList());
+                container.add(classificationList);
             }
         }
     }

@@ -170,6 +170,17 @@
                     $(this).next().css('display', 'block').css('top', ($(e.target).offset().top + 32) + 'px')
                 })
 
+                $td.find('input[type=text]').on('click keydown', function(event) {
+                    if ((event.keyCode && event.keyCode !== 9) || !event.keyCode) {
+                        currentMaterialDom = this
+                    }
+
+                    if (event.keyCode !== 9) {
+                        event.preventDefault();
+                        return;
+                    }
+                })
+
                 // $td.find('button').on('click', function () {
                 //     $(this).parent().parent().css('display', 'none')
                 //
@@ -208,7 +219,7 @@
                 $.get("/materials/classifications?materialIds=" + value.map(row => row.id).join(','), (res) => {
                     for (let row of value) {
                         if (res[row.id] && res[row.id].length > 0) {
-                            this._render($tr, res[row.id])
+                            this._render($tr.find('input[name=characteristic]'), res[row.id])
                         }
 
                         $tr = $tr.next()
@@ -216,14 +227,31 @@
                 })
             } else {
                 $.get(`/materials/${value.id}/classifications`, (res) => {
-                    this._render($tr, res)
+                    this._render($tr.find('input[name=characteristic]'), res)
                 })
             }
+        },
+        setInputCharacteristic: function ($input, classificationList) {
+            let characteristic = []
+            let characteristicValueList = []
+            this._render($input, classificationList.map(classification => classification.classification), (characteristicValue) => {
+                characteristic.push(characteristicValue.value)
+                characteristicValueList.push(characteristicValue)
+            })
+
+            for (let characteristicValue of characteristicValueList) {
+                $input.next().find(':input[name='+characteristicValue.code+']').val(characteristicValue.value)
+            }
+
+            if (classificationList.length > 0) {
+                $input.val(characteristic.join(' '))
+            }
+
         },
         setCharacteristic: function ($tr, value) {
             let characteristic = []
 
-            this._render($tr, value.classificationList.map(classification => classification.classification), (characteristicValue) => {
+            this._render($tr.find('input[name=characteristic]'), value.classificationList.map(classification => classification.classification), (characteristicValue) => {
                 value[characteristicValue.code] = characteristicValue.value
                 characteristic.push(characteristicValue.value)
             })
@@ -238,7 +266,7 @@
             let $cursorTr = $editableTable.find("tbody tr:eq(0)")
             for (let row of itemList) {
                 let characteristic = []
-                this._render($cursorTr, row.classificationList.map(classification => classification.classification), (characteristicValue) => {
+                this._render($cursorTr.find('input[name=characteristic]'), row.classificationList.map(classification => classification.classification), (characteristicValue) => {
                     row[characteristicValue.code] = characteristicValue.value
                     characteristic.push(characteristicValue.value)
                 })
@@ -274,11 +302,9 @@
                 })
             }
         },
-        _render: function($tr, classificationList, characteristicValueConsumer) {
+        _render: function($input, classificationList, characteristicValueConsumer) {
         if (classificationList.length > 0) {
-            $tr.find(':input[name=characteristic], :input[name=characteristic] + div button')
-                .attr('disabled', false)
-                .attr('readonly', false)
+            $input.attr('disabled', false).attr('readonly', false)
 
             let html = []
             for (let classification of classificationList) {
@@ -297,7 +323,7 @@
                     characteristicValueConsumer && characteristicValueConsumer(characteristicValue)
                 }
 
-                $tr.find('input[name=characteristic]').next().find('.items').html('<div data-classification_code="' + classification.code + '">' + html.join('') + '</div>')
+                $input.next().find('.items').html('<div data-classification_code="' + classification.code + '">' + html.join('') + '</div>')
             }
         }
     }

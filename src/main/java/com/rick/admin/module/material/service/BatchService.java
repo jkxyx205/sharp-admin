@@ -59,10 +59,8 @@ public class BatchService {
             // 获取特征值
             for (BatchHandler item : batchHandlerList) {
                 if (CollectionUtils.isNotEmpty(item.getClassificationList())) {
-                    if (CollectionUtils.isNotEmpty(item.getClassificationList())) {
-                        CharacteristicHelper.fillValueToClassification(item.getClassificationList().stream().map(classification -> classification.getClassification()).collect(Collectors.toList()),
-                                materialProfileMap.get(MaterialProfileSupport.materialIdBatchIdString(item.getMaterialId(), item.getBatchId())).getCharacteristicValueList());
-                    }
+                    CharacteristicHelper.fillValueToClassification(item.getClassificationList().stream().map(classification -> classification.getClassification()).collect(Collectors.toList()),
+                            materialProfileMap.get(MaterialProfileSupport.materialIdBatchIdString(item.getMaterialId(), item.getBatchId())).getCharacteristicValueList());
                 }
             }
         }
@@ -74,8 +72,8 @@ public class BatchService {
         if (CollectionUtils.isEmpty(batchHandlerList)) {
             return;
         }
-        Set<String> materialIdBatchCodeStringCollection = batchHandlerList.stream().map(batchHandler -> batchHandler.getMaterialId() + BatchSupport.characteristicToCode(batchHandler.getClassificationList().stream().flatMap(p -> p.getCharacteristicValueList().stream()).map(CharacteristicValue::getValue).collect(Collectors.toList()))).collect(Collectors.toSet());
 
+        Set<String> materialIdBatchCodeStringCollection = batchHandlerList.stream().map(batchHandler -> batchHandler.getMaterialId() + BatchSupport.characteristicToCode(batchHandler.getClassificationList().stream().flatMap(p -> p.getCharacteristicValueList().stream()).map(CharacteristicValue::getValue).collect(Collectors.toList()))).collect(Collectors.toSet());
         Map<String, Long> materialIdBatchCodeStringBatchIdMap = getMaterialIdBatchCodeStringBatchIdMap(materialIdBatchCodeStringCollection);
 
         for (BatchHandler item : batchHandlerList) {

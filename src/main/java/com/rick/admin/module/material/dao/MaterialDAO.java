@@ -32,8 +32,13 @@ public class MaterialDAO extends EntityCodeDAOImpl<Material, Long> {
     @Override
     protected Object[] handleAutoFill(Object t, Object[] params, List<String> columnNameList, ColumnFillType fillType) {
         Object[] objects = super.handleAutoFill(t, params, columnNameList, fillType);
-        Material material = (Material)t;
-        material.getMaterialProfile().setMaterialId(material.getId());
+
+        if (t != null) {
+            // 提前设置外键material_id
+            Material material = (Material)t;
+            material.getMaterialProfile().setMaterialId(material.getId());
+        }
+
         return objects;
     }
 }

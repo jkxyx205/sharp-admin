@@ -190,6 +190,8 @@ public class InventoryController {
     private InventoryDocument getDocumentFromProduceOrder(InventoryDocument.MovementTypeEnum movementType, InventoryDocument.TypeEnum type, InventoryDocument.ReferenceTypeEnum referenceType, String referenceCode) {
         String sql = "select produce_order_item_detail.`material_id`,\n" +
                 "       mm_material.code material_code," +
+                "       produce_order_item_detail.batch_id," +
+                "       produce_order_item_detail.batch_code," +
                 "       produce_order_item_detail.`id`                               referenceItemId,\n" +
                 "       produce_order_item_detail.`id`                               rootReferenceItemId,\n" +
                 "       produce_order_item_detail.quantity * produce_order_item.quantity quantity,\n" +

@@ -15,7 +15,7 @@ public class BatchSupport {
 
     public static String characteristicToCode(List<String> characteristicList) {
         if (CollectionUtils.isEmpty(characteristicList)) {
-            return null;
+            return "";
         }
 
         String string = characteristicList.stream().collect(Collectors.joining("#"));

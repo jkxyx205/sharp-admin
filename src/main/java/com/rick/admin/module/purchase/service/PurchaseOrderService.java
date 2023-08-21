@@ -108,9 +108,7 @@ public class PurchaseOrderService {
             });
         }
 
-        for (PurchaseOrder purchaseOrder : list) {
-            batchService.saveBatch(purchaseOrder.getItemList());
-        }
+        batchService.saveBatch(list.stream().flatMap(purchaseOrder -> purchaseOrder.getItemList().stream()).collect(Collectors.toSet()));
 
         purchaseOrderDAO.insert(list);
     }
