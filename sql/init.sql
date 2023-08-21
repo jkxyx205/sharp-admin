@@ -11,6 +11,8 @@ update sys_dict set remark = '10000' where type = 'MATERIAL_TYPE' AND name = 'HA
 update sys_dict set remark = '20000' where type = 'MATERIAL_TYPE' AND name = 'FERT';
 update sys_dict set remark = '30000' where type = 'MATERIAL_TYPE' AND name = 'HIBE';
 
+delete from pur_source_list where not exists(select 1 from core_partner where `partner_type` = 'VENDOR' AND core_partner.id = pur_source_list.partner_id)
+
 -- 以下是非 sys_开头的表
 truncate table inv_document;
 truncate table inv_document_item;
