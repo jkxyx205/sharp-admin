@@ -63,8 +63,6 @@ public class CharacteristicHelper {
         }
         for (Classification classification : classificationList) {
             for (Characteristic characteristic : classification.getCharacteristicList()) {
-
-
                 MapBindingResult result = new MapBindingResult(new HashMap<>(), characteristic.getDescription());
                 String value = characteristicValueMap.get(classification.getCode() + ":" +characteristic.getCode());
 

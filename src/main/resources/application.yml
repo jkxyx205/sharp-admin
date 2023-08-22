@@ -65,9 +65,9 @@ dict:
     - type: core_partner
       sql: "select id, name from core_partner WHERE is_deleted = 0 order by id asc"
     - type: core_partner_vendor
-      sql: "select id, name from core_partner where partner_type = 'VENDOR' AND is_deleted = 0 order by id asc"
+      sql: "select id, name from core_partner where partner_type = 'VENDOR' AND is_deleted = 0 order by name asc"
     - type: core_partner_customer
-      sql: "select id, name from core_partner where partner_type = 'CUSTOMER' AND is_deleted = 0 order by id asc"
+      sql: "select id, name from core_partner where partner_type = 'CUSTOMER' AND is_deleted = 0 order by name asc"
     - type: core_plant
       sql: "select id, name from core_plant where is_deleted = 0 order by id asc"
     - type: sys_dict_type

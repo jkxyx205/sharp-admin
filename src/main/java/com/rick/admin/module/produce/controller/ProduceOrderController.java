@@ -2,6 +2,7 @@ package com.rick.admin.module.produce.controller;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.rick.admin.auth.common.UserContextHolder;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
 import com.rick.admin.module.material.dao.ClassificationDAO;
@@ -15,10 +16,12 @@ import com.rick.admin.module.produce.service.ProduceOrderService;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
 import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
+import com.rick.common.util.Time2StringUtils;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
 import com.rick.db.plugin.dao.support.BaseEntityUtils;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
+import com.rick.meta.dict.service.DictService;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -63,6 +66,8 @@ public class ProduceOrderController {
     BatchService batchService;
 
     ClassificationDAO materialClassificationDAO;
+
+    DictService dictService;
 
     /**
      * 根据物料 ID 获取 bom
@@ -111,8 +116,9 @@ public class ProduceOrderController {
      */
     @GetMapping("{id}")
     public String gotoDetailPageById(@PathVariable Long id, Model model) {
+        ProduceOrder produceOrder;
         if (Objects.nonNull(id)) {
-            ProduceOrder produceOrder = produceOrderDAO.selectById(id).orElseThrow(() -> new ResourceNotFoundException());
+            produceOrder = produceOrderDAO.selectById(id).orElseThrow(() -> new ResourceNotFoundException());
             Map<Long, BomTemplate> itemIdBomTemplateMap = Maps.newHashMapWithExpectedSize(produceOrder.getItemList().size());
 
             for (ProduceOrder.Item item : produceOrder.getItemList()) {
@@ -142,10 +148,14 @@ public class ProduceOrderController {
             }
             model.addAttribute("goodsIssueItemList", goodsIssueItemList);
         } else {
-            model.addAttribute("po", new ProduceOrder());
+            produceOrder = new ProduceOrder();
+            produceOrder.setCreateBy(UserContextHolder.get().getId());
+            model.addAttribute("po", produceOrder);
             model.addAttribute("bomTemplate", Collections.emptyMap());
         }
 
+        model.addAttribute("createName", dictService.getDictByTypeAndName("sys_user", produceOrder.getCreateBy().toString()).get().getLabel());
+        model.addAttribute("createTime", Time2StringUtils.format(produceOrder.getCreateTime()));
         return "modules/produce_order";
     }
 

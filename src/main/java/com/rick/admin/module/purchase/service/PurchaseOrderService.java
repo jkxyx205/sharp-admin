@@ -170,7 +170,7 @@ public class PurchaseOrderService {
      * @return
      */
     public Map<String, List<Dict>> getVendorByMaterialIds(Collection<Long> materialIds) {
-        String sql = "select sl.material_id, core_partner.id name, core_partner.name label from core_partner inner join (select `partner_id`, ifnull(`material_id`, mm_material.id) material_id from pur_source_list left join mm_material on mm_material.`category_id` = pur_source_list.`material_category_id` AND pur_source_list.material_id is null  where mm_material.id IN (:materialIds) or `material_id` IN (:materialIds)) sl on sl.partner_id = core_partner.id where `partner_type` = 'VENDOR'";
+        String sql = "select sl.material_id, core_partner.id name, core_partner.name label from core_partner inner join (select `partner_id`, ifnull(`material_id`, mm_material.id) material_id from pur_source_list left join mm_material on mm_material.`category_id` = pur_source_list.`material_category_id` AND pur_source_list.material_id is null  where mm_material.id IN (:materialIds) or `material_id` IN (:materialIds)) sl on sl.partner_id = core_partner.id where `partner_type` = 'VENDOR' ORDER BY core_partner.name ASC";
         List<Map<String, Object>> list = sharpService.query(sql, Params.builder(1).pv("materialIds", materialIds).build());
         Map<Long, List<Map<String, Object>>> map = list.stream().collect(Collectors.groupingBy(m -> (Long) m.get("material_id")));
         Map<String, List<Dict>> resultMap = Maps.newHashMapWithExpectedSize(map.size());
@@ -214,7 +214,7 @@ public class PurchaseOrderService {
         excelWriter.writeCell(new ExcelCell(2, 8, partner.getContactFax()));
         excelWriter.writeCell(new ExcelCell(1, 9, "ADD：  " + partner.getAddress()));
 
-//        excelWriter.writeCell(new ExcelCell(7, 5, "需方：普源电机制造（苏州）有限公司"));
+//        excelWriter.writeCell(new ExcelCell(7, 5, "需方：XX制造（苏州）有限公司"));
 //        excelWriter.writeCell(new ExcelCell(7, 6, "慧博士 18898876623"));
 //        excelWriter.writeCell(new ExcelCell(7, 7, "0512-77359511"));
 //        excelWriter.writeCell(new ExcelCell(7, 8, "0512-77359511"));
