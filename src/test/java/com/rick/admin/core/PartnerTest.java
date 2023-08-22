@@ -65,7 +65,7 @@ public class PartnerTest {
 
     private List<CpnConfigurer> createCpnConfigurerList() {
         // 文本校验器
-        List<Validator> textValidatorList = Lists.newArrayListWithExpectedSize(2);
+        List<Validator> textValidatorList = Lists.newArrayListWithExpectedSize(1);
         textValidatorList.add(new Length(16));
 
         // 文本校验器
@@ -184,7 +184,7 @@ public class PartnerTest {
                 .name("accountNumber")
                 .label("银行账号")
                 .placeholder("请输入银行账户")
-                .validatorList(textValidatorList)
+                .validatorList(Arrays.asList(new Length(32)))
                 .build();
 
         CpnConfigurer taxCodeCpn = CpnConfigurer.builder()
@@ -203,9 +203,25 @@ public class PartnerTest {
                 .validatorList(Arrays.asList(new Length(128)))
                 .build();
 
+        CpnConfigurer invoiceReceiveInfoCpn = CpnConfigurer.builder()
+                .cpnType(CpnTypeEnum.TEXT)
+                .name("invoiceReceiveInfo")
+                .label("收件信息")
+                .validatorList(longTextValidatorList)
+                .placeholder("请输入收件信息")
+                .build();
+
+        CpnConfigurer invoiceRemarkCpn = CpnConfigurer.builder()
+                .cpnType(CpnTypeEnum.TEXT)
+                .name("invoiceRemark")
+                .label("备注")
+                .validatorList(longTextValidatorList)
+                .placeholder("请输入备注")
+                .build();
+
 
         List<CpnConfigurer> cpnConfigurerList = Lists.newArrayList(typeCpn, codeCpn, nameCpn, shortNameCpn, remarkCpn, contactPersonCpn, contactNumberCpn, contactMailCpn, contactFaxCpn,
-                bankNameCpn, bankNumberCpn, accountNameCpn, accountNumberCpn, taxCodeCpn, addressCpn);
+                bankNameCpn, bankNumberCpn, accountNameCpn, accountNumberCpn, taxCodeCpn, addressCpn, invoiceReceiveInfoCpn, invoiceRemarkCpn);
         return cpnConfigurerList;
     }
 

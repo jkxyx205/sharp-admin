@@ -24,12 +24,13 @@
     <sp:select class="hidden" id="core_material_category"  key="material_category_select_sql" emptyItemText group/>
     <div id="dialogInput" style="display: none"></div>
     <div id="multipleDialogInput" style="display: none"></div>
-    <form class="needs-validation dialog-form" th:classappend="${query.readonly == 'true' ? 'readonly' : ''}" id="695708313425285120" name="core_partner" novalidate>
+    <form class="needs-validation dialog-form" th:classappend="${query.readonly == 'true' ? 'readonly' : ''}" id="form_695708313425285120" name="core_partner" novalidate>
         <div class="nav-tabs-boxed">
             <ul class="nav nav-tabs" role="tablist">
                 <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#pane-1" role="tab" aria-controls="home" aria-selected="true">基本信息</a></li>
                 <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pane-2" role="tab" aria-controls="profile" aria-selected="false">公司信息</a></li>
-                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pane-3" role="tab" aria-controls="source_list" aria-selected="false">货源清单</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pane-3" role="tab" aria-controls="profile" aria-selected="false">开票资料</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pane-4" role="tab" aria-controls="source_list" aria-selected="false">货源清单</a></li>
             </ul>
             <div class="tab-content">
                 <div class="tab-pane active" id="pane-1" role="tabpanel">
@@ -64,7 +65,7 @@
                     <div class="form-group row">
                         <label for="name" class="col-sm-3 col-form-label required">公司名称</label>
                         <div class="col-sm-9">
-                            <input type="text" class="form-control" id="name" name="name" maxlength="32" th:value="${formBO.propertyMap.name.value}"
+                            <input type="text" class="form-control" id="name" name="name" maxlength="32" v-model="name.value" th:value="${formBO.propertyMap.name.value}"
                                    placeholder="请输入公司名称" value="" required="required">
                             <!--前端验证所有验证信息-->
                             <div class="invalid-feedback">必填项需要填写</div>
@@ -131,7 +132,7 @@
                     <div class="form-group row">
                         <label for="bankName" class="col-sm-3 col-form-label">开户银行</label>
                         <div class="col-sm-9">
-                            <input type="text" class="form-control" id="bankName" name="bankName" maxlength="16" th:value="${formBO.propertyMap.bankName.value}"
+                            <input type="text" class="form-control" id="bankName" name="bankName" maxlength="16" v-model="bankName.value" th:value="${formBO.propertyMap.bankName.value}"
                                    placeholder="请输入开户银行" value="">
                             <!--前端验证所有验证信息-->
                             <div class="invalid-feedback">长度范围 0 - 16 个字符</div>
@@ -158,16 +159,16 @@
                     <div class="form-group row">
                         <label for="accountNumber" class="col-sm-3 col-form-label">银行账户</label>
                         <div class="col-sm-9">
-                            <input type="text" class="form-control" id="accountNumber" name="accountNumber" maxlength="16" th:value="${formBO.propertyMap.accountNumber.value}"
+                            <input type="text" class="form-control" id="accountNumber" name="accountNumber" maxlength="32" v-model="accountNumber.value" th:value="${formBO.propertyMap.accountNumber.value}"
                                    placeholder="请输入银行账户" value="">
                             <!--前端验证所有验证信息-->
-                            <div class="invalid-feedback">长度范围 0 - 16 个字符</div>
+                            <div class="invalid-feedback">长度范围 0 - 32 个字符</div>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label for="taxCode" class="col-sm-3 col-form-label">纳税人识别号</label>
                         <div class="col-sm-9">
-                            <input type="text" class="form-control" id="taxCode" name="taxCode" maxlength="18" th:value="${formBO.propertyMap.taxCode.value}"
+                            <input type="text" class="form-control" id="taxCode" name="taxCode" maxlength="18" v-model="taxCode.value" th:value="${formBO.propertyMap.taxCode.value}"
                                    placeholder="请输入纳税人识别号" value="">
                             <!--前端验证所有验证信息-->
                             <div class="invalid-feedback">长度范围 0 - 18 个字符</div>
@@ -184,6 +185,63 @@
                     </div>
                 </div>
                 <div role="tabpanel" id="pane-3" class="tab-pane">
+                    <div class="form-group row">
+                        <label for="name" class="col-sm-3 col-form-label required">公司名称</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" name="name" maxlength="32" v-model="name.value" th:value="${formBO.propertyMap.name.value}"
+                                   placeholder="请输入公司名称" value="" required="required">
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">必填项需要填写</div>
+                            <div class="invalid-feedback">长度范围 0 - 32 个字符</div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="bankName" class="col-sm-3 col-form-label">开户银行</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" name="bankName" maxlength="16" v-model="bankName.value" th:value="${formBO.propertyMap.bankName.value}"
+                                   placeholder="请输入开户银行" value="">
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">长度范围 0 - 16 个字符</div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="accountNumber" class="col-sm-3 col-form-label">银行账户</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" name="accountNumber" maxlength="32"  v-model="accountNumber.value" th:value="${formBO.propertyMap.accountNumber.value}"
+                                   placeholder="请输入银行账户" value="">
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">长度范围 0 - 32 个字符</div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="taxCode" class="col-sm-3 col-form-label">纳税人识别号</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" name="taxCode" maxlength="18"  v-model="taxCode.value" th:value="${formBO.propertyMap.taxCode.value}"
+                                   placeholder="请输入纳税人识别号" value="">
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">长度范围 0 - 18 个字符</div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="invoiceReceiveInfo" class="col-sm-3 col-form-label">收件信息</label>
+                        <div class="col-sm-9">
+                            <textarea class="form-control" id="invoiceReceiveInfo" name="invoiceReceiveInfo" maxlength="1024" th:text="${formBO.propertyMap.invoiceReceiveInfo.value}"
+                                      placeholder="请输入收件信息" style="height: 120px;"></textarea>
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">长度范围 0 - 1024 个字符</div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="invoiceRemark" class="col-sm-3 col-form-label">发票备注</label>
+                        <div class="col-sm-9">
+                            <textarea class="form-control" id="invoiceRemark" name="invoiceRemark" maxlength="1000" th:text="${formBO.propertyMap.invoiceRemark.value}"
+                                      placeholder="请输入备注"></textarea>
+                            <!--前端验证所有验证信息-->
+                            <div class="invalid-feedback">长度范围 0 - 1000 个字符</div>
+                        </div>
+                    </div>
+                </div>
+                <div role="tabpanel" id="pane-4" class="tab-pane">
                     <div id="table-container"></div>
                 </div>
             </div>
@@ -207,77 +265,6 @@
     if (propertyMap.sourceList) {
         value = propertyMap.sourceList.value
     }
-
-    // 可编辑表格初始化
-    var $editableTable = $('#table-container').editableTablePlus({
-        customizeType,
-        showRowNumber: true, // 是否显示行号
-        readonly: readonly, // 只读
-        allowEmpty: true, // 表格允许为空
-        columnConfigs: [
-            {
-                type: "material",
-                name: "materialId",
-                title: "物料",
-                width: 100,
-                align: 'left',
-                required: false,
-                mode: 'multiple', // 多选
-                selected: function ($tr, row) {
-                }
-            },
-            {
-                type: "label",
-                name: "materialName",
-                title: "名称"
-            },
-            {
-                type: "label",
-                name: "materialSpecification",
-                title: "规格"
-            },
-            {
-                type: "select",
-                name: "materialCategoryId",
-                align: 'left',
-                title: "分类",
-                required: true,
-                // disabled: true,
-                // datasource: $('#core_material_category option').map((i,option) => {
-                //     return {
-                //         "name": option.value,
-                //         "value": option.innerText
-                //     }
-                // }),
-                datasource: $('#core_material_category'),
-                onchange: function ($tr, value) {
-                    // alert(value)
-                    $tr.find(':input[name=materialId]').val('')
-                    $tr.find(':input[name=materialCode]').val('')
-                    $tr.find(':input[name=materialText]').val('')
-                }
-                // datasource: [
-                //     {
-                //         name: "",
-                //         value: ""
-                //     },
-                //     {
-                //         name: "990",
-                //         value: "轮毂"
-                //     },
-                //     {
-                //         name: "999",
-                //         value: "端盖"
-                //     },
-                //     {
-                //         name: "9999",
-                //         value: "转子"
-                //     }
-                // ]
-            }
-        ],
-        value
-    })
 
     // 自定义表单
     /*<![CDATA[*/
@@ -401,6 +388,83 @@
         $(obj).parent().remove()
 
     }
+
+    new Vue({
+        el: '.nav-tabs-boxed', // el不能是 form 及其父元素，否则 form 的验证将失效
+        data: propertyMap,
+        mounted: function () {
+            // 可编辑表格初始化
+            $editableTable = $('#table-container').editableTablePlus({
+                customizeType,
+                showRowNumber: true, // 是否显示行号
+                readonly: readonly, // 只读
+                allowEmpty: true, // 表格允许为空
+                columnConfigs: [
+                    {
+                        type: "material",
+                        name: "materialId",
+                        title: "物料",
+                        width: 100,
+                        align: 'left',
+                        required: false,
+                        mode: 'multiple', // 多选
+                        selected: function ($tr, row) {
+                        }
+                    },
+                    {
+                        type: "label",
+                        name: "materialName",
+                        title: "名称"
+                    },
+                    {
+                        type: "label",
+                        name: "materialSpecification",
+                        title: "规格"
+                    },
+                    {
+                        type: "select",
+                        name: "materialCategoryId",
+                        align: 'left',
+                        title: "分类",
+                        required: true,
+                        // disabled: true,
+                        // datasource: $('#core_material_category option').map((i,option) => {
+                        //     return {
+                        //         "name": option.value,
+                        //         "value": option.innerText
+                        //     }
+                        // }),
+                        datasource: $('#core_material_category'),
+                        onchange: function ($tr, value) {
+                            // alert(value)
+                            $tr.find(':input[name=materialId]').val('')
+                            $tr.find(':input[name=materialCode]').val('')
+                            $tr.find(':input[name=materialText]').val('')
+                        }
+                        // datasource: [
+                        //     {
+                        //         name: "",
+                        //         value: ""
+                        //     },
+                        //     {
+                        //         name: "990",
+                        //         value: "轮毂"
+                        //     },
+                        //     {
+                        //         name: "999",
+                        //         value: "端盖"
+                        //     },
+                        //     {
+                        //         name: "9999",
+                        //         value: "转子"
+                        //     }
+                        // ]
+                    }
+                ],
+                value
+            })
+        }
+    })
 
 </script>
 </html>

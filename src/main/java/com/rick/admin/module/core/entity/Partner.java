@@ -63,6 +63,12 @@ public class Partner extends BaseCodeEntity {
     @Column(comment = "公司地址", columnDefinition = "varchar(128)")
     String address;
 
+    @Column(comment = "发票收件信息", columnDefinition = "varchar(1024)")
+    String invoiceReceiveInfo;
+
+    @Column(comment = "发票备注", columnDefinition = "varchar(512)")
+    String invoiceRemark;
+
     @OneToMany(subTable = "pur_source_list", cascadeInsertOrUpdate = true, joinValue = "partner_id", reversePropertyName="partnerId")
     List<MaterialSource> sourceList;
 
