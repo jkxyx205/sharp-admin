@@ -3,6 +3,7 @@ package com.rick.admin.init;
 import com.rick.admin.module.core.dao.CategoryDAO;
 import com.rick.admin.module.core.entity.Category;
 import com.rick.admin.module.material.dao.MaterialDAO;
+import com.rick.admin.module.material.service.ClassificationService;
 import com.rick.admin.module.material.service.MaterialFormAdvice;
 import com.rick.excel.core.ExcelReader;
 import com.rick.meta.dict.entity.Dict;
@@ -14,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
 import java.io.FileInputStream;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,19 +38,23 @@ public class MaterialDataHandler {
     @Resource
     private DictService dictService;
 
+    @Resource(name = "materialClassificationService")
+    private ClassificationService classificationService;
+
     @Test
     public void importData() throws Exception {
+        materialDAO.delete(Collections.emptyMap(), "material_type = 'ROH'");
         Map<String, Long> categoryNameIdMap = categoryDAO.selectAll().stream().collect(Collectors.toMap(Category::getName, Category::getId));
         Map<String, String> unitLabelNameMap = dictService.getDictByType("unit").stream().collect(Collectors.toMap(Dict::getLabel, Dict::getName));
 
-        String path = "/Users/rick/Space/Yodean/苏州普源电机/data/Material.xlsx";
+        String path = "/Users/rick/Space/tmp/py/data/material.xlsx";
         ExcelReader.readExcelContent(new FileInputStream(path), (index, data, sheetIndex, sheetName) -> {
-            if (data.length == 0) {
+            if (data.length < 4 || StringUtils.isBlank((CharSequence) data[1]) || StringUtils.isBlank((CharSequence) data[3])) {
                 return false;
             }
 
             if (index > 0) {
-                String specification = Objects.toString(data[2], "");
+                String specification = dataToString(data[2]);
                 List<List<String>> specificationList = new ArrayList<>();
                 if (StringUtils.isNotBlank(specification)) {
                     specificationList.add(Arrays.asList("规格", specification));
@@ -60,7 +66,14 @@ public class MaterialDataHandler {
                 values.put("code", data[0]);
                 values.put("name", data[1]);
                 values.put("specificationList", specificationList);
-                values.put("baseUnit", unitLabelNameMap.get((String) data[3]));
+
+                String unitLabel = (String) data[3];
+                if (unitLabel.matches("[a-zA-z]+")) {
+                    unitLabel = unitLabel.toUpperCase();
+                }
+
+                values.put("baseUnit", unitLabelNameMap.get(unitLabel));
+
                 values.put("batchManagement", batchManagement ? Lists.newArrayList(true) : null);
 
                 values.put("materialType", "ROH");
@@ -74,4 +87,23 @@ public class MaterialDataHandler {
         });
 
     }
+
+//    @Test
+    public void batchAssignClassification() {
+        classificationService.batchAssignClassification("COLOR", Arrays.asList(725426617400188928L));
+    }
+
+    private String dataToString(Object data) {
+        if (Objects.isNull(data)) {
+            return null;
+        }
+
+        if (data instanceof Number) {
+           Number number = (Number) data;
+           return new BigDecimal(number.toString()).stripTrailingZeros().toPlainString();
+        }
+
+        return String.valueOf(data);
+    }
+
 }

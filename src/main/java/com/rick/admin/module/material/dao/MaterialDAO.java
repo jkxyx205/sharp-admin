@@ -8,6 +8,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Rick.Xu
@@ -36,7 +37,9 @@ public class MaterialDAO extends EntityCodeDAOImpl<Material, Long> {
         if (t != null) {
             // 提前设置外键material_id
             Material material = (Material)t;
-            material.getMaterialProfile().setMaterialId(material.getId());
+            if (Objects.nonNull(material.getMaterialProfile())) {
+                material.getMaterialProfile().setMaterialId(material.getId());
+            }
         }
 
         return objects;

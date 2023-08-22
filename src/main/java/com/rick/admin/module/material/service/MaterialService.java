@@ -205,10 +205,12 @@ public class MaterialService {
     }
 
     private void fillCharacteristicText(Collection<? extends MaterialDescriptionHandler> materialDescriptionHandlerList) {
-        Collection<String> materialIdBatchIdStringCollection = materialDescriptionHandlerList.stream().map(materialDescriptionHandler -> MaterialProfileSupport.materialIdBatchIdString(materialDescriptionHandler.getMaterialId(), materialDescriptionHandler.getBatchId())).collect(Collectors.toSet());
-        Map<String, String> characteristicTextMap = materialProfileService.getCharacteristicText(materialIdBatchIdStringCollection);
-        for (MaterialDescriptionHandler handler : materialDescriptionHandlerList) {
-            handler.getMaterialDescription().setCharacteristic(characteristicTextMap.get(MaterialProfileSupport.materialIdBatchIdString(handler.getMaterialId(), handler.getBatchId())));
+        if (CollectionUtils.isNotEmpty(materialDescriptionHandlerList)) {
+            Collection<String> materialIdBatchIdStringCollection = materialDescriptionHandlerList.stream().map(materialDescriptionHandler -> MaterialProfileSupport.materialIdBatchIdString(materialDescriptionHandler.getMaterialId(), materialDescriptionHandler.getBatchId())).collect(Collectors.toSet());
+            Map<String, String> characteristicTextMap = materialProfileService.getCharacteristicText(materialIdBatchIdStringCollection);
+            for (MaterialDescriptionHandler handler : materialDescriptionHandlerList) {
+                handler.getMaterialDescription().setCharacteristic(characteristicTextMap.get(MaterialProfileSupport.materialIdBatchIdString(handler.getMaterialId(), handler.getBatchId())));
+            }
         }
     }
 }
