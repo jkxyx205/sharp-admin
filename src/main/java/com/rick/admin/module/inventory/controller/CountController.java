@@ -1,5 +1,9 @@
 package com.rick.admin.module.inventory.controller;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.rick.admin.module.core.entity.Classification;
+import com.rick.admin.module.material.dao.ClassificationDAO;
 import com.rick.common.http.HttpServletResponseUtils;
 import com.rick.common.util.JsonUtils;
 import com.rick.common.util.Time2StringUtils;
@@ -7,11 +11,13 @@ import com.rick.db.service.SharpService;
 import com.rick.excel.core.ExcelWriter;
 import com.rick.excel.core.model.ExcelCell;
 import com.rick.excel.core.model.ExcelRow;
+import com.rick.formflow.form.cpn.core.CpnConfigurer;
 import com.rick.meta.dict.service.DictService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -44,11 +50,15 @@ public class CountController {
 
     DictService dictService;
 
+    ClassificationDAO materialClassificationDAO;
+
     @GetMapping("template")
     public void downloadCountTemplate(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String fileName = "盘点单" + Time2StringUtils.format(new Date());
         ExcelWriter excelWriter = new ExcelWriter(fileName);
         float heightInPoints = 30F;
+
+        Map<Long, List<Classification>> materialIdClassificationMap = materialClassificationDAO.findClassificationByMaterialIds(null);
 
         ExcelCell title = new ExcelCell(1, 1, "盘点单", 1, 7);
         title.setHeightInPoints(heightInPoints);
@@ -68,7 +78,7 @@ public class CountController {
         excelWriter.getActiveSheet().setColumnWidth(5, 3000);
         excelWriter.getActiveSheet().setColumnWidth(6, 3000);
 
-        String sql = "select core_material_category.order_index, core_material_category.name categoryName, mm_material.code, mm_material.name, mm_material.`specification`, mm_material.base_unit  from core_material_category left join mm_material on core_material_category.id = mm_material.category_id where mm_material.code is not null order by order_index asc";
+        String sql = "select core_material_category.order_index, core_material_category.name categoryName, mm_material.id, mm_material.code, mm_material.name, mm_material.`specification`, mm_material.base_unit  from core_material_category left join mm_material on core_material_category.id = mm_material.category_id where mm_material.code is not null order by order_index asc";
         List<Map<String, Object>> list = sharpService.query(sql, null);
         Map<String, List<Map<String, Object>>> categroyNameMaterialMap = list.stream().collect(Collectors.groupingBy(r -> r.get("order_index") + "-" + r.get("categoryName")));
         Set<String> treeSet = new TreeSet<>(categroyNameMaterialMap.keySet());
@@ -77,20 +87,64 @@ public class CountController {
         for (String key : treeSet) {
             List<Map<String, Object>> valueList = categroyNameMaterialMap.get(key);
             int valueSize = valueList.size();
-            ExcelCell categoryCell = new ExcelCell(1, y, key.substring(key.indexOf("-") + 1), valueSize, 1);
+
+            Map<Long, List<String>> characteristicValueListMap = Maps.newHashMap();
+
+            // 获取特征值
+            int characteristicValueListSize = 0;
+            int classificationListNumber = 0;
+            for (int i = 0; i < valueSize; i++) {
+                Map<String, Object> value = valueList.get(i);
+                Long materialId  = (Long) value.get("id");
+                List<Classification> classificationList = materialIdClassificationMap.get(materialId);
+                List<String> characteristicValueList;
+                if (CollectionUtils.isNotEmpty(classificationList)) {
+                    List<List<String>> optionList = classificationList.stream().flatMap(classification -> classification.getCharacteristicList().stream())
+                            .map(characteristic -> characteristic.getCpnConfigurer().getOptions().stream().map(CpnConfigurer.CpnOption::getLabel).collect(Collectors.toList())).collect(Collectors.toList());
+                    characteristicValueList = Lists.newArrayList();
+                    getCharacteristicValueList(characteristicValueList, optionList, 0, "");
+                    characteristicValueListMap.put(materialId, characteristicValueList);
+                    characteristicValueListSize += characteristicValueList.size();
+                    classificationListNumber++;
+                }
+            }
+
+            ExcelCell categoryCell = new ExcelCell(1, y, key.substring(key.indexOf("-") + 1), valueSize + characteristicValueListSize - classificationListNumber, 1);
             categoryCell.setStyle(createCellStyle(excelWriter.getBook()));
             excelWriter.writeCell(categoryCell);
 
             for (int i = 0; i < valueSize; i++) {
                 Map<String, Object> value = valueList.get(i);
-                ExcelRow dataRow = new ExcelRow(2, y, new Object[]{
-                        value.get("code"), value.get("name"), getSpecificationText((String) value.get("specification")), "", dictService.getDictByTypeAndName("unit", (String) value.get("base_unit")).get().getLabel(), ""
-                });
-                dataRow.setHeightInPoints(heightInPoints);
-                dataRow.setStyle(createCellStyle(excelWriter.getBook()));
-                excelWriter.writeRow(dataRow);
 
-                y++;
+                List<String> characteristicValueList = characteristicValueListMap.get(value.get("id"));
+                if (CollectionUtils.isNotEmpty(characteristicValueList)) {
+                    for (String characteristicValue : characteristicValueList) {
+                        ExcelRow dataRow = new ExcelRow(2, y, new Object[]{
+                                value.get("code"), value.get("name"), getSpecificationText((String) value.get("specification")),
+                                characteristicValue,
+                                dictService.getDictByTypeAndName("unit", (String) value.get("base_unit")).get().getLabel(), ""
+                        });
+                        dataRow.setHeightInPoints(heightInPoints);
+                        dataRow.setStyle(createCellStyle(excelWriter.getBook()));
+                        excelWriter.writeRow(dataRow);
+
+                        y++;
+                    }
+
+                } else {
+                    ExcelRow dataRow = new ExcelRow(2, y, new Object[]{
+                            value.get("code"), value.get("name"), getSpecificationText((String) value.get("specification")),
+                            "",
+                            dictService.getDictByTypeAndName("unit", (String) value.get("base_unit")).get().getLabel(), ""
+                    });
+                    dataRow.setHeightInPoints(heightInPoints);
+                    dataRow.setStyle(createCellStyle(excelWriter.getBook()));
+                    excelWriter.writeRow(dataRow);
+
+                    y++;
+                }
+
+
             }
         }
 
@@ -175,5 +229,18 @@ public class CountController {
         cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
         return cellStyle;
+    }
+
+    private void getCharacteristicValueList(List<String> characteristicValueList, List<List<String>> data, int index, String value) {
+        if (index >= data.size()) {
+            return;
+        }
+
+        for (String s : data.get(index)) {
+            if (index == data.size() - 1) {
+                characteristicValueList.add((value + " ") + s);
+            }
+            getCharacteristicValueList(characteristicValueList, data, index + 1, (StringUtils.isBlank(value) ? "" : value + " ") + s);
+        }
     }
 }
