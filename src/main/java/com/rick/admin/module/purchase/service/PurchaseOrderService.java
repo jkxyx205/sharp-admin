@@ -3,7 +3,10 @@ package com.rick.admin.module.purchase.service;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.rick.admin.common.BigDecimalUtils;
+import com.rick.admin.common.PropertiesConstants;
+import com.rick.admin.common.exception.ExceptionCodeEnum;
 import com.rick.admin.common.exception.ResourceNotFoundException;
+import com.rick.admin.common.model.IdQuantity;
 import com.rick.admin.module.core.dao.PartnerDAO;
 import com.rick.admin.module.core.entity.Partner;
 import com.rick.admin.module.core.service.CodeHelper;
@@ -16,12 +19,14 @@ import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
 import com.rick.admin.module.purchase.dao.PurchaseOrderItemDAO;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
 import com.rick.common.http.HttpServletResponseUtils;
+import com.rick.common.http.exception.BizException;
 import com.rick.common.util.Time2StringUtils;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
 import com.rick.excel.core.ExcelWriter;
 import com.rick.excel.core.model.ExcelCell;
 import com.rick.meta.dict.entity.Dict;
+import com.rick.meta.props.service.PropertyUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -154,6 +159,12 @@ public class PurchaseOrderService {
         return histroyGoodsReceiptQuantityMap;
     }
 
+    public Map<Long, BigDecimal> itemOrderQuantity(String rootReferenceCode) {
+        return purchaseOrderItemDAO.selectByParamsAsMap
+                (Params.builder(1).pv("purchaseOrderCode", rootReferenceCode).build(),
+                        "id, quantity", "purchase_order_code = :purchaseOrderCode");
+    }
+
     /**
      * 获取物料的供应商
      * @param materialId
@@ -170,7 +181,7 @@ public class PurchaseOrderService {
      * @return
      */
     public Map<String, List<Dict>> getVendorByMaterialIds(Collection<Long> materialIds) {
-        String sql = "select sl.material_id, core_partner.id name, core_partner.name label from core_partner inner join (select `partner_id`, ifnull(`material_id`, mm_material.id) material_id from pur_source_list left join mm_material on mm_material.`category_id` = pur_source_list.`material_category_id` AND pur_source_list.material_id is null  where mm_material.id IN (:materialIds) or `material_id` IN (:materialIds)) sl on sl.partner_id = core_partner.id where `partner_type` = 'VENDOR' ORDER BY core_partner.name ASC";
+        String sql = "select sl.material_id, core_partner.id name, core_partner.name label from core_partner inner join (select distinct `partner_id`, ifnull(`material_id`, mm_material.id) material_id from pur_source_list left join mm_material on mm_material.`category_id` = pur_source_list.`material_category_id` AND pur_source_list.material_id is null  where mm_material.id IN (:materialIds) or `material_id` IN (:materialIds)) sl on sl.partner_id = core_partner.id where `partner_type` = 'VENDOR' ORDER BY core_partner.name ASC";
         List<Map<String, Object>> list = sharpService.query(sql, Params.builder(1).pv("materialIds", materialIds).build());
         Map<Long, List<Map<String, Object>>> map = list.stream().collect(Collectors.groupingBy(m -> (Long) m.get("material_id")));
         Map<String, List<Dict>> resultMap = Maps.newHashMapWithExpectedSize(map.size());
@@ -185,15 +196,46 @@ public class PurchaseOrderService {
         return resultMap;
     }
 
-    public void ifAllCompleteAndSetDone(String rootReferenceCode) {
-        List<PurchaseOrder.Item> list = purchaseOrderItemDAO.list(rootReferenceCode);
+    public void setItemCompleteStatus(List<Long> completedIdList, List<Long> uncompletedIdList, String rootReferenceCode) {
+        purchaseOrderItemDAO.setCompleted(completedIdList);
+        purchaseOrderItemDAO.setUnCompleted(uncompletedIdList);
+        ifAllCompleteAndSetDone(rootReferenceCode);
+    }
 
-        boolean hasUnComplete = list.stream().anyMatch(item -> !item.getComplete());
-        if (!hasUnComplete) {
-            purchaseOrderDAO.update("status"
-                    , Params.builder(2).pv("code", rootReferenceCode).pv("status", PurchaseOrder.StatusEnum.DONE).build(),
-                    "code = :code");
+    public void ifAllCompleteAndSetDone(String rootReferenceCode) {
+        List<Boolean> list = purchaseOrderItemDAO.complateStatusList(rootReferenceCode);
+
+        boolean hasUnComplete = list.stream().anyMatch(completed -> !completed);
+        purchaseOrderDAO.update("status"
+                , Params.builder(2).pv("code", rootReferenceCode).pv("status", !hasUnComplete ? PurchaseOrder.StatusEnum.DONE : PurchaseOrder.StatusEnum.PLANNING).build(),
+                "code = :code");
+    }
+
+    public void checkItemOpenQuantity(InventoryDocument.MovementTypeEnum movementType, String purchaseCode, List<IdQuantity> idQuantityList) {
+        Map<Long, BigDecimal> itemHistroyGoodsReceiptQuantityMap = historyGoodsReceiptQuantity(purchaseCode);
+        Map<Long, BigDecimal> itemOrderQuantityMap = itemOrderQuantity(purchaseCode);
+
+        Map<Long, BigDecimal> itemOpenQuantityMap = null;
+        if (movementType == InventoryDocument.MovementTypeEnum.OUTBOUND) {
+           itemOpenQuantityMap = openQuantity(movementType, purchaseCode);
         }
+
+        for (IdQuantity idQuantity : idQuantityList) {
+            if (movementType == InventoryDocument.MovementTypeEnum.INBOUND) {
+                // 收货最大容差
+                BigDecimal overReceiptTolerance = new BigDecimal(PropertyUtils.getProperty(PropertiesConstants.OVER_RECEIPT_TOLERANCE));
+
+                if (BigDecimalUtils.gt(itemHistroyGoodsReceiptQuantityMap.get(idQuantity.getId()).add(idQuantity.getQuantity()),
+                        itemOrderQuantityMap.get(idQuantity.getId()).multiply(BigDecimal.ONE.add(overReceiptTolerance.divide(BigDecimal.valueOf(100)))))) {
+                    throw new BizException(idQuantity.getDescription() + " 收货超过订单总数的 " + overReceiptTolerance + "%，不能入库！");
+                }
+            } else {
+                if (BigDecimalUtils.gt(idQuantity.getQuantity(), itemOpenQuantityMap.get(idQuantity.getId()))) {
+                    throw new BizException(ExceptionCodeEnum.MATERIAL_OVER_MAX_MOVEMENT_ERROR, new Object[]{idQuantity.getDescription()});
+                }
+            }
+        }
+
     }
 
     public void downloadById(Long id, HttpServletRequest request, HttpServletResponse response) throws IOException {

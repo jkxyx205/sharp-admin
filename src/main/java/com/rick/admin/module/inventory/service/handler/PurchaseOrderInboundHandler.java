@@ -2,6 +2,7 @@ package com.rick.admin.module.inventory.service.handler;
 
 import com.google.common.collect.Lists;
 import com.rick.admin.common.BigDecimalUtils;
+import com.rick.admin.common.model.IdQuantity;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.inventory.service.AbstractHandler;
 import com.rick.admin.module.purchase.dao.PurchaseOrderItemDAO;
@@ -10,8 +11,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 采购订单入库
@@ -40,7 +43,11 @@ public class PurchaseOrderInboundHandler extends AbstractHandler {
     @Override
     public void handle0(InventoryDocument inventoryDocument) {
         Map<Long, BigDecimal> itemOpenQuantityMap = purchaseOrderService.openQuantity(InventoryDocument.MovementTypeEnum.INBOUND, inventoryDocument.getReferenceCode());
+
         List<Long> completeIdList = Lists.newArrayListWithExpectedSize(inventoryDocument.getItemList().size());
+
+        purchaseOrderService.checkItemOpenQuantity(InventoryDocument.MovementTypeEnum.INBOUND, inventoryDocument.getReferenceCode()
+                , inventoryDocument.getItemList().stream().map(item -> new IdQuantity(item.getReferenceItemId(), item.getMaterialCode(), item.getQuantity())).collect(Collectors.toList()));
 
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
             item.setMovementType(InventoryDocument.MovementTypeEnum.INBOUND);
@@ -53,10 +60,7 @@ public class PurchaseOrderInboundHandler extends AbstractHandler {
 
         inventoryDocument.setRootReferenceCode(inventoryDocument.getReferenceCode());
 
-        purchaseOrderItemDAO.setComplete(completeIdList);
-
-        // 如果全部收货完成， 订单标记完成
-        purchaseOrderService.ifAllCompleteAndSetDone(inventoryDocument.getRootReferenceCode());
+        purchaseOrderService.setItemCompleteStatus(completeIdList, Collections.EMPTY_LIST, inventoryDocument.getRootReferenceCode());
     }
 
 }

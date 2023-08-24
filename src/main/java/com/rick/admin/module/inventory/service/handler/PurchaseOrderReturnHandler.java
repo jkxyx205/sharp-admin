@@ -3,11 +3,10 @@ package com.rick.admin.module.inventory.service.handler;
 import com.google.common.collect.Lists;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ExceptionCodeEnum;
+import com.rick.admin.common.model.IdQuantity;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.inventory.service.AbstractHandler;
-import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
-import com.rick.admin.module.purchase.dao.PurchaseOrderItemDAO;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
 import com.rick.admin.module.purchase.service.PurchaseOrderService;
 import com.rick.common.http.exception.BizException;
@@ -19,6 +18,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author Rick.Xu
@@ -28,13 +28,7 @@ import java.util.Optional;
 public class PurchaseOrderReturnHandler extends AbstractHandler {
 
     @Resource
-    MaterialDAO materialDAO;
-
-    @Resource
     PurchaseOrderDAO purchaseOrderDAO;
-
-    @Resource
-    PurchaseOrderItemDAO purchaseOrderItemDAO;
 
     @Resource
     PurchaseOrderService purchaseOrderService;
@@ -63,26 +57,27 @@ public class PurchaseOrderReturnHandler extends AbstractHandler {
         InventoryDocument.MovementTypeEnum movementType = ObjectUtils.defaultIfNull(inventoryDocument.getItemList().get(0).getMovementType(), InventoryDocument.MovementTypeEnum.OUTBOUND);
 
         Map<Long, BigDecimal> itemOpenQuantityMap = purchaseOrderService.openQuantity(movementType, purchaseOrder.getCode());
+        Map<Long, BigDecimal> itemOrderQuantityMap = purchaseOrderService.itemOrderQuantity(inventoryDocument.getReferenceCode());
 
-        List<Long> completeIdList = Lists.newArrayListWithExpectedSize(inventoryDocument.getItemList().size());
+        List<Long> completedIdList = Lists.newArrayListWithExpectedSize(inventoryDocument.getItemList().size());
+        List<Long> uncompletedIdList = Lists.newArrayListWithExpectedSize(inventoryDocument.getItemList().size());
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
-            item.setMovementType(ObjectUtils.defaultIfNull(item.getMovementType(), InventoryDocument.MovementTypeEnum.OUTBOUND));
+            item.setMovementType(movementType);
             item.setRootReferenceCode(purchaseOrder.getCode());
             item.setRootReferenceItemId(ObjectUtils.defaultIfNull(item.getRootReferenceItemId(), item.getReferenceItemId()));
-            checkOpenQuantity(item.getMaterialId(), item.getQuantity(), itemOpenQuantityMap.get(item.getRootReferenceItemId()));
 
             if (item.getMovementType() == InventoryDocument.MovementTypeEnum.INBOUND && BigDecimalUtils.ge(item.getQuantity(), itemOpenQuantityMap.get(item.getRootReferenceItemId()))) {
-                completeIdList.add(item.getRootReferenceItemId());
+                completedIdList.add(item.getRootReferenceItemId());
+            } else if (BigDecimalUtils.lt(itemOpenQuantityMap.get(item.getRootReferenceItemId()).subtract(item.getQuantity()), itemOrderQuantityMap.get(item.getRootReferenceItemId()))){
+                uncompletedIdList.add(item.getRootReferenceItemId());
             }
         }
 
-        purchaseOrderItemDAO.setComplete(completeIdList);
+        purchaseOrderService.checkItemOpenQuantity(movementType, inventoryDocument.getReferenceCode()
+                , inventoryDocument.getItemList().stream().map(item -> new IdQuantity(item.getRootReferenceItemId(), item.getMaterialCode(), item.getQuantity())).collect(Collectors.toList()));
+
+        purchaseOrderService.setItemCompleteStatus(completedIdList, uncompletedIdList, inventoryDocument.getReferenceCode());
     }
 
-    private void checkOpenQuantity(Long materialId, BigDecimal movementQuantity, BigDecimal openQuantity) {
-        if (BigDecimalUtils.gt(movementQuantity, openQuantity)) {
-            throw new BizException(ExceptionCodeEnum.MATERIAL_OVER_MAX_MOVEMENT_ERROR, new Object[]{materialDAO.selectCodeById(materialId).get()});
-        }
-    }
 
 }

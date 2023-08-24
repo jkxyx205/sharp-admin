@@ -107,15 +107,18 @@ public class InventoryController {
 
             Map<Long, BigDecimal> itemOpenQuantityMap = null;
 
-            if (inventoryDocument.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PO && type == InventoryDocument.TypeEnum.RETURN) {
-                itemOpenQuantityMap = purchaseOrderService.openQuantity(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.OUTBOUND : InventoryDocument.MovementTypeEnum.INBOUND, inventoryDocument.getRootReferenceCode());
-            } else if (inventoryDocument.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PDO && type == InventoryDocument.TypeEnum.RETURN) {
-                itemOpenQuantityMap = produceOrderService.openQuantity(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.INBOUND : InventoryDocument.MovementTypeEnum.OUTBOUND, inventoryDocument.getRootReferenceCode());
-            } else if (inventoryDocument.getReferenceType() == InventoryDocument.ReferenceTypeEnum.SO && type == InventoryDocument.TypeEnum.RETURN) {
-                itemOpenQuantityMap = produceOrderService.saleOpenQuantity(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.INBOUND : InventoryDocument.MovementTypeEnum.OUTBOUND, inventoryDocument.getRootReferenceCode());
-            } else if (type == InventoryDocument.TypeEnum.RETURN) {
-                itemOpenQuantityMap = inventoryDocumentService.openQuantity(HandlerHelper.oppositeMovementType(inventoryDocument.getItemList().get(0).getMovementType()),
-                        inventoryDocument.getRootReferenceCode());
+            if (type == InventoryDocument.TypeEnum.RETURN) {
+                InventoryDocument.MovementTypeEnum oppositeMovementType = HandlerHelper.oppositeMovementType(inventoryDocument.getItemList().get(0).getMovementType());
+                if (inventoryDocument.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PO) {
+                    itemOpenQuantityMap = purchaseOrderService.openQuantity(oppositeMovementType, inventoryDocument.getRootReferenceCode());
+                } else if (inventoryDocument.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PDO) {
+                    itemOpenQuantityMap = produceOrderService.openQuantity(oppositeMovementType, inventoryDocument.getRootReferenceCode());
+                } else if (inventoryDocument.getReferenceType() == InventoryDocument.ReferenceTypeEnum.SO) {
+                    itemOpenQuantityMap = produceOrderService.salesOpenQuantity(oppositeMovementType, inventoryDocument.getRootReferenceCode());
+                } else {
+                    itemOpenQuantityMap = inventoryDocumentService.openQuantity(HandlerHelper.oppositeMovementType(inventoryDocument.getItemList().get(0).getMovementType()),
+                            inventoryDocument.getRootReferenceCode());
+                }
             }
 
             for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
@@ -126,7 +129,6 @@ public class InventoryController {
             }
 
             materialService.fillMaterialDescription(inventoryDocument.getItemList());
-
         } else if (referenceType == InventoryDocument.ReferenceTypeEnum.PO) {
             inventoryDocument = getDocumentFromPurchaseOrder(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.OUTBOUND : InventoryDocument.MovementTypeEnum.INBOUND, type, referenceType, referenceCode);
         } else if (referenceType == InventoryDocument.ReferenceTypeEnum.PDO) {
@@ -272,7 +274,7 @@ public class InventoryController {
                             .build());
         }
 
-        Map<Long, BigDecimal> itemOpenQuantityMap = produceOrderService.saleOpenQuantity(movementType, referenceCode);
+        Map<Long, BigDecimal> itemOpenQuantityMap = produceOrderService.salesOpenQuantity(movementType, referenceCode);
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
             item.setQuantity(ObjectUtils.defaultIfNull(itemOpenQuantityMap.get(item.getRootReferenceItemId()), BigDecimal.ZERO));
         }
