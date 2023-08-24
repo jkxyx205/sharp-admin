@@ -218,7 +218,7 @@ public class PurchaseOrderService {
 //        excelWriter.writeCell(new ExcelCell(7, 6, "慧博士 18898876623"));
 //        excelWriter.writeCell(new ExcelCell(7, 7, "0512-77359511"));
 //        excelWriter.writeCell(new ExcelCell(7, 8, "0512-77359511"));
-//        excelWriter.writeCell(new ExcelCell(7, 10, "交货地点：苏州市高新区石阳路28号一号厂房大厅"));
+//        excelWriter.writeCell(new ExcelCell(7, 10, "交货地点：苏州市XXX一号厂房大厅"));
 
         ArrayList<Object[]> data = new ArrayList<>();
         materialService.fillMaterialDescription(purchaseOrder.getItemList());
@@ -227,7 +227,7 @@ public class PurchaseOrderService {
             MaterialDescription materialDescription = item.getMaterialDescription();
             //        data.add(new Object[]{1, "资材编号1", "品 名", "型号规格", 3, "单位", 1, 11, "2022-11-16"});
             data.add(new Object[] {i + 1, materialDescription.getCode(), materialDescription.getName(),
-                    materialDescription.getSpecification() + " " + item.getMaterialDescription().getCharacteristic(),
+                    materialDescription.getSpecification() + " " + materialDescription.getCharacteristic(),
                     item.getQuantity(), materialDescription.getUnitText(), item.getUnitPrice(), item.getAmount(),
                     StringUtils.isNotBlank(item.getRemark()) ? item.getRemark() : Time2StringUtils.format(item.getDeliveryDate())
             });

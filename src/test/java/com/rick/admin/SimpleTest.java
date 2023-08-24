@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,5 +45,30 @@ public class SimpleTest {
         Field classificationList = ClassUtils.getField(Material.class, "classificationList");
         Class<?> genericClass = ClassUtils.getFieldGenericClass(classificationList);
         System.out.println(genericClass);
+    }
+
+    @Test
+    public void test4() {
+        List<List<String>> data =new ArrayList<>();
+        data.add(Arrays.asList("1", "2", "3"));
+        data.add(Arrays.asList("4", "5", "6"));
+        data.add(Arrays.asList("7", "8", "9"));
+        data.add(Arrays.asList("a", "b", "c"));
+
+        dd(data, 0, "");
+    }
+
+    private void dd(List<List<String>> data, int index, String value) {
+        if (index >= data.size()) {
+            return;
+        }
+
+        for (String s : data.get(index)) {
+            if (index == data.size() - 1) {
+                System.out.print((value + " ") + s);
+            }
+            dd(data, index + 1, (StringUtils.isBlank(value) ? "" : value + " ") + s);
+            System.out.println();
+        }
     }
 }

@@ -114,6 +114,13 @@ head.appendChild(style)
         },
         _dialogRowDbClick: function (rows) {
             if (rows && (this.options.mode === 'single' || rows.length > 0)) {
+
+                let maxRowLength = 300
+                if (this.options.mode === 'multiple' && rows.length > maxRowLength) {
+                    alert('一次性选择不能超过 '+maxRowLength+' 条记录！')
+                    return
+                }
+
                 this.$modal.modal('hide')
                 this._fillValue(rows)
                 this.options.selected && this.options.selected(rows)

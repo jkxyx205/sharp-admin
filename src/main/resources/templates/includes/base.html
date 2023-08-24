@@ -424,21 +424,21 @@
                     if (xhr.status === 400) {
                         let message = '请求出现错误!'
                         let json = xhr.responseJSON
+                        if (json) {
+                            if (json.message) {
+                                message += json.message
+                            }
 
-                        if (json.message) {
-                            message += json.message
-                        }
-
-                        if (json.data) {
-                            if (Array.isArray(json.data)) {
-                                for (let row of json.data) {
-                                    message += "<br> * " + row.message
+                            if (json.data) {
+                                if (Array.isArray(json.data)) {
+                                    for (let row of json.data) {
+                                        message += "<br> * " + row.message
+                                    }
+                                } else {
+                                    message += "<br> * " + json.data
                                 }
-                            } else {
-                                message += "<br> * " + json.data
                             }
                         }
-
                         toastr.error(message);
                     } else if (xhr.status === 403) {
                         toastr.warning('您没有操作权限！');

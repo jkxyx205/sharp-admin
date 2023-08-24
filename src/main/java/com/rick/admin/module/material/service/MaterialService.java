@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -102,6 +103,7 @@ public class MaterialService {
                     materialDescription.setUnitText(dictService.getDictByTypeAndName("unit", material.getBaseUnit()).get().getLabel());
                     materialDescription.setCategoryId(material.getCategoryId());
                     materialDescription.setUnitPrice(material.getStandardPrice());
+                    materialDescription.setCharacteristic("");
                 }
 
                 fillCharacteristicText(materialDescriptionList.stream().filter(materialDescriptionHandler -> Objects.nonNull(materialDescriptionHandler.getMaterialId())).collect(Collectors.toSet()));
@@ -209,7 +211,7 @@ public class MaterialService {
             Collection<String> materialIdBatchIdStringCollection = materialDescriptionHandlerList.stream().map(materialDescriptionHandler -> MaterialProfileSupport.materialIdBatchIdString(materialDescriptionHandler.getMaterialId(), materialDescriptionHandler.getBatchId())).collect(Collectors.toSet());
             Map<String, String> characteristicTextMap = materialProfileService.getCharacteristicText(materialIdBatchIdStringCollection);
             for (MaterialDescriptionHandler handler : materialDescriptionHandlerList) {
-                handler.getMaterialDescription().setCharacteristic(characteristicTextMap.get(MaterialProfileSupport.materialIdBatchIdString(handler.getMaterialId(), handler.getBatchId())));
+                handler.getMaterialDescription().setCharacteristic(StringUtils.defaultString(characteristicTextMap.get(MaterialProfileSupport.materialIdBatchIdString(handler.getMaterialId(), handler.getBatchId())), ""));
             }
         }
     }

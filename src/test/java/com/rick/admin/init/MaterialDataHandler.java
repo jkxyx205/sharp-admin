@@ -46,6 +46,7 @@ public class MaterialDataHandler {
         Map<String, String> categoryMap = new HashMap<>();
         categoryMap.put("辐条轮-轮毂", "COLOR");
         categoryMap.put("一体轮-轮毂", "COLOR");
+        categoryMap.put("端盖", "COLOR");
 
         materialDAO.delete(Collections.emptyMap(), "material_type = 'ROH'");
         Map<String, Long> categoryNameIdMap = categoryDAO.selectAll().stream().collect(Collectors.toMap(Category::getName, Category::getId));
@@ -83,10 +84,14 @@ public class MaterialDataHandler {
                 values.put("materialType", "ROH");
                 values.put("categoryId", categoryNameIdMap.get(sheetName));
 
+                String classificationCode = categoryMap.get(sheetName);
+                if (StringUtils.isNotBlank(classificationCode)) {
+                    values.put("batchManagement", true);
+                }
+
                 materialFormAdvice.beforeInstanceHandle(null, null, values);
                 materialDAO.insertOrUpdate(values);
 
-                String classificationCode = categoryMap.get(sheetName);
                 if (StringUtils.isNotBlank(classificationCode)) {
                     classificationService.batchAssignClassification(classificationCode, Arrays.asList((Long) values.get("id")));
                 }
