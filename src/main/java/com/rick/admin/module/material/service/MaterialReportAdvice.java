@@ -3,7 +3,6 @@ package com.rick.admin.module.material.service;
 import com.rick.admin.module.core.service.CategoryService;
 import com.rick.admin.module.inventory.dao.StockDAO;
 import com.rick.report.core.entity.Report;
-import com.rick.report.core.service.ReportAdvice;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Component;
@@ -21,7 +20,7 @@ import java.util.stream.Collectors;
  */
 @Component
 @RequiredArgsConstructor
-public class MaterialReportAdvice implements ReportAdvice {
+public class MaterialReportAdvice extends MaterialKeywordsSearchReportService {
 
     private final CategoryService categoryService;
 
