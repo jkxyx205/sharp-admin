@@ -7,7 +7,10 @@ import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
 import com.rick.admin.module.material.dao.ClassificationDAO;
 import com.rick.admin.module.material.entity.Classification;
-import com.rick.admin.module.material.service.*;
+import com.rick.admin.module.material.service.BatchService;
+import com.rick.admin.module.material.service.MaterialDescription;
+import com.rick.admin.module.material.service.MaterialDescriptionHandler;
+import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.produce.dao.ProduceOrderItemDAO;
 import com.rick.admin.module.produce.entity.BomTemplate;
 import com.rick.admin.module.produce.entity.ProduceOrder;
@@ -60,8 +63,6 @@ public class ProduceOrderController {
     MaterialService materialService;
 
     BomService bomService;
-
-    MaterialProfileService materialProfileService;
 
     BatchService batchService;
 
@@ -130,15 +131,16 @@ public class ProduceOrderController {
             model.addAttribute("bomTemplate", itemIdBomTemplateMap);
 
             // 领料记录
-            List<GoodsReceiptItem> goodsReceiptItemList = getGoodsReceiptItemList(produceOrder.getCode());
-            model.addAttribute("goodsReceiptItemList", goodsReceiptItemList);
+//            List<GoodsReceiptItem> goodsReceiptItemList = getGoodsReceiptItemList(produceOrder.getCode());
+//            model.addAttribute("goodsReceiptItemList", goodsReceiptItemList);
 
-            materialService.fillMaterialDescription(Stream.concat(produceOrder.getItemList().stream(), goodsReceiptItemList.stream()).collect(Collectors.toSet()));
+//            materialService.fillMaterialDescription(Stream.concat(produceOrder.getItemList().stream(), goodsReceiptItemList.stream()).collect(Collectors.toSet()));
+            materialService.fillMaterialDescription(produceOrder.getItemList());
 
             // 发货记录
             List<ProduceOrderController.GoodsIssueItem> goodsIssueItemList = Lists.newArrayListWithExpectedSize(produceOrder.getItemList().size());
 
-            Map<Long, BigDecimal> historyGoodsIssueQuantityMap = produceOrderService.historyGoodsIssueQuantity(produceOrder.getCode(), produceOrder.getItemList().stream().map(ProduceOrder.Item::getId).collect(Collectors.toSet()));
+            Map<Long, BigDecimal> historyGoodsIssueQuantityMap = produceOrderService.salesHistoryGoodsIssueQuantity(produceOrder.getCode(), produceOrder.getItemList().stream().map(ProduceOrder.Item::getId).collect(Collectors.toSet()));
 
             for (ProduceOrder.Item item : produceOrder.getItemList()) {
                 ProduceOrderController.GoodsIssueItem goodsIssueItem = new ProduceOrderController.GoodsIssueItem();

@@ -63,6 +63,14 @@ public class ProduceOrderService {
             if (Objects.isNull(item.getId())) {
                 item.setComplete(false);
                 item.getItemList().forEach(detail -> detail.setComplete(false));
+            } else {
+                if (order.getStatus() != ProduceOrder.StatusEnum.PLANNING) {
+                    item.getItemList().forEach(detail -> detail.setComplete(true));
+                }
+
+                if (order.getStatus() == ProduceOrder.StatusEnum.DONE) {
+                    item.setComplete(true);
+                }
             }
         });
 
@@ -78,7 +86,7 @@ public class ProduceOrderService {
      * @return
      */
     public Map<Long, BigDecimal> openQuantity(InventoryDocument.MovementTypeEnum movementType, String rootReferenceCode) {
-        String sql = "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where `root_reference_code` = :rootReferenceCode group by root_reference_item_id";
+        String sql = "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where `root_reference_code` = :rootReferenceCode AND plant_id = 719893335619162112 group by root_reference_item_id";
         Map<Long, BigDecimal> histroyGoodsReceiptQuantityMap = sharpService.queryForKeyValue(sql, Params.builder(1).pv("rootReferenceCode", rootReferenceCode).build());
 
         String sql2 = "select produce_order_item_detail.`id`, produce_order_item_detail.quantity * produce_order_item.quantity from produce_order\n" +
@@ -104,7 +112,13 @@ public class ProduceOrderService {
         return histroyGoodsReceiptQuantityMap;
     }
 
-    public Map<Long, BigDecimal> saleOpenQuantity(InventoryDocument.MovementTypeEnum movementType, String rootReferenceCode) {
+    public Map<Long, BigDecimal> saleItemOrderQuantity(String produceOrderCode) {
+        return produceOrderItemDAO.selectByParamsAsMap
+                (Params.builder(1).pv("produceOrderCode", produceOrderCode).build(),
+                        "id, quantity", "produce_order_code = :produceOrderCode");
+    }
+
+    public Map<Long, BigDecimal> salesOpenQuantity(InventoryDocument.MovementTypeEnum movementType, String rootReferenceCode) {
         String sql = "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where exists(select 1 from produce_order_item where `produce_order_code` = :rootReferenceCode AND produce_order_item.id = inv_document_item.root_reference_item_id) group by root_reference_item_id";
         Map<Long, BigDecimal> histroyGoodsReceiptQuantityMap = sharpService.queryForKeyValue(sql, Params.builder(1).pv("rootReferenceCode", rootReferenceCode).build());
 
@@ -121,12 +135,12 @@ public class ProduceOrderService {
         return histroyGoodsReceiptQuantityMap;
     }
 
-    public Map<Long, BigDecimal> historyGoodsIssueQuantity(String rootReferenceCode) {
-        return historyGoodsIssueQuantity(rootReferenceCode,
+    public Map<Long, BigDecimal> salesHistoryGoodsIssueQuantity(String rootReferenceCode) {
+        return salesHistoryGoodsIssueQuantity(rootReferenceCode,
                 produceOrderItemDAO.selectIdsByParams(ProduceOrder.Item.builder().produceOrderCode(rootReferenceCode).build()));
     }
 
-    public Map<Long, BigDecimal> historyGoodsIssueQuantity(String rootReferenceCode, Collection<Long> itemIdsList) {
+    public Map<Long, BigDecimal> salesHistoryGoodsIssueQuantity(String rootReferenceCode, Collection<Long> itemIdsList) {
         String sql = "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where `root_reference_code` = :rootReferenceCode group by root_reference_item_id";
         Map<Long, BigDecimal> histroyGoodsIssueQuantityMap = sharpService.queryForKeyValue(sql, Params.builder(1).pv("rootReferenceCode", rootReferenceCode).build());
 
@@ -146,11 +160,27 @@ public class ProduceOrderService {
         setStatus(rootReferenceCode, ProduceOrder.StatusEnum.PROCESSING);
     }
 
+    /**
+     * 设置状态： 计划中
+     *
+     * @param rootReferenceCode
+     */
+    public void setPlanningStatus(String rootReferenceCode) {
+        setStatus(rootReferenceCode, ProduceOrder.StatusEnum.PLANNING);
+    }
+
     public void setProcessingComplete(List<Long> completeIdList) {
-        // set complete = true
+        setProcessingUnComplete(completeIdList, true);
+    }
+
+    public void setProcessingUnComplete(List<Long> completeIdList) {
+       setProcessingUnComplete(completeIdList, false);
+    }
+
+    private void setProcessingUnComplete(List<Long> completeIdList, boolean complete) {
         if (CollectionUtils.isNotEmpty(completeIdList)) {
             produceOrderItemDetailDAO.update("is_complete"
-                    , Params.builder(2).pv("completeIdList", completeIdList).pv("is_complete", true).build(),
+                    , Params.builder(2).pv("completeIdList", completeIdList).pv("is_complete", complete).build(),
                     "id IN (:completeIdList)");
         }
     }
@@ -160,9 +190,17 @@ public class ProduceOrderService {
      * @param completeIdList
      */
     public void setIssueComplete(List<Long> completeIdList) {
+        setIssueUnCompleteStatus(completeIdList, true);
+    }
+
+    public void setIssueUnComplete(List<Long> completeIdList) {
+        setIssueUnCompleteStatus(completeIdList, false);
+    }
+
+    public void setIssueUnCompleteStatus(List<Long> completeIdList, boolean complete) {
         if (CollectionUtils.isNotEmpty(completeIdList)) {
             produceOrderItemDAO.update("is_complete"
-                    , Params.builder(2).pv("completeIdList", completeIdList).pv("is_complete", true).build(),
+                    , Params.builder(2).pv("completeIdList", completeIdList).pv("is_complete", complete).build(),
                     "id IN (:completeIdList)");
         }
     }
@@ -176,7 +214,7 @@ public class ProduceOrderService {
         setStatus(rootReferenceCode, ProduceOrder.StatusEnum.DONE);
     }
 
-    private void setStatus(String rootReferenceCode, ProduceOrder.StatusEnum status) {
+    public void setStatus(String rootReferenceCode, ProduceOrder.StatusEnum status) {
         produceOrderDAO.update("status", new Object[]{status.getCode(), rootReferenceCode}, "code = ?");
     }
 

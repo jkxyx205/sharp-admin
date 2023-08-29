@@ -182,6 +182,8 @@ public class InventoryDocument extends BaseCodeEntity {
         INBOUND("入库"),
         OUTBOUND("出库"),
         RETURN("退货"),
+        MOVING_TO_PRODUCE("领料"),
+        RETURN_FROM_PRODUCE("退料"),
         CANCEL("取消"),
         DISPLAY("显示"),
         COUNT("盘点");

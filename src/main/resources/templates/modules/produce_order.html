@@ -132,7 +132,6 @@
         <div class="nav-tabs-boxed">
             <ul class="nav nav-tabs" role="tablist">
                 <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#tab-1" role="tab" aria-controls="home" aria-selected="false">物料清单</a></li>
-                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-2" role="tab" aria-controls="home" aria-selected="false" th:if="${po.id != null}">领料记录</a></li>
                 <li class="nav-item" th:if="${po.id != null}"><a class="nav-link" data-toggle="tab" href="#tab-3" role="tab" aria-controls="home" aria-selected="false">出货记录</a></li>
             </ul>
             <div class="tab-content">
@@ -148,7 +147,7 @@
                                                 <thead>
                                                 <tr>
                                                     <th style="width: 100px;"><label class="required">零部件物料</label></th>
-                                                    <th style="width: 100px;"><label>名称</label></th>
+                                                    <th><label>名称</label></th>
                                                     <th><label>规格</label></th>
                                                     <th><label class="required">特征值</label></th>
                                                     <th style="width: 80px;"><label>用量</label></th>
@@ -174,7 +173,7 @@
                                                                         <thead>
                                                                         <tr>
                                                                             <th style="width: 100px;"><label class="required">零部件物料</label></th>
-                                                                            <th style="width: 100px;"><label>名称</label></th>
+                                                                            <th><label>名称</label></th>
                                                                             <th><label>规格</label></th>
                                                                             <th><label class="required">特征值</label></th>
                                                                             <th style="width: 80px;"><label>用量</label></th>
@@ -199,7 +198,7 @@
                                                                                                 <thead>
                                                                                                 <tr>
                                                                                                     <th style="width: 100px;"><label class="required">零部件物料</label></th>
-                                                                                                    <th style="width: 100px;"><label>名称</label></th>
+                                                                                                    <th><label>名称</label></th>
                                                                                                     <th><label>规格</label></th>
                                                                                                     <th><label class="required">特征值</label></th>
                                                                                                     <th style="width: 80px;"><label>用量</label></th>
@@ -225,7 +224,7 @@
                                                                                                                         <thead>
                                                                                                                         <tr>
                                                                                                                             <th style="width: 100px;"><label class="required">零部件物料</label></th>
-                                                                                                                            <th style="width: 100px;"><label>名称</label></th>
+                                                                                                                            <th><label>名称</label></th>
                                                                                                                             <th><label>规格</label></th>
                                                                                                                             <th><label class="required">特征值</label></th>
                                                                                                                             <th style="width: 80px;"><label>用量</label></th>
@@ -272,48 +271,6 @@
                         <div id="materialDetailInput" style="display: none"></div>
                     </div>
                 </div>
-                <div class="tab-pane" id="tab-2" role="tabpanel">
-                    <div id="goods_receipt_container" role="tabpanel">
-                        <div class="table-fixed-container">
-                            <table class="table table-responsive-sm table-bordered table-striped table-sm table-thead">
-                                <thead>
-                                <tr>
-                                    <th style="width: 50px" data-index>序号</th>
-                                    <th style="width: 100px" class="sortable active asc">物料</th>
-                                    <th style="width: 100px;">名称</th>
-                                    <th>规格</th>
-                                    <th style="width: 100px;">特征值</th>
-                                    <th style="width: 100px">基本单位</th>
-                                    <th style="width: 100px" class="sortable text-right">领料数量</th>
-                                    <th style="width: 120px" class="sortable text-right" data-sort-type="number">已领料数量</th>
-                                    <th style="width: 120px" class="sortable text-right" data-sort-type="number">待领料数量</th>
-                                    <th style="width: 90px" class="sortable">状态</th>
-                                    <th style="width: 120px">物料凭证</th>
-                                </tr>
-                                </thead>
-                            </table>
-                            <table class="table table-responsive-sm table-bordered table-striped table-sm table-tbody">
-                                <tbody>
-                                <tr th:each="s: ${goodsReceiptItemList}">
-                                    <td th:text="${sStat.index + 1}" data-index></td>
-                                    <td th:text="${s.materialCode}" th:data-sort-value="${s.materialCode}"></td>
-                                    <td th:text="${s.materialName}" th:data-sort-value="${s.materialName}"></td>
-                                    <td th:text="${s.materialSpecification}" th:data-sort-value="${s.materialSpecification}"></td>
-                                    <td th:text="${s.characteristic}" th:data-sort-value="${s.characteristic}"></td>
-                                    <td th:text="${s.unitText}" th:data-sort-value="${s.unitText}"></td>
-                                    <td th:text="${#numbers.formatDecimal(s.quantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.quantity}" th:class="text-right"></td>
-                                    <td th:text="${#numbers.formatDecimal(s.goodsReceiptQuantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.goodsReceiptQuantity}" th:class="text-right"></td>
-                                    <td th:text="${#numbers.formatDecimal(s.openQuantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.openQuantity}" th:class="text-right"></td>
-                                    <td th:class="${'status-' + s.complete}" th:data-sort-value="${s.complete}" th:text="${s.complete == true ? '已完成' : '未完成'}"></td>
-                                    <td>
-                                        <a href="javascript:;" th:onclick="openOnNewTab('[(${s.rootReferenceItemId})]', '[(${\'/reports/699659248728047616?root_reference_code=\'+s.produceOrderCode+\'&root_reference_item_id=\'+s.rootReferenceItemId+\'&material_id=\' + s.materialId})]', '物料凭证')">详情</a>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
                 <div class="tab-pane" id="tab-3" role="tabpanel" th:if="${po.id != null}">
                     <div id="goods_issue_container" role="tabpanel">
                         <div class="table-fixed-container">
@@ -322,7 +279,7 @@
                                 <tr>
                                     <th style="width: 50px" data-index>序号</th>
                                     <th style="width: 100px" class="sortable active asc">物料</th>
-                                    <th style="width: 100px;">名称</th>
+                                    <th>名称</th>
                                     <th>规格</th>
                                     <th>特征值</th>
                                     <th style="width: 100px">基本单位</th>
@@ -484,7 +441,7 @@
                     title: "含税单价",
                     align: 'right',
                     width: 100,
-                    required: true,
+                    required: false,
                     keyup: function ($tr, event, value) {
                         calcAmount($tr);
                     }
@@ -517,8 +474,11 @@
                 },
             ]
         })
-
         // end
+
+        // $('#form-item').delegate('.items select', 'change', function () {
+        //     alert(11123)
+        // })
 
         function valid() {
             var formHeaderValidity = formHeader.checkValidity()
@@ -689,6 +649,7 @@
                     currentMaterialDom.fireEvent("input");
 
                 let form_data = vue.form
+                let $tr = $editableTable.editableTablePlus('getActiveRowValue').$tr
 
                 // 递归设置物料信息
                 let break_flag = false
@@ -714,12 +675,21 @@
                                     d.value.unit = row.base_unit
                                     d.value.unitText = row.base_unit_name
                                     d.value.componentDetailId = currentMaterialDom.getAttribute('component_detail_id')
-                                    d.test = 'aa'
-                                    console.log('1111')
+
                                     // 设置特征值
                                     $.ajaxSettings.async = false
                                     $.get(`/materials/${row.id}/classifications`, (res) => {
-                                        d.classificationList = res.map(c => { return {"classification": c}})
+                                        let classificationList = res.map(c => { return {"classification": c}})
+                                        for (let classification of classificationList) {
+                                            for (let characteristic of classification.classification.characteristicValue) {
+                                                let $select = $tr.find('[data-classification_code='+classification.classification.code+'] select[name='+characteristic.code+']')
+                                                if ($select.length > 0) {
+                                                    characteristic.value = $select.val()
+                                                }
+                                            }
+                                        }
+
+                                        d.classificationList = classificationList
                                     })
                                     $.ajaxSettings.async = true
 

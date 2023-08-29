@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
+ * 生产单退料
  * @author Rick.Xu
  * @date 2023/7/12 15:42
  */
@@ -38,7 +39,7 @@ public class ProduceOrderReturnHandler extends AbstractHandler {
 
     @Override
     public InventoryDocument.TypeEnum type() {
-        return InventoryDocument.TypeEnum.RETURN;
+        return InventoryDocument.TypeEnum.RETURN_FROM_PRODUCE;
     }
 
     @Override
@@ -59,18 +60,28 @@ public class ProduceOrderReturnHandler extends AbstractHandler {
         InventoryDocument.MovementTypeEnum movementType = ObjectUtils.defaultIfNull(inventoryDocument.getItemList().get(0).getMovementType(), InventoryDocument.MovementTypeEnum.INBOUND);
 
         Map<Long, BigDecimal> itemOpenQuantityMap = produceOrderService.openQuantity(movementType, produceOrder.getCode());
+        // 退料不修改 complete 状态
+//        List<Long> unCompleteIdList = Lists.newArrayListWithExpectedSize(inventoryDocument.getItemList().size());
 
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
             item.setMovementType(ObjectUtils.defaultIfNull(item.getMovementType(), InventoryDocument.MovementTypeEnum.INBOUND));
             item.setRootReferenceCode(produceOrder.getCode());
             item.setRootReferenceItemId(ObjectUtils.defaultIfNull(item.getRootReferenceItemId(), item.getReferenceItemId()));
             checkOpenQuantity(item.getMaterialId(), item.getQuantity(), itemOpenQuantityMap.get(item.getRootReferenceItemId()));
+
+//            if (BigDecimalUtils.lt(item.getQuantity(), itemOpenQuantityMap.get(item.getReferenceItemId()))) {
+//                unCompleteIdList.add(item.getReferenceItemId());
+//            }
+
+            itemOpenQuantityMap.put(item.getReferenceItemId(), itemOpenQuantityMap.get(item.getReferenceItemId()).subtract(item.getQuantity()));
         }
 
-        boolean complete = itemOpenQuantityMap.values().stream().allMatch(quantity -> BigDecimalUtils.le(quantity, BigDecimal.ZERO));
-        if (complete) {
-            produceOrderService.setProcessingStatus(inventoryDocument.getRootReferenceCode());
-        }
+//        if (unCompleteIdList.size() > 0) {
+//            produceOrderService.setPlanningStatus(inventoryDocument.getRootReferenceCode());
+//        }
+
+//        produceOrderService.setProcessingUnComplete(unCompleteIdList);
+
     }
 
     private void checkOpenQuantity(Long materialId, BigDecimal movementQuantity, BigDecimal openQuantity) {

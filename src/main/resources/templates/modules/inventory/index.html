@@ -30,10 +30,12 @@
                     <div class="form-group">
                         <label class="col-form-label mr-2" for="type">场景</label>
                         <select id="type" name="type" class="form-control" onchange="changeType(this)">
-                            <option value="INBOUND">入库</option>
-                            <option value="OUTBOUND">出库</option>
+                            <option value="INBOUND">收货</option>
+                            <option value="OUTBOUND">出货</option>
                             <option value="RETURN">退货</option>
-                            <option value="CANCEL">取消</option>
+                            <option value="MOVING_TO_PRODUCE">领料</option>
+                            <option value="RETURN_FROM_PRODUCE">退料</option>
+<!--                            <option value="CANCEL">取消</option>-->
                             <option value="DISPLAY">显示</option>
                         </select>
                     </div>
@@ -43,8 +45,8 @@
                             <option value="OTHER" hidden>无</option>
                             <option value="MATERIAL_DOCUMENT" hidden>物料凭证</option>
                             <option value="PO" hidden>采购订单</option>
-                            <option value="PDO" hidden>生产单领料</option>
-                            <option value="SO" hidden>生产单出货</option>
+                            <option value="PDO" hidden>生产单</option>
+                            <option value="SO" hidden>生产单</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -205,9 +207,13 @@
 
         let selectMapping = {
             "INBOUND": ["OTHER", "PO"],
-            "OUTBOUND": ["OTHER", "PDO", "SO"],
-            "RETURN": ["MATERIAL_DOCUMENT", "PO", "PDO"],
-            "CANCEL": ["MATERIAL_DOCUMENT"],
+            "OUTBOUND": ["OTHER", "SO"],
+            "RETURN": ["PO", "SO"],
+            // "RETURN": ["MATERIAL_DOCUMENT", "PO", "SO"],
+            "MOVING_TO_PRODUCE": ["OTHER", "PDO"],
+            // "RETURN_FROM_PRODUCE": ["OTHER", "PDO"],
+            "RETURN_FROM_PRODUCE": ["OTHER"],
+            // "CANCEL": ["MATERIAL_DOCUMENT"],
             "DISPLAY": ["MATERIAL_DOCUMENT"]
         }
 
@@ -262,6 +268,8 @@
             if (type.value === 'CANCEL' || type.value === 'DISPLAY' || type.value === 'RETURN') {
                 $editableTable.editableTablePlus('readonly', true)
             }
+
+            $('#plantId').val('719893335619162112')
         }
 
         function changeReferenceType(select) {
@@ -281,6 +289,15 @@
             if (type.value === 'CANCEL' || type.value === 'DISPLAY' || type.value === 'RETURN') {
                 $editableTable.editableTablePlus('readonly', true)
             }
+
+            // 库房自动选择
+            if (type.value === 'OUTBOUND' && select.value === 'SO') {
+                // 成品库
+                $('#plantId').val('726159086739001344')
+            } else {
+                $('#plantId').val('719893335619162112')
+            }
+
         }
         
         function execute() {
@@ -293,7 +310,8 @@
                 $editableTable.editableTablePlus('clear')
                 // ajax
                 $.get("/inventory/documents", {type: type.value, referenceType:referenceTypeDom.value, referenceCode: $referenceCode.val()},function (res) {
-                    referenceCode = $referenceCode.val()
+                    $referenceCode.val(res.code ? res.code : res.referenceCode)
+
                     console.log(res)
 
                     // $editableTable.editableTablePlus('setValue', res.itemList)
@@ -303,7 +321,7 @@
                     res.itemList.forEach((item, index) => {
                         let $tr = $("#table-container tbody tr:nth-child("+(index + 1)+")")
                         // 出库入库
-                        if (!(type.value === 'INBOUND' || type.value === 'OUTBOUND')) {
+                        if (!(type.value === 'INBOUND' || type.value === 'OUTBOUND' || type.value === 'MOVING_TO_PRODUCE'|| type.value === 'RETURN_FROM_PRODUCE')) {
                             $tr.find('td:nth-child(6)').css('position', 'relative').append("<span style='position: absolute;top: 5px; right: 0;'>"+(item.movementType === 'OUTBOUND' ? '-' : '+')+"</span>")
                         }
                     })
@@ -325,11 +343,9 @@
                             toastr.warning('物料凭证已经被取消了，不能重复取消!')
                         }
                         $editableTable.editableTablePlus('readonly', true)
-                    } else if(type.value === 'RETURN' || (type.value === 'INBOUND') || (type.value === 'OUTBOUND')) {
+                    } else if(type.value === 'RETURN' || type.value === 'INBOUND' || type.value === 'OUTBOUND' || type.value === 'MOVING_TO_PRODUCE'|| type.value === 'RETURN_FROM_PRODUCE') {
                         $editableTable.editableTablePlus('readonly', false)
                         $("#table-container table.table-tbody :input[name=materialCode]").prop("disabled", true).prop('readonly', true)
-                    } else {
-                        // $("form.readonly :input").prop("disabled", true);
                     }
                 }).fail(function(err) {
                     console.log(err.responseJSON)

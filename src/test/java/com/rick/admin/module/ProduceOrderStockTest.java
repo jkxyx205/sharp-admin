@@ -44,7 +44,7 @@ public class ProduceOrderStockTest {
                         "                            sum(produce_order_item.quantity * produce_order_item_detail.quantity) quantity\n" +
                         "                     from `produce_order`\n" +
                         "                              left join produce_order_item on produce_order.id = produce_order_item.`produce_order_id`\n" +
-                        "                              inner join produce_order_item_detail on produce_order_item_detail.produce_order_item_id = produce_order_item.id WHERE produce_order.`status` = 'PLANNING' AND produce_order_item_detail.is_complete = 0\n" +
+                        "                              inner join produce_order_item_detail on produce_order_item_detail.produce_order_item_id = produce_order_item.id WHERE produce_order.`status` = 'PLANNING'\n" +
                         "                     group by produce_order_item_detail.material_id, produce_order_item_detail.batch_code) po on po.material_id = mm_material.id\n" +
                         "         left join (select material_id, batch_code, sum(quantity) quantity from inv_stock group by material_id, batch_code) stock\n" +
                         "                   on stock.material_id = mm_material.id AND ifnull(stock.batch_code, '') = ifnull(po.batch_code, '') \n" +
@@ -83,7 +83,8 @@ public class ProduceOrderStockTest {
                         new ReportColumn("quantity", "生产需求").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
                         new ReportColumn("diffQuantity", "差异").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
                         new HiddenReportColumn("batch_code"),
-                        new HiddenReportColumn("batch_id")
+                        new HiddenReportColumn("batch_id"),
+                        new HiddenReportColumn("needPurchase")
                 ))
                 .pageable(false)
                 .sidx("id")

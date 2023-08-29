@@ -1,7 +1,6 @@
 package com.rick.admin.module.inventory.service.handler;
 
 import com.google.common.collect.Lists;
-import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ExceptionCodeEnum;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.inventory.service.AbstractHandler;
@@ -14,12 +13,11 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
+ * 生产单退货
  * @author Rick.Xu
  * @date 2023/6/11 11:42
  */
@@ -56,29 +54,16 @@ public class SalesOrderReturnHandler extends AbstractHandler {
 
         inventoryDocument.setRootReferenceCode(produceOrder.getCode());
 
-        InventoryDocument.MovementTypeEnum movementType = ObjectUtils.defaultIfNull(inventoryDocument.getItemList().get(0).getMovementType(), InventoryDocument.MovementTypeEnum.INBOUND);
-
-        Map<Long, BigDecimal> itemOpenQuantityMap = produceOrderService.saleOpenQuantity(movementType, produceOrder.getCode());
-
-        List<Long> completeIdList = Lists.newArrayListWithExpectedSize(inventoryDocument.getItemList().size());
+        List<Long> unCompleteIdList = Lists.newArrayListWithExpectedSize(inventoryDocument.getItemList().size());
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
             item.setMovementType(ObjectUtils.defaultIfNull(item.getMovementType(), InventoryDocument.MovementTypeEnum.INBOUND));
             item.setRootReferenceCode(produceOrder.getCode());
             item.setRootReferenceItemId(ObjectUtils.defaultIfNull(item.getRootReferenceItemId(), item.getReferenceItemId()));
-            checkOpenQuantity(item.getMaterialId(), item.getQuantity(), itemOpenQuantityMap.get(item.getRootReferenceItemId()));
-
-            if (item.getMovementType() == InventoryDocument.MovementTypeEnum.OUTBOUND && BigDecimalUtils.ge(item.getQuantity(), itemOpenQuantityMap.get(item.getRootReferenceItemId()))) {
-                completeIdList.add(item.getRootReferenceItemId());
-            }
+            unCompleteIdList.add(item.getRootReferenceItemId());
         }
 
-        produceOrderService.setIssueComplete(completeIdList);
-    }
-
-    private void checkOpenQuantity(Long materialId, BigDecimal movementQuantity, BigDecimal openQuantity) {
-        if (BigDecimalUtils.gt(movementQuantity, openQuantity)) {
-            throw new BizException(ExceptionCodeEnum.MATERIAL_OVER_MAX_MOVEMENT_ERROR, new Object[]{materialDAO.selectCodeById(materialId).get()});
-        }
+        produceOrderService.setIssueUnComplete(unCompleteIdList);
+        produceOrderService.setStatus(inventoryDocument.getRootReferenceCode(), ProduceOrder.StatusEnum.PRODUCED);
     }
 
 }

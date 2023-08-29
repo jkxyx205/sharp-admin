@@ -13,7 +13,6 @@ import com.rick.admin.module.core.service.CodeHelper;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.material.service.MaterialDescription;
-import com.rick.admin.module.material.service.MaterialProfileService;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
 import com.rick.admin.module.purchase.dao.PurchaseOrderItemDAO;
@@ -32,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.xssf.usermodel.*;
@@ -77,8 +77,6 @@ public class PurchaseOrderService {
 
     BatchService batchService;
 
-    MaterialProfileService materialProfileService;
-
     /**
      * 新增或修改
      * @param order
@@ -101,12 +99,8 @@ public class PurchaseOrderService {
     public void save(List<PurchaseOrder> list) {
         for (int i = 0; i < list.size(); i++) {
             PurchaseOrder purchaseOrder = list.get(i);
-            if (list.size() == 1) {
-                purchaseOrder.setCode(CodeHelper.generateCode("PO"));
-            } else {
-                purchaseOrder.setCode(CodeHelper.generateCode("PO") + "-" + (i + 1));
-            }
 
+            purchaseOrder.setCode(CodeHelper.generateCode("PO")  + (i + 1) + RandomStringUtils.randomNumeric(1));
             purchaseOrder.getItemList().forEach(item -> {
                 item.setComplete(false);
                 item.setPurchaseOrderCode(purchaseOrder.getCode());
@@ -217,7 +211,7 @@ public class PurchaseOrderService {
 
         Map<Long, BigDecimal> itemOpenQuantityMap = null;
         if (movementType == InventoryDocument.MovementTypeEnum.OUTBOUND) {
-           itemOpenQuantityMap = openQuantity(movementType, purchaseCode);
+            itemOpenQuantityMap = openQuantity(movementType, purchaseCode);
         }
 
         for (IdQuantity idQuantity : idQuantityList) {
@@ -337,7 +331,5 @@ public class PurchaseOrderService {
 
         excelWriter.toFile(os);
     }
-
-
 
 }

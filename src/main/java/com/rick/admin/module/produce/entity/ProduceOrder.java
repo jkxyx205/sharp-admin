@@ -92,7 +92,7 @@ public class ProduceOrder extends BaseCodeEntity {
         @Column(comment = "单位")
         String unit;
 
-        @NotNull
+//        @NotNull
         @Column(comment = "含税单价")
         BigDecimal unitPrice;
 

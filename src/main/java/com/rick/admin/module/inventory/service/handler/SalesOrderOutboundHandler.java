@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 生产单出库
+ * 生产单出货
  * @author Rick.Xu
  * @date 2023/7/12 11:42
  */
@@ -35,7 +35,7 @@ public class SalesOrderOutboundHandler extends AbstractHandler {
 
     @Override
     public void handle0(InventoryDocument inventoryDocument) {
-        Map<Long, BigDecimal> itemOpenQuantityMap = produceOrderService.saleOpenQuantity(InventoryDocument.MovementTypeEnum.OUTBOUND, inventoryDocument.getReferenceCode());
+        Map<Long, BigDecimal> itemOpenQuantityMap = produceOrderService.salesOpenQuantity(InventoryDocument.MovementTypeEnum.OUTBOUND, inventoryDocument.getReferenceCode());
         List<Long> completeIdList = Lists.newArrayListWithExpectedSize(inventoryDocument.getItemList().size());
 
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {

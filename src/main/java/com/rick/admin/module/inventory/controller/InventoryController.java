@@ -11,6 +11,7 @@ import com.rick.admin.module.inventory.service.InventoryDocumentService;
 import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.material.service.MaterialService;
+import com.rick.admin.module.produce.dao.ProduceOrderDAO;
 import com.rick.admin.module.produce.dao.ProduceOrderItemDetailDAO;
 import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.admin.module.produce.service.ProduceOrderService;
@@ -20,7 +21,6 @@ import com.rick.admin.module.purchase.service.PurchaseOrderService;
 import com.rick.common.http.exception.BizException;
 import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
-import com.rick.db.plugin.dao.core.EntityCodeDAO;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
 import com.rick.meta.dict.service.DictService;
@@ -68,7 +68,7 @@ public class InventoryController {
 
     final ProduceOrderService produceOrderService;
 
-    final EntityCodeDAO<ProduceOrder, Long> produceOrderDAO;
+    final ProduceOrderDAO produceOrderDAO;
 
     final MaterialService materialService;
 
@@ -132,7 +132,7 @@ public class InventoryController {
         } else if (referenceType == InventoryDocument.ReferenceTypeEnum.PO) {
             inventoryDocument = getDocumentFromPurchaseOrder(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.OUTBOUND : InventoryDocument.MovementTypeEnum.INBOUND, type, referenceType, referenceCode);
         } else if (referenceType == InventoryDocument.ReferenceTypeEnum.PDO) {
-            inventoryDocument = getDocumentFromProduceOrder(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.INBOUND : InventoryDocument.MovementTypeEnum.OUTBOUND, type, referenceType, referenceCode);
+            inventoryDocument = getDocumentFromProduceOrder(type == InventoryDocument.TypeEnum.RETURN_FROM_PRODUCE ? InventoryDocument.MovementTypeEnum.INBOUND : InventoryDocument.MovementTypeEnum.OUTBOUND, type, referenceType, referenceCode);
         }  else if (referenceType == InventoryDocument.ReferenceTypeEnum.SO) {
             inventoryDocument =  getDocumentFromSalesOrder(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.INBOUND : InventoryDocument.MovementTypeEnum.OUTBOUND, type, referenceType, referenceCode);
         } else {
@@ -145,13 +145,21 @@ public class InventoryController {
     }
 
     private InventoryDocument getDocumentFromPurchaseOrder(InventoryDocument.MovementTypeEnum movementType, InventoryDocument.TypeEnum type, InventoryDocument.ReferenceTypeEnum referenceType, String referenceCode) {
-        PurchaseOrder purchaseOrder = purchaseOrderDAO.selectByCode(referenceCode)
-                .orElseThrow(() -> new BizException(ExceptionCodeEnum.PO_DOCUMENT_NOT_FOUND_ERROR, new Object[]{referenceCode}));
+        PurchaseOrder purchaseOrder;
+        if (referenceCode.startsWith("PO")) {
+            // 完整 code 输入
+            purchaseOrder = purchaseOrderDAO.selectByCode(referenceCode)
+                    .orElseThrow(() -> new BizException(ExceptionCodeEnum.PO_DOCUMENT_NOT_FOUND_ERROR, new Object[]{referenceCode}));
+        } else {
+            purchaseOrder = purchaseOrderDAO.findActivePurchaseOrderByKeyCode(referenceCode)
+                    .orElseThrow(() -> new BizException("没有找到订单号，请输入更多的编号或者完整订单号！"));
+        }
+
         InventoryDocument inventoryDocument = InventoryDocument.builder()
                 .type(type)
                 .referenceType(referenceType)
-                .referenceCode(referenceCode)
-                .rootReferenceCode(referenceCode)
+                .referenceCode(purchaseOrder.getCode())
+                .rootReferenceCode(purchaseOrder.getCode())
                 .plantId(purchaseOrder.getPlantId())
                 .operatorId(UserContextHolder.get().getId())
                 .documentDate(LocalDate.now())
@@ -165,9 +173,9 @@ public class InventoryController {
                     .add(InventoryDocument.Item.builder()
                             .type(type)
                             .referenceType(referenceType)
-                            .referenceCode(referenceCode)
+                            .referenceCode(purchaseOrder.getCode())
                             .referenceItemId(item.getId())
-                            .rootReferenceCode(referenceCode)
+                            .rootReferenceCode(purchaseOrder.getCode())
                             .rootReferenceItemId(item.getId())
                             .movementType(InventoryDocument.MovementTypeEnum.INBOUND)
                             .plantId(purchaseOrder.getPlantId())
@@ -181,7 +189,7 @@ public class InventoryController {
                             .build());
         }
 
-        Map<Long, BigDecimal> itemOpenQuantityMap = purchaseOrderService.openQuantity(movementType, referenceCode);
+        Map<Long, BigDecimal> itemOpenQuantityMap = purchaseOrderService.openQuantity(movementType, purchaseOrder.getCode());
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
             item.setQuantity(ObjectUtils.defaultIfNull(itemOpenQuantityMap.get(item.getRootReferenceItemId()), BigDecimal.ZERO));
         }
@@ -190,6 +198,10 @@ public class InventoryController {
     }
 
     private InventoryDocument getDocumentFromProduceOrder(InventoryDocument.MovementTypeEnum movementType, InventoryDocument.TypeEnum type, InventoryDocument.ReferenceTypeEnum referenceType, String referenceCode) {
+        if (!referenceCode.startsWith("PDO")) {
+            referenceCode = produceOrderDAO.findActiveProduceOrderByKeyCode(referenceCode);
+        }
+
         String sql = "select produce_order_item_detail.`material_id`,\n" +
                 "       mm_material.code material_code," +
                 "       produce_order_item_detail.batch_id," +
@@ -231,17 +243,23 @@ public class InventoryController {
             item.setReferenceType(referenceType);
             item.setReferenceCode(referenceCode);
             item.setRootReferenceCode(referenceCode);
-            item.setMovementType(InventoryDocument.MovementTypeEnum.OUTBOUND);
+            item.setMovementType(movementType);
             item.setQuantity(ObjectUtils.defaultIfNull(itemOpenQuantityMap.get(item.getRootReferenceItemId()), BigDecimal.ZERO));
             item.setClassificationList(idDetailMap.get(item.getReferenceItemId()).getClassificationList());
         }
 
+        inventoryDocument.setReferenceCode(referenceCode);
         return inventoryDocument;
     }
 
-    private InventoryDocument getDocumentFromSalesOrder(InventoryDocument.MovementTypeEnum movementType, InventoryDocument.TypeEnum type, InventoryDocument.ReferenceTypeEnum referenceType, String referenceCode) {
+    private InventoryDocument getDocumentFromSalesOrder(InventoryDocument.MovementTypeEnum movementType, InventoryDocument.TypeEnum type, InventoryDocument.ReferenceTypeEnum referenceType, String referenceCode2) {
+        String referenceCode = referenceCode2;
+        if (!referenceCode2.startsWith("PDO")) {
+            referenceCode = produceOrderDAO.findActiveProduceOrderByKeyCode(referenceCode2);
+        }
+
         com.rick.admin.module.produce.entity.ProduceOrder produceOrder = produceOrderDAO.selectByCode(referenceCode)
-                .orElseThrow(() -> new BizException(ExceptionCodeEnum.PDO_DOCUMENT_NOT_FOUND_ERROR, new Object[]{referenceCode}));
+                .orElseThrow(() -> new BizException(ExceptionCodeEnum.PDO_DOCUMENT_NOT_FOUND_ERROR, new Object[]{referenceCode2}));
         InventoryDocument inventoryDocument = InventoryDocument.builder()
                 .type(type)
                 .referenceType(referenceType)
@@ -279,6 +297,7 @@ public class InventoryController {
             item.setQuantity(ObjectUtils.defaultIfNull(itemOpenQuantityMap.get(item.getRootReferenceItemId()), BigDecimal.ZERO));
         }
 
+        inventoryDocument.setCode(referenceCode);
         return inventoryDocument;
     }
 

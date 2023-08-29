@@ -29,15 +29,19 @@ public class ProduceOrderStockReportAdvice implements ReportAdvice {
         Map<String, String> characteristicTextMap = materialProfileService.getCharacteristicText(materialIdBatchIdStringCollection);
 
         for (Map<String, Object> row : rows) {
+            row.put("needPurchase",
+                    ((BigDecimal)row.get("stock_quantity")).add((BigDecimal)row.get("open_quantity")).subtract((BigDecimal)row.get("quantity")).compareTo(BigDecimal.ZERO) == -1);
+
             row.put("diffQuantity",
-                    ((BigDecimal)row.get("stock_quantity")).add((BigDecimal)row.get("open_quantity")).subtract((BigDecimal)row.get("quantity")));
+                    ((BigDecimal)row.get("stock_quantity")).subtract((BigDecimal)row.get("quantity")));
 
             row.put("characteristic", characteristicTextMap.get(MaterialProfileSupport.materialIdBatchIdString((Long) row.get("id"), (Long) row.get("batch_id"))));
         }
 
         //report.getAdditionalInfo().put("css", "div {color: red;}");
         // language=JS
-        String js = "$('table tr td:nth-child(11) span:contains(-)').css('color', '#ffffff').parents('tr').css('background', 'rgb(231, 116, 112)').css('color', '#ffffff')\n" +
+        String js = "$('table tr input[name=needPurchase][value=true]').css('color', '#ffffff').parents('tr').css('background', '#f86c6b').css('color', '#ffffff')\n" +
+                "$('table tr input[name=needPurchase][value=false]').css('color', '#ffffff').parents('tr').css('background', '#ffc107').css('color', '#ffffff')\n" +
                 "$('#batch-cpn-bar .btn-group').html('').append('<button class=\"btn btn-primary\" style=\"padding: .075rem .45rem\" type=\"button\" onclick=\"addPurchase()\" disabled>立即采购...</button>')\n" +
                 "function addPurchase() {\n" +
                 "    let materialIds = []\n" +
