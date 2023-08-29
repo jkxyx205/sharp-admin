@@ -144,6 +144,14 @@
                     .siblings().css('border-left', 'none')
             }
         },
+        getActiveRowValue: function () {
+            let $tr =  this.$table.find('tr:nth-child('+this.options.activeIndex+')')
+            return {
+                activeIndex: this.options.activeIndex,
+                $tr,
+                value: this._getValue($tr)
+            }
+        },
         each: function (callback) {
             this.$table.find('tbody tr:not(:last-child)').each((index, elem) => {
                 callback(index, this, $(elem), this._getValue($(elem)))
