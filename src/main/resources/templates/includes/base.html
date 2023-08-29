@@ -579,7 +579,10 @@
                 tabId = new Date().getTime()
             }
             // 'tab-' 防止 tabId 是纯数字，tab切换会有问题
-            window.parent.addTab('tab-' + tabId, name, url)
+            if ((tabId + '').match(/^\d+$/)) {
+                tabId = 'tab-' + tabId
+            }
+            window.parent.addTab(tabId, name, url)
         }
 
         function openOnNewTabLink(url, name) {

@@ -40,7 +40,10 @@ public abstract class AbstractHandler implements MovementHandler {
             item.setReferenceType(inventoryDocument.getReferenceType());
             item.setReferenceCode(inventoryDocument.getReferenceCode());
             item.setInventoryDocumentCode(inventoryDocument.getCode());
-            item.setPlantId(inventoryDocument.getPlantId());
+
+            if (item.getPlantId() == null) {
+                item.setPlantId(inventoryDocument.getPlantId());
+            }
         }
 
         handle0(inventoryDocument);
