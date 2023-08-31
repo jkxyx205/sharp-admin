@@ -22,7 +22,12 @@ delete from produce_bom_template_component_detail where type = 'MATERIAL' AND ex
 
 -- dirty data
 delete from pur_source_list where not exists(select 1 from core_partner where `partner_type` = 'VENDOR' AND core_partner.id = pur_source_list.partner_id AND core_partner.is_deleted = 0) or (not exists(select 1 from mm_material where mm_material.id = pur_source_list.material_id AND is_deleted = 0) AND pur_source_list.material_id is not null) or (select 1 from `core_material_category` where core_material_category.id = pur_source_list.material_category_id AND core_material_category.is_deleted = 0);
-delete from `sys_form_configurer` where id NOT IN (select config_id from sys_form_cpn_configurer) AND name <> 'COLOR';
+
+delete from `sys_form_configurer` where id NOT IN (select config_id from sys_form_cpn_configurer) AND name NOT IN (select CODE from `core_characteristic`);
+
+delete from sys_role_permission where not exists(select 1 from sys_role where sys_role.id = sys_role_permission.role_id) or not exists(select 1 from sys_permission where sys_permission.id = sys_role_permission.permission_id);
+
+delete from sys_user_role where not exists(select 1 from sys_role where sys_role.id = sys_user_role.role_id) or not exists(select 1 from sys_user where sys_user.id = sys_user_role.user_id);
 
 -- 以下是非 sys_开头的表，业务数据。
 truncate table inv_document;
