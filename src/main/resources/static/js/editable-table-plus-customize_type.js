@@ -309,15 +309,23 @@
             let html = []
             for (let classification of classificationList) {
                 for (let characteristicValue of classification.characteristicValue) {
-                    let item = "<div class='mb-2'>\n" +
-                        "            <label style='width: 50px; text-align: right' for=\"" + characteristicValue.code + "\">" + characteristicValue.description + "：</label>\n" +
-                        "            <select class='form-control' style='display: inline-block; width: auto;border-width: 1px;' id=\"" + characteristicValue.code + "\" name=\"" + characteristicValue.code + "\" " + (characteristicValue.required ? 'required = "required"' : '') + ">\n" +
-                        "<option value=''></option>" +
-                        "" + characteristicValue.options.map(d => {
-                            return '<option value="' + d.name + '">' + d.label + '</option>'
-                        }).join('') + "" +
-                        "            </select>\n" +
-                        "        </div>\n"
+                    let item
+                    if (characteristicValue.options && characteristicValue.options.length > 0) {
+                       item = "<div class='mb-2'>\n" +
+                            "            <label style='width: 50px; text-align: right' for=\"" + characteristicValue.code + "\">" + characteristicValue.description + "：</label>\n" +
+                            "            <select class='form-control' style='display: inline-block; width: auto;border-width: 1px;' id=\"" + characteristicValue.code + "\" name=\"" + characteristicValue.code + "\" " + (characteristicValue.required ? 'required = "required"' : '') + ">\n" +
+                            "<option value=''></option>" +
+                            "" + characteristicValue.options.map(d => {
+                                return '<option value="' + d.name + '">' + d.label + '</option>'
+                            }).join('') + "" +
+                            "            </select>\n" +
+                            "        </div>\n"
+                    } else {
+                        item = "<div class='mb-2'>\n" +
+                            "            <label style='width: 50px; text-align: right' for=\"" + characteristicValue.code + "\">" + characteristicValue.description + "：</label>\n" +
+                            "            <input class='form-control' style='display: inline-block; width: auto;border-width: 1px;' id=\"" + characteristicValue.code + "\" name=\"" + characteristicValue.code + "\" " + (characteristicValue.required ? 'required = "required"' : '') + ">\n" +
+                            "        </div>\n"
+                    }
 
                     html.push(item)
                     characteristicValueConsumer && characteristicValueConsumer(characteristicValue)

@@ -81,6 +81,7 @@
 
             // 固定表头
             this.$element.table({fixedHead: true})
+
             if (!this.options.readonly || hasData) {
                 $('.tr-empty.non-data').remove()
             }
@@ -139,13 +140,13 @@
             this.options.activeIndex = index
             // highlight
             if (this.options.highlight) {
-                this.$table.find('tr:nth-child('+this.options.activeIndex+')')
+                this.$table.find('tbody tr:nth-child('+this.options.activeIndex+')')
                     .css('border-left', '4px solid rgb(32, 168, 216)')
                     .siblings().css('border-left', 'none')
             }
         },
         getActiveRowValue: function () {
-            let $tr =  this.$table.find('tr:nth-child('+this.options.activeIndex+')')
+            let $tr =  this.$table.find('tbody tr:nth-child('+this.options.activeIndex+')')
             return {
                 activeIndex: this.options.activeIndex,
                 $tr,
@@ -180,8 +181,8 @@
         edit_only: function () {
             // 不能删除 和 添加行，只能编辑单元格
             this.$element.find('thead th:last-child').hide()
-            if (this.$table.find('tr').length > 1) {
-                this.$table.find('tr:not(:last-child) .operator, tr:last-child').hide()
+            if (this.$table.find('tbody tr').length > 1) {
+                this.$table.find('tbody tr:not(:last-child) .operator, tbody tr:last-child').hide()
             }
         },
         getColumnConfigs: function () {
@@ -196,7 +197,7 @@
         appendValue: function (value) {
             for (let row of value) {
                 this.$table.editableTable('addEmptyLine')
-                let $tr = this.$table.find("tr:last-child").prev()
+                let $tr = this.$table.find("tbody tr:last-child").prev()
                 this._setRowValue($tr, row)
             }
         },
