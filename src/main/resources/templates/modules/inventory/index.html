@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
       xmlns:sp="" lang="zh">
 <head th:replace="includes/base :: common_header(~{},~{::link},~{::style})">
     <link rel="stylesheet" th:href="@{/css/tab-common.css}">
@@ -454,6 +455,14 @@
             $referenceCode.val(urlObject.referenceCode)
             execute()
         }
+    </script>
+
+    <script sec:authorize="hasAuthority('ROLE_so')">
+        document.getElementById('type').value = 'OUTBOUND'
+        changeType(document.getElementById('type'))
+
+        document.getElementById('referenceType').value = 'SO'
+        changeReferenceType(document.getElementById('referenceType'))
     </script>
 </th:block>
 </body>

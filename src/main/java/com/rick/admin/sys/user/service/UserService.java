@@ -44,7 +44,7 @@ public class UserService {
             }
 
             List<String> authorityList = new ArrayList<>();
-
+            authorityList.add("USER_" + user.getCode());
             for (Role role : user.getRoleList()) {
                 authorityList.add("ROLE_" + role.getCode());
                 for (Permission permission : role.getPermissionList()) {

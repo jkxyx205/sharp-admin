@@ -4,10 +4,12 @@ import com.rick.admin.module.material.entity.Material;
 import com.rick.db.plugin.SQLUtils;
 import com.rick.db.plugin.dao.core.ColumnFillType;
 import com.rick.db.plugin.dao.core.EntityCodeDAOImpl;
+import com.rick.db.service.support.Params;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -28,6 +30,16 @@ public class MaterialDAO extends EntityCodeDAOImpl<Material, Long> {
         }
 
         return SQLUtils.update(getTableName(), "standard_price", paramsList, "id = ?");
+    }
+
+    public List<String> getSpecificationByCategory(Long categoryId) {
+        return selectByParams(Params.builder(1).pv("categoryId", categoryId).build(),
+                "specification", "category_id = :categoryId", String.class);
+    }
+
+    public List<Map> getNameAndSpecificationByCategory(Long categoryId) {
+        return selectByParams(Params.builder(1).pv("categoryId", categoryId).build(),
+                "name, specification", "category_id = :categoryId", Map.class);
     }
 
     @Override

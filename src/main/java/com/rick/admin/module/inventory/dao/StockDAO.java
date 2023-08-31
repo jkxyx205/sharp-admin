@@ -46,7 +46,7 @@ public class StockDAO extends EntityDAOImpl<Stock, Long> {
                 .pv("keyIds", materialIdBatchCodes.stream().map(mb -> mb.getMaterialId() + Objects.toString(mb.getBatchCode(), "")).collect(Collectors.toSet()))
                 .build());
 
-        return list.stream().collect(Collectors.toMap(m -> new MaterialIdBatchCode((Long) m.get("material_id"), (String) m.get("batch_code")), m -> (BigDecimal) m.get("quantity")));
+        return list.stream().collect(Collectors.toMap(m -> new MaterialIdBatchCode((Long) m.get("material_id"), Objects.toString(m.get("batch_code"), "")), m -> (BigDecimal) m.get("quantity")));
     }
 
 }

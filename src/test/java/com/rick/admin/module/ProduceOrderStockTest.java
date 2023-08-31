@@ -66,7 +66,7 @@ public class ProduceOrderStockTest {
                         "                                          pur_purchase_order_item.id = receive.root_reference_item_id\n" +
                         "                    where `is_complete` = 0\n" +
                         "                    group by material_id, pur_purchase_order_item.batch_code) open on open.material_id = mm_material.id AND                     ifnull(po.batch_code, '') = ifnull(open.batch_code, '')" +
-                        "where mm_material.id = :materialId\n" +
+                        "where IFNULL(stock.quantity, 0) < po.quantity AND mm_material.id = :materialId\n" +
                         "  AND mm_material.code = :materialCode")
                 .queryFieldList(Arrays.asList(
                         new QueryField("materialCode", "物料", QueryField.Type.TEXT)

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
       xmlns:sp="" lang="zh">
 <head th:replace="includes/base :: common_header(~{},~{::link},~{::style})">
     <link rel="stylesheet" th:href="@{/css/tab-common.css}">
@@ -65,8 +66,8 @@
             <button class="btn btn-primary" type="button" name="send" onclick="send()">
                 <i class="fa fa-send"></i> 提交</button>
 
-            <button class="btn btn-secondary ml-2" type="button" name="download" onclick="window.location = '/inventory/count/template'">
-                <i class="fa fa-upload"></i> 下载模版</button>
+<!--            <button class="btn btn-secondary ml-2" type="button" name="download" onclick="window.location = '/inventory/count/template'">-->
+<!--                <i class="fa fa-upload"></i> 下载模版</button>-->
         </div>
     </div>
 </th:block>
@@ -205,6 +206,19 @@
             });
         }
     </script>
+
+    <script sec:authorize="hasAuthority('USER_cqk')">
+        $('#plantId').val('726158903766683648')
+    </script>
+
+    <script sec:authorize="hasAuthority('USER_jxk')">
+        $('#plantId').val('726158996003622912')
+    </script>
+
+    <script sec:authorize="hasAuthority('USER_cpk')">
+        $('#plantId').val('726159086739001344')
+    </script>
+
 </th:block>
 </body>
 </html>

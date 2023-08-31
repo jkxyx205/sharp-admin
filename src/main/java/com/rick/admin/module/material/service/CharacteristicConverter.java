@@ -27,7 +27,7 @@ public class CharacteristicConverter implements ValueConverter<String> {
         if (CollectionUtils.isEmpty(characteristicList)) {
             return null;
         }
-        return characteristicList.stream().map(list -> list.get(1).toString()).collect(Collectors.joining("/"));
+        return characteristicList.stream().map(list -> list.get(1).toString()).collect(Collectors.joining(" "));
 
     }
 }

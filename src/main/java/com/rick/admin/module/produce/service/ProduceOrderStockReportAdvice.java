@@ -49,7 +49,7 @@ public class ProduceOrderStockReportAdvice implements ReportAdvice {
                 "    $('table > tbody td:nth-child(2) > input[type=checkbox]:checked').each(function () {\n" +
                 "        console.log($(this).prop(\"name\"), '...')\n" +
                 "        materialIds.push($(this).prop(\"name\") + '@' + $(this).parents('tr').find('[name=batch_id]').val())\n" +
-                "        quantity.push(Math.abs($(this).parents('tr').find(\"td\").eq(-1).text()))\n" +
+                "        quantity.push(Math.abs($(this).parents('tr').find(\"td\").eq(-1).text().replaceAll(',', '')))\n" +
                 "    })\n" +
                 "    \n" +
                 "    if (!materialIds.length) {\n" +

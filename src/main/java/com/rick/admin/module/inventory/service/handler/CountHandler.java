@@ -9,6 +9,7 @@ import com.rick.admin.module.material.entity.CharacteristicValue;
 import com.rick.admin.module.material.model.MaterialIdBatchCode;
 import com.rick.admin.module.material.service.BatchSupport;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -41,16 +42,18 @@ public class CountHandler extends AbstractHandler {
 
     @Override
     public void handle0(InventoryDocument inventoryDocument) {
+        Map<Long, MaterialIdBatchCode> collect = inventoryDocument.getItemList().stream().map(item -> new MaterialIdBatchCode(item.getMaterialId(),
+                        StringUtils.defaultString(BatchSupport.characteristicToCode(item.getClassificationList().stream().flatMap(p -> p.getCharacteristicValueList().stream()).map(CharacteristicValue::getValue).collect(Collectors.toList())))))
+                .collect(Collectors.toMap(MaterialIdBatchCode::getMaterialId, mb -> mb));
+
         Map<MaterialIdBatchCode, BigDecimal> materialIdStockQuantityMap
                 = stockDAO.getStockQuantityByMaterialIdAndBatchCode(inventoryDocument.getPlantId(),
-                inventoryDocument.getItemList().stream().map(item -> new MaterialIdBatchCode(item.getMaterialId(),
-                        BatchSupport.characteristicToCode(item.getClassificationList().stream().flatMap(p -> p.getCharacteristicValueList().stream()).map(CharacteristicValue::getValue).collect(Collectors.toList())))).collect(Collectors.toSet()));
+                collect.values());
 
         Iterator<InventoryDocument.Item> iterator = inventoryDocument.getItemList().iterator();
         while (iterator.hasNext()) {
             InventoryDocument.Item item = iterator.next();
-            BigDecimal quantityInDb = ObjectUtils.defaultIfNull(materialIdStockQuantityMap.get(new MaterialIdBatchCode(item.getMaterialId(),
-                    BatchSupport.characteristicToCode(item.getClassificationList().stream().flatMap(p -> p.getCharacteristicValueList().stream()).map(CharacteristicValue::getValue).collect(Collectors.toList())))), BigDecimal.ZERO);
+            BigDecimal quantityInDb = ObjectUtils.defaultIfNull(materialIdStockQuantityMap.get(collect.get(item.getMaterialId())), BigDecimal.ZERO);
             item.setRootReferenceCode(item.getInventoryDocumentCode());
 
             BigDecimal difference = item.getQuantity().subtract(quantityInDb);

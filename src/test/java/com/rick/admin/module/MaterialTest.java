@@ -450,10 +450,10 @@ public class MaterialTest {
                         new ReportColumn("name", "名称", true),
                         new ReportColumn("specification", "规格", false, null, Arrays.asList("characteristicConverter")),
                         new ReportColumn("characteristic", "特征值"),
-                        new ReportColumn("material_type", "类型", false, "material_type", Arrays.asList("dictConverter")),
+//                        new ReportColumn("material_type", "类型", false, "material_type", Arrays.asList("dictConverter")),
 //                        new ReportColumn("category_id", "分类", false, "core_material_category", Arrays.asList("dictConverter")),
                         new ReportColumn("category_path", "分类", false),
-                        new ReportColumn("batchManagement", "批次物料", false, null, Arrays.asList("boolConverter")),
+//                        new ReportColumn("batchManagement", "批次物料", false, null, Arrays.asList("boolConverter")),
                         new ReportColumn("base_unit", "基本单位", false, "unit", Arrays.asList("dictConverter")),
                         new ReportColumn("attachment", "附件"),
                         new ReportColumn("standard_price", "标准价格(元)").setType(ReportColumn.TypeEnum.DECIMAL).setAlign(AlignEnum.RIGHT),
@@ -549,7 +549,7 @@ public class MaterialTest {
                 .tplName("tpl/query_list")
                 .name("bom模版物料查询")
                 .querySql("select cast(mm_material.id as char(20)) materialId, mm_material.code code, mm_material.name, mm_material.specification, batch_management batchManagement, base_unit, base_unit as base_unit_name,combine.item_id, combine.partner_id, combine.batch_code, combine.characteristic, combine.remark, combine.create_time  from (SELECT * FROM\n" +
-                        "(select null item_id, null partner_id, id material_id, null batch_code, null batch_id, null characteristic, remark, null create_time from mm_material where bom_template_id is NOT NULL AND is_deleted = 0) t3\n" +
+                        "(select null item_id, null partner_id, id material_id, null batch_code, null batch_id, null characteristic, remark, null create_time from mm_material where bom_template_id is NOT NULL AND material_type = 'FERT' AND is_deleted = 0) t3\n" +
                         "UNION\n" +
                         "SELECT * FROM\n" +
                         "(select produce_order_item.id item_id, produce_order.partner_id, material_id, batch_code, batch_id, characteristic.characteristic, produce_order_item.remark, produce_order_item.create_time  from produce_order_item inner join produce_order on produce_order_item.produce_order_id = produce_order.id\n" +
@@ -576,7 +576,7 @@ public class MaterialTest {
                         new HiddenReportColumn("remark"),
                         new ReportColumn("code", "物料").setColumnWidth(80),
                         new ReportColumn("name", "名称").setTooltip(true),
-                        new ReportColumn("specification", "规格", false, null, Arrays.asList("characteristicConverter")).setTooltip(true),
+//                        new ReportColumn("specification", "规格", false, null, Arrays.asList("characteristicConverter")).setTooltip(true),
                         new ReportColumn("characteristic", "特征值"),
 //                        new ReportColumn("base_unit_name", "基本单位", false, "unit", Arrays.asList("dictConverter")),
                         new HiddenReportColumn("base_unit"),
