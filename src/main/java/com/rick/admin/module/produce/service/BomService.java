@@ -8,21 +8,21 @@ import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.common.http.exception.BizException;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
 import com.rick.db.plugin.dao.support.BaseEntityUtils;
+import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
 import com.rick.meta.dict.service.DictService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,29 +42,45 @@ public class BomService {
 
     MaterialService materialService;
 
+    Map<Long, BomTemplate> materialIdBomTemplateMap = new HashMap<>();
+
+    Map<Long, Material> idMaterialMap = new HashMap<>();
+
+    SharpService sharpService;
+
     @Resource
     private EntityCodeDAO<BomTemplate, Long> bomTemplateDAO;
+
+    @PostConstruct
+    public void init() {
+        String sql = "select id, bom_template_id from mm_material where `bom_template_id` is not null";
+        List<Map<String, Object>> list = sharpService.query(sql, null);
+
+        Map<Long, BomTemplate> bomTemplateIdMap = bomTemplateDAO.selectByIdsAsMap(list.stream().map(map -> map.get("bom_template_id")).collect(Collectors.toSet()));
+
+        for (Map<String, Object> row : list) {
+            materialIdBomTemplateMap.put((Long) row.get("id"), bomTemplateIdMap.get(row.get("bom_template_id")));
+        }
+
+        Set<Long> materialIdSet = bomTemplateIdMap.values().stream().flatMap(bomTemplate -> bomTemplate.getComponentList().stream()).flatMap(component -> component.getComponentDetailList().stream())
+                .filter(d -> d.getType() == BomTemplate.TypeEnum.MATERIAL).map(BomTemplate.ComponentDetail::getTypeInstanceId).collect(Collectors.toSet());
+
+
+        if (CollectionUtils.isNotEmpty(materialIdSet)) {
+            idMaterialMap.putAll(materialDAO.selectByParamsWithoutCascade(Params.builder(1).pv("id", materialIdSet).build(), "id IN (:id)")
+                    .stream().collect(Collectors.toMap(Material::getId, material -> material)));
+        }
+
+    }
 
     public BomTemplate getBomTemplateMaterialId(Long materialId, Map<Long, ProduceOrder.Item.Detail> valueMapping) {
         return getBomTemplateMaterialId(materialId, valueMapping, false);
     }
 
     public BomTemplate getBomTemplateMaterialId(Long materialId, Map<Long, ProduceOrder.Item.Detail> valueMapping, Boolean resetValueAdditionalFields) {
-        Optional<Long> bomTemplateOptional = materialDAO.selectSingleValueById(materialId, "bom_template_id", Long.class);
-        if (!bomTemplateOptional.isPresent()) {
+        BomTemplate bomTemplate = SerializationUtils.clone(materialIdBomTemplateMap.get(materialId));
+        if (Objects.isNull(bomTemplate)) {
             throw new BizException(500, "没有找到 bom 模版");
-        }
-
-        BomTemplate bomTemplate = bomTemplateDAO.selectById(bomTemplateOptional.get()).get();
-
-        Set<Long> materialIdSet = bomTemplate.getComponentList().stream().flatMap(component -> component.getComponentDetailList().stream())
-                .filter(d -> d.getType() == BomTemplate.TypeEnum.MATERIAL).map(BomTemplate.ComponentDetail::getTypeInstanceId).collect(Collectors.toSet());
-
-        Map<Long, Material> idMaterialMap = null;
-
-        if (CollectionUtils.isNotEmpty(materialIdSet)) {
-            idMaterialMap = materialDAO.selectByParamsWithoutCascade(Params.builder(1).pv("id", materialIdSet).build(), "id IN (:id)")
-                    .stream().collect(Collectors.toMap(Material::getId, material -> material));
         }
 
         for (BomTemplate.Component component : bomTemplate.getComponentList()) {

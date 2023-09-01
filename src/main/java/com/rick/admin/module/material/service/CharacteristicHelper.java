@@ -1,7 +1,6 @@
 package com.rick.admin.module.material.service;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.rick.admin.module.core.entity.Characteristic;
 import com.rick.admin.module.core.entity.Classification;
 import com.rick.admin.module.material.entity.CharacteristicValue;
@@ -29,8 +28,6 @@ import java.util.stream.Collectors;
 public class CharacteristicHelper {
 
     public void handlerSameReference(List<? extends BatchHandler> batchHandlerList) {
-        Set<List<com.rick.admin.module.material.entity.Classification>> container = Sets.newHashSetWithExpectedSize(batchHandlerList.size());
-
         // 处理分类的重复引用问题
         for (BatchHandler batchHandler : batchHandlerList) {
             List<com.rick.admin.module.material.entity.Classification> classificationList = batchHandler.getClassificationList();
@@ -38,15 +35,11 @@ public class CharacteristicHelper {
                 continue;
             }
 
-            if (container.contains(classificationList)) {
-                List<com.rick.admin.module.material.entity.Classification> newClassification = Lists.newArrayListWithExpectedSize(classificationList.size());
-                for (com.rick.admin.module.material.entity.Classification classification : classificationList) {
-                    newClassification.add(SerializationUtils.clone(classification));
-                }
-                batchHandler.setClassificationList(newClassification);
-            } else {
-                container.add(classificationList);
+            List<com.rick.admin.module.material.entity.Classification> newClassification = Lists.newArrayListWithExpectedSize(classificationList.size());
+            for (com.rick.admin.module.material.entity.Classification classification : classificationList) {
+                newClassification.add(SerializationUtils.clone(classification));
             }
+            batchHandler.setClassificationList(newClassification);
         }
     }
 
@@ -112,7 +105,7 @@ public class CharacteristicHelper {
     }
 
     /**
-     * 注意 不能有相同的引用
+     * 注意 确保不能有相同的引用， handlerSameReference 处理过的确保没有重复引用
      * @param classificationList
      * @param characteristicValueList
      */
@@ -127,18 +120,10 @@ public class CharacteristicHelper {
             for (Classification classification : classificationList) {
                 if (CollectionUtils.isNotEmpty(classification.getCharacteristicList())) {
                     Iterator<Characteristic> iterator = classification.getCharacteristicList().iterator();
-                    List<Characteristic> newCharacteristicList = Lists.newArrayListWithExpectedSize(classification.getCharacteristicList().size());
                     while (iterator.hasNext()) {
-                        // set default value 同一个引用，后面会覆盖前面！！！
-//                        // characteristic.getCpnConfigurer().setDefaultValue((String) map.get(materialClassification.getClassification().getId(), characteristic.getId()));
-                        // 拷贝
-                        Characteristic source = iterator.next();
-                        source.getCpnConfigurer().setDefaultValue((String) map.get(classification.getId(), source.getId()));
-                        Characteristic target = SerializationUtils.clone(source);
-                        newCharacteristicList.add(target);
-                        iterator.remove();
+                        Characteristic characteristic = iterator.next();
+                        characteristic.getCpnConfigurer().setDefaultValue((String) map.get(classification.getId(), characteristic.getId()));
                     }
-                    classification.getCharacteristicList().addAll(newCharacteristicList);
                 }
             }
         }
