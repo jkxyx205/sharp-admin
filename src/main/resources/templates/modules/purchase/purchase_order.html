@@ -41,7 +41,7 @@
 <body class="app">
 <th:block th:replace="includes/base :: common_content(~{::div})">
     <div class="container-fluid">
-        <div class="card">
+        <div class="card" sec:authorize="${hasAuthority('pur_purchase_order_add') or hasAuthority('pur_purchase_order_edit')}">
             <div class="card-body">
                 <form class="form-inline query-form-container" id="form-header">
                     <input type="hidden" id="id" th:value="${po.id}"/>
@@ -59,8 +59,8 @@
                         <input class="form-control" type="text" id="contactNumber" th:value="${po.contactNumber}" name="contactNumber" required>
                     </div>
                     <div class="form-group">
-                        <label class="col-form-label mr-2 required" for="contactMail">联系邮箱</label>
-                        <input class="form-control" type="text" id="contactMail" th:value="${po.contactMail}" name="contactMail" required>
+                        <label class="col-form-label mr-2" for="contactMail">联系邮箱</label>
+                        <input class="form-control" type="text" id="contactMail" th:value="${po.contactMail}" name="contactMail">
                     </div>
                     <div class="form-group">
                         <label class="col-form-label mr-2" for="plantId">入库库房</label>
@@ -100,7 +100,9 @@
                         <label>订单号：</label><span class="bold" th:text="${po.code}" id="code_text"></span>
                         <label>创建人：</label><span class="bold" th:text="${createName}"></span>
                         <label>创建时间：</label><span id="createTime" class="bold" th:text="${createTime}"></span>
-                        <label>预计本单应付：</label><span class="bold" id="total_amount" style="color: #f86c6b;">0</span>元
+                        <th:block sec:authorize="${hasAuthority('pur_purchase_order_add') or hasAuthority('pur_purchase_order_edit')}">
+                            <label>预计本单应付：</label><span class="bold" id="total_amount" style="color: #f86c6b;">0</span>元
+                        </th:block>
                         <input type="hidden" name="totalAmount" id="totalAmount">
                     </div>
                 </form>
@@ -185,7 +187,11 @@
     <script th:src="@{/js/upload.js}"></script>
 
     <script th:inline="javascript">
-        var readonly = false
+        let readonly = true
+        /*[# sec:authorize="${hasAuthority('pur_purchase_order_add') or hasAuthority('pur_purchase_order_edit')}"]*/
+            readonly = false
+        /*[/]*/
+
         let isAdd = /*[[${po.id == null}]]*/
         let formHeader = document.getElementById('form-header');
         let formItem = document.getElementById('form-item');
@@ -200,7 +206,7 @@
         var $editableTable = $('#table-container').editableTablePlus({
             customizeType,
             showRowNumber: true, // 是否显示行号
-            readonly: readonly, // 只读
+            // readonly, // 只读
             allowEmpty: false, // 表格允许为空
             columnConfigs: [
                 {
@@ -237,7 +243,7 @@
                     name: "materialName",
                     title: "名称",
                     render: function (row) {
-                        return '<a href="javascript:;" onclick="showMaterialDialog(\''+row.materialId+'\')">'+row.materialName+'</a>'
+                        return readonly ? row.materialName : '<a href="javascript:;" onclick="showMaterialDialog(\''+row.materialId+'\')">'+row.materialName+'</a>'
                     }
                 },
                 {
@@ -273,7 +279,7 @@
                     required: false,
                 },
                 {
-                    type: "decimal",
+                    type: readonly ? "hidden": "decimal",
                     name: "unitPrice",
                     title: "含税单价",
                     align: 'right',
@@ -284,7 +290,7 @@
                     }
                 },
                 {
-                    type: "label",
+                    type: readonly ? "hidden": "label",
                     name: "amount",
                     width: 100,
                     title: "含税总计",
@@ -460,6 +466,10 @@
                 $trs.find('[name=materialCode]').attr('disabled', true)
                 // $trs.find('td.operator').hide()
             }
+        }
+
+        if (readonly) {
+            $editableTable.editableTablePlus('readonly', true)
         }
     </script>
 </th:block>

@@ -26,7 +26,7 @@ import java.util.List;
 @Table(value = "mm_batch", comment = "物料批次")
 public class Batch extends BaseEntity {
 
-    @Length(max = 256, message = "编号不能超过32个字符")
+    @Length(max = 512, message = "编号不能超过512个字符")
     @NotNull
     @Pattern(regexp = "^[0-9a-zA-Z_/%-]{1,}$", message = "CODE只能包含数字、字母、下划线、中划线")
     @Column(value = "code", updatable = false, comment = "外部可见，唯一code", nullable = false)

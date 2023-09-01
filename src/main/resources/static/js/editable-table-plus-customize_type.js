@@ -160,7 +160,7 @@
                 // })
             },
             formatTr: function ($td, columnConfig) {
-                $td.append("<div class='characteristic-popup' style=\'position: fixed; padding: 12px; background: #ffffff; /*border: 1px solid #c8ced3;*/ box-shadow: 0 2px 12px 0 rgba(0,0,0,0.12); display: none;\'>\n" +
+                $td.append("<div class='characteristic-popup' style=\'position: fixed; z-index: 999; padding: 12px; background: #ffffff; /*border: 1px solid #c8ced3;*/ box-shadow: 0 2px 12px 0 rgba(0,0,0,0.12); display: none;\'>\n" +
                     "    <div class=\'items\'>\n " +
                     "    </div>\n    " +
                     // "<div style=\'text-align: right\'>\n<button type=\'button\' class=\'btn btn-primary btn-sm\'>确定</button>\n    </div>\n" +

@@ -149,9 +149,9 @@
     }
 
     /*<![CDATA[*/
-    var readonly = [[${query.readonly}]]
+    var materialReadonly = [[${query.readonly}]]
     $(document).ready(function () {
-        if (readonly === 'true') {
+        if (materialReadonly === 'true') {
             $("form.readonly :input").prop("disabled", true);
             $('table .operator').hide()
             $('#okId').hide()
@@ -164,7 +164,7 @@
     var tables = p.filter(c => c.configurer.cpnType == 'TABLE')
     tables.forEach(c => {
         $('.' + c.name).editableTable({
-            readonly,
+            readonly: materialReadonly,
             columns: c.configurer.additionalInfo.columns.length
         })
     })

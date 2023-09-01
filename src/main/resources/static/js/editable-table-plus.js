@@ -387,7 +387,7 @@
                     })
                 } else if(columnConfig.type === 'render') {
                     // $td.html(columnConfig.render()).css('padding', "0 8px");
-                    $td.html('').css('padding', "0 8px");
+                    $td.html('').css('padding', "0 8px").css('text-align', columnConfig.align ?  columnConfig.align : 'left');
                 } else {
                     this.options.customizeType[columnConfig.type] && this.options.customizeType[columnConfig.type].formatTr($td, columnConfig)
                 }

@@ -1,5 +1,4 @@
 server:
-  port: 8080
   servlet:
     session:
       timeout: 480m
@@ -44,13 +43,6 @@ spring:
           auth: true
           starttls:
             enable: true
-logging:
-  level:
-    com.rick.admin: DEBUG
-    com.rick.db: DEBUG
-  file:
-    path: /Users/rick/Space/tmp/admin/log
-
 sharp:
   database:
     entity-base-package: com.rick.admin.module.**.entity
@@ -101,11 +93,6 @@ dict:
       map: { "PLANNING": "采购中", "DONE": "采购完成"}
 
 props:
-  items: {"material_category_select_sql": "select id, name, (select name from core_material_category where c1.parent_id = id) parent_name from `core_material_category` c1 where id not in(719894871824945152, 719894910232186880, 719894937591631872, 719895017157578752)"}
+  items: {"material_category_select_sql": "select id, name, (select name from core_material_category where c1.parent_id = id) parent_name from `core_material_category` c1 where id not in(719894871824945152, 719894910232186880, 719894937591631872, 719895017157578752) ORDER BY order_index ASC"}
 
 
-fileupload:
-  tmp: /Users/rick/Space/tmp/fastdfs/tmp # 下载的临时目录
-  local: # cd /Users/rick/Space/tmp/fileupload && http-server -p 7892
-    root-path: /Users/rick/Space/tmp/fileupload
-    server-url: http://localhost:7892/ # 映射到tmp目录
