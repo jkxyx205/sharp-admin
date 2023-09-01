@@ -83,35 +83,33 @@ public class CharacteristicTest {
                 .required(true)
                 .build());
 
-//        characteristicService.saveOrUpdate(CharacteristicDTO.builder()
-//                .type(Characteristic.CharacteristicTypeEnum.TEXT)
-//                .code("AREA")
-//                .description("平方")
-//                .cpnType(CpnTypeEnum.RADIO) // 单选
-//                .options(Arrays.asList(
-//                        new CpnConfigurer.CpnOption("1.2平方"),
-//                        new CpnConfigurer.CpnOption("1.5平方"),
-//                        new CpnConfigurer.CpnOption("2.0平方"),
-//                        new CpnConfigurer.CpnOption("2.5平方"),
-//                        new CpnConfigurer.CpnOption("3.0平方")
-//                ))
-//                .required(true)
-//                .build());
+        characteristicService.saveOrUpdate(CharacteristicDTO.builder()
+                .type(Characteristic.CharacteristicTypeEnum.TEXT)
+                .code("XIANGXIAN")
+                .description("相线")
+                .cpnType(CpnTypeEnum.RADIO) // 单选
+                .options(Arrays.asList(
+                        new CpnConfigurer.CpnOption("3C头子"),
+                        new CpnConfigurer.CpnOption("普通子弹头"),
+                        new CpnConfigurer.CpnOption("Φ5子弹头"),
+                        new CpnConfigurer.CpnOption("O型圈"),
+                        new CpnConfigurer.CpnOption("MT60端子")
+                ))
+                .required(true)
+                .build());
 
-//        characteristicService.saveOrUpdate(CharacteristicDTO.builder()
-//                .type(Characteristic.CharacteristicTypeEnum.TEXT)
-//                .code("HNRX")
-//                .description("平方")
-//                .cpnType(CpnTypeEnum.RADIO) // 单选
-//                .options(Arrays.asList(
-//                        new CpnConfigurer.CpnOption("1.2平方"),
-//                        new CpnConfigurer.CpnOption("1.5平方"),
-//                        new CpnConfigurer.CpnOption("2.0平方"),
-//                        new CpnConfigurer.CpnOption("2.5平方"),
-//                        new CpnConfigurer.CpnOption("3.0平方")
-//                ))
-//                .required(true)
-//                .build());
+        characteristicService.saveOrUpdate(CharacteristicDTO.builder()
+                .type(Characteristic.CharacteristicTypeEnum.TEXT)
+                .code("HUOERXIAN")
+                .description("霍尔线")
+                .cpnType(CpnTypeEnum.RADIO) // 单选
+                .options(Arrays.asList(
+                        new CpnConfigurer.CpnOption("2.8插片"),
+                        new CpnConfigurer.CpnOption("SM-6A插针"),
+                        new CpnConfigurer.CpnOption("SM-6Y插簧")
+                ))
+                .required(true)
+                .build());
 
         characteristicService.saveOrUpdate(CharacteristicDTO.builder()
                 .type(Characteristic.CharacteristicTypeEnum.TEXT)

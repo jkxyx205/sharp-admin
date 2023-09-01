@@ -35,7 +35,7 @@ public class ClassificationTest {
 
 //        classificationService.saveOrUpdate(new ClassificationDTO(null, "XIANBAO", "线包组件", Arrays.asList("TIEX", "TONGX")));
 
-        classificationService.saveOrUpdate(new ClassificationDTO(null, "LINE", "引出线", Arrays.asList("XIN", "AREA", "LENGTH")));
+        classificationService.saveOrUpdate(new ClassificationDTO(null, "LINE", "引出线", Arrays.asList("XIN", "AREA", "XIANGXIAN","HUOERXIAN","LENGTH")));
 
     }
 }
