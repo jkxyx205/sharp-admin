@@ -300,7 +300,9 @@
             }
 
         }
-        
+
+        let referenceCode;
+
         function execute() {
             let formOperatorValidity = formOperator.checkValidity()
             formOperator.classList.add('was-validated')
@@ -312,7 +314,7 @@
                 // ajax
                 $.get("/inventory/documents", {type: type.value, referenceType:referenceTypeDom.value, referenceCode: $referenceCode.val()},function (res) {
                     $referenceCode.val(res.code ? res.code : res.referenceCode)
-
+                    referenceCode = $referenceCode.val()
                     console.log(res)
 
                     // $editableTable.editableTablePlus('setValue', res.itemList)
