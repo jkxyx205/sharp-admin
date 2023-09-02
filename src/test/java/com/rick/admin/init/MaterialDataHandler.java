@@ -47,14 +47,16 @@ public class MaterialDataHandler {
         categoryMap.put("辐条轮-轮毂", "COLOR");
         categoryMap.put("一体轮-轮毂", "COLOR");
         categoryMap.put("端盖", "COLOR");
+        categoryMap.put("线", "LINE");
 
         materialDAO.delete(Collections.emptyMap(), "material_type = 'ROH'");
         Map<String, Long> categoryNameIdMap = categoryDAO.selectAll().stream().collect(Collectors.toMap(Category::getName, Category::getId));
         Map<String, String> unitLabelNameMap = dictService.getDictByType("unit").stream().collect(Collectors.toMap(Dict::getLabel, Dict::getName));
 
         String path = "/Users/rick/Space/tmp/py/data/material.xlsx";
+
         ExcelReader.readExcelContent(new FileInputStream(path), (index, data, sheetIndex, sheetName) -> {
-            if (data.length < 4 || StringUtils.isBlank((CharSequence) data[1]) || StringUtils.isBlank((CharSequence) data[3])) {
+            if (data.length < 4 || StringUtils.isBlank(dataToString(data[1])) || StringUtils.isBlank(dataToString(data[3]))) {
                 return false;
             }
 
@@ -68,11 +70,12 @@ public class MaterialDataHandler {
                 Boolean batchManagement = (data.length == 5) ? (Objects.equals(data[4], "1") || Objects.equals(String.valueOf(data[4]), "1.0")) : false;
 
                 Map<String, Object> values = new HashMap<>();
-                values.put("code", data[0]);
-                values.put("name", data[1]);
+                String name = dataToString(data[1]);
+                values.put("code", dataToString(data[0]));
+                values.put("name", name);
                 values.put("specificationList", specificationList);
 
-                String unitLabel = (String) data[3];
+                String unitLabel = dataToString(data[3]);
                 if (unitLabel.matches("[a-zA-z]+")) {
                     unitLabel = unitLabel.toUpperCase();
                 }
@@ -86,13 +89,20 @@ public class MaterialDataHandler {
 
                 String classificationCode = categoryMap.get(sheetName);
                 if (StringUtils.isNotBlank(classificationCode)) {
-                    values.put("batchManagement", true);
+                    values.put("batchManagement", Arrays.asList(1));
                 }
 
                 materialFormAdvice.beforeInstanceHandle(null, null, values);
                 materialDAO.insertOrUpdate(values);
 
                 if (StringUtils.isNotBlank(classificationCode)) {
+                    if (classificationCode.equals("LINE")) {
+                       if (name.equals("防水线")) {
+                           classificationCode = "LINE_FS";
+                       }  else if (name.equals("过桥线")) {
+                           classificationCode = "LINE_GQ";
+                       }
+                    }
                     classificationService.batchAssignClassification(classificationCode, Arrays.asList((Long) values.get("id")));
                 }
 

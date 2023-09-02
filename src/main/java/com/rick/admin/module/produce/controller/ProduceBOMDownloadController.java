@@ -61,8 +61,8 @@ public class ProduceBOMDownloadController {
         float heightInPoints = 25f;
 
         ExcelWriter excelWriter = new ExcelWriter();
-        excelWriter.getActiveSheet().setColumnWidth(0, 6000);
-        excelWriter.getActiveSheet().setColumnWidth(1, 8000);
+        excelWriter.getActiveSheet().setColumnWidth(0, 5000);
+        excelWriter.getActiveSheet().setColumnWidth(1, 9000);
 
         excelWriter.writeRow(new ExcelRow(1,1, heightInPoints, "生产单号：" + item.getProduceOrderCode()));
         excelWriter.writeRow(new ExcelRow(3,1, heightInPoints, new Object[]{"交货日期：" + Time2StringUtils.format(item.getDeliveryDate())}));

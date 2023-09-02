@@ -102,6 +102,8 @@ public class CountController {
                     List<List<String>> optionList = classificationList.stream().flatMap(classification -> classification.getCharacteristicList().stream())
                             .map(characteristic -> characteristic.getCpnConfigurer().getOptions().stream().map(CpnConfigurer.CpnOption::getLabel).collect(Collectors.toList())).collect(Collectors.toList());
                     characteristicValueList = Lists.newArrayList();
+
+                    optionList = optionList.stream().filter(option -> CollectionUtils.isNotEmpty(option)).collect(Collectors.toList());
                     getCharacteristicValueList(characteristicValueList, optionList, 0, "");
                     characteristicValueListMap.put(materialId, characteristicValueList);
                     characteristicValueListSize += characteristicValueList.size();
@@ -235,6 +237,7 @@ public class CountController {
         if (index >= data.size()) {
             return;
         }
+
 
         for (String s : data.get(index)) {
             if (index == data.size() - 1) {

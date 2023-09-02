@@ -5,6 +5,7 @@ import com.rick.admin.module.inventory.dao.StockDAO;
 import com.rick.report.core.entity.Report;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -28,6 +29,8 @@ public class MaterialReportAdvice extends MaterialKeywordsSearchReportService {
 
     private final MaterialProfileService materialProfileService;
 
+    private final CharacteristicConverter characteristicConverter;
+
     @Override
     public void beforeSetRow(Report report, List<Map<String, Object>> rows) {
 //        Map<Long, BigDecimal> materialIdQuantityMap = stockDAO.getStockQuantityByMaterialId(rows.stream().map(m -> (Long) m.get("id")).collect(Collectors.toSet()));
@@ -49,6 +52,8 @@ public class MaterialReportAdvice extends MaterialKeywordsSearchReportService {
 
             row.put("category_path", categoryService.getPathById((Long) row.get("category_id")));
             row.put("characteristic", characteristicTextMap.get(MaterialProfileSupport.materialIdBatchIdString((Long) row.get("id"), (Long) row.get("batch_id"))));
+            String specification = characteristicConverter.convert(null, (String) row.get("specification"));
+            row.put("specificationAndCharacteristic", (StringUtils.isBlank(specification) ? "" : specification + " ") + Objects.toString(row.get("characteristic"), ""));
 
             // 可以做一些权限处理，比如将库存金额设置为空； 删选某些数据
         }
@@ -56,7 +61,7 @@ public class MaterialReportAdvice extends MaterialKeywordsSearchReportService {
         // 添加样式
 //        report.getAdditionalInfo().put("css", "#report-list div.card-body-scroll-panel > table > thead > th:nth-child(10) { color: red;}");
 //        report.getAdditionalInfo().put("css", "div {color: red;}");
-//        report.getAdditionalInfo().put("js", "alert(123)");
+        report.getAdditionalInfo().put("js", "$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/inventory/count/template\"><i class=\"fa fa-upload\"></i> 库存报表</a>'); $('#exportBtn').hide();");
 
         // language=javascript
 //        String js = "setTimeout(function () {\n" +
