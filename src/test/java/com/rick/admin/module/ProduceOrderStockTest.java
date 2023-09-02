@@ -39,6 +39,7 @@ public class ProduceOrderStockTest {
                         "       concat(mm_material.id, ifnull(batch_id, '')) materialIdBatchIdString,\n" +
                         "       IFNULL(stock.quantity, 0)     stock_quantity,\n" +
                         "       IFNULL(open.open_quantity, 0) open_quantity,\n" +
+                        "       IFNULL(pdo_receive.quantity, 0) receive_quantity,\n" +
                         "       po.quantity FROM mm_material\n" +
                         "         inner join (select produce_order_item_detail.material_id, produce_order_item_detail.batch_id,produce_order_item_detail.batch_code,\n" +
                         "                            sum(produce_order_item.quantity * produce_order_item_detail.quantity) quantity\n" +
@@ -46,8 +47,11 @@ public class ProduceOrderStockTest {
                         "                              left join produce_order_item on produce_order.id = produce_order_item.`produce_order_id`\n" +
                         "                              inner join produce_order_item_detail on produce_order_item_detail.produce_order_item_id = produce_order_item.id WHERE produce_order.`status` = 'PLANNING'\n" +
                         "                     group by produce_order_item_detail.material_id, produce_order_item_detail.batch_code) po on po.material_id = mm_material.id\n" +
-                        "         left join (select material_id, batch_code, sum(quantity) quantity from inv_stock group by material_id, batch_code) stock\n" +
-                        "                   on stock.material_id = mm_material.id AND ifnull(stock.batch_code, '') = ifnull(po.batch_code, '') \n" +
+                        "         left join (select material_id, batch_code, sum(quantity) quantity from inv_stock where plant_id = 719893335619162112 group by material_id, batch_code ) stock\n" +
+                        "                   on stock.material_id = mm_material.id AND ifnull(stock.batch_code, '') = ifnull(po.batch_code, '')\n" +
+                        "\t\t left join(select inv_document_item.material_id, inv_document_item.batch_code,\n" +
+                        "                                               ABS(ifnull(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity), 0)) quantity\n" +
+                        "                                        from inv_document_item where plant_id = '719893335619162112' AND reference_type='PDO' AND exists (select 1 from produce_order where produce_order.`status` = 'PLANNING' AND root_reference_code = produce_order.code) group by inv_document_item.material_id, inv_document_item.batch_code) pdo_receive on pdo_receive.material_id = mm_material.id AND ifnull(pdo_receive.batch_code, '') = ifnull(po.batch_code, '')\n" +
                         "         left join (select material_id, batch_code,\n" +
                         "                           sum(pur_purchase_order_item.quantity - ifnull(receive.quantity, 0)) open_quantity\n" +
                         "                    from `pur_purchase_order_item`\n" +
@@ -65,8 +69,7 @@ public class ProduceOrderStockTest {
                         "                                       on pur_purchase_order_item.purchase_order_code = receive.root_reference_code and\n" +
                         "                                          pur_purchase_order_item.id = receive.root_reference_item_id\n" +
                         "                    where `is_complete` = 0\n" +
-                        "                    group by material_id, pur_purchase_order_item.batch_code) open on open.material_id = mm_material.id AND                     ifnull(po.batch_code, '') = ifnull(open.batch_code, '')" +
-                        "where IFNULL(stock.quantity, 0) < po.quantity AND mm_material.id = :materialId\n" +
+                        "                    group by material_id, pur_purchase_order_item.batch_code) open on open.material_id = mm_material.id AND ifnull(po.batch_code, '') = ifnull(open.batch_code, '') where IFNULL(stock.quantity, 0) + IFNULL(pdo_receive.quantity, 0)  < po.quantity AND mm_material.id = :materialId\n" +
                         "  AND mm_material.code = :materialCode")
                 .queryFieldList(Arrays.asList(
                         new QueryField("materialCode", "物料", QueryField.Type.TEXT)
@@ -78,10 +81,11 @@ public class ProduceOrderStockTest {
                         new ReportColumn("specification", "规格", false, null, Arrays.asList("characteristicConverter")),
                         new ReportColumn("characteristic", "特征值"),
                         new ReportColumn("base_unit", "基本单位", false, "unit", Arrays.asList("dictConverter")),
-                        new ReportColumn("stock_quantity", "实际库存").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
+                        new ReportColumn("stock_quantity", "材料库库存").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
                         new ReportColumn("open_quantity", "在途库存").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
+                        new ReportColumn("receive_quantity", "已领料").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
                         new ReportColumn("quantity", "生产需求").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
-                        new ReportColumn("diffQuantity", "差异").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
+                        new ReportColumn("diffQuantity", "待采购").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
                         new HiddenReportColumn("batch_code"),
                         new HiddenReportColumn("batch_id"),
                         new HiddenReportColumn("needPurchase")
