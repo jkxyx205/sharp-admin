@@ -77,7 +77,7 @@
                     <div class="form-group">
                         <label class="col-form-label mr-2" for="remark">附件</label>
                         <div class="attachment">
-                            <input type="file" multiple="multiple" name="attachment_file" id="attachment_file" data-group-name="purchase" onchange="upload.ajaxFileUpload()" style="width: 100px;">
+                            <input type="file" multiple="multiple" name="attachment_file" id="attachment_file" data-group-name="purchase" onchange="upload.ajaxFileUpload()" style="width: 99px;">
                             <input type="text" style="display:none;" name="attachmentList" id="attachmentList" th:value="${po.attachmentList ne null ? T(com.rick.common.util.JsonUtils).toJson(po.attachmentList) : '[]'}">
 
                             <th:block th:if="${po.attachmentList ne null}">
