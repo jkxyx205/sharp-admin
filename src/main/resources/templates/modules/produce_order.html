@@ -21,9 +21,9 @@
             border-top: 1px solid #c8ced3;
         }
 
-        #form-item .table-fixed-container {
-            max-height: calc(100vh - 630px);
-        }
+        /*#form-item .table-fixed-container {*/
+        /*    max-height: calc(100vh - 630px);*/
+        /*}*/
 
         @media screen and (min-width: 576px) {
             .card-body-scroll-panel {
@@ -497,7 +497,7 @@
                     width: 100,
                 },
                 {
-                    type: "render",
+                    type: isAdd ? "hidden": "render",
                     name: "download",
                     title: "BOM",
                     align: 'center',
