@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Getter
 @Setter
@@ -26,6 +27,10 @@ public class TreeNode implements Serializable {
 	private String icon;
 	
 	private String iconSkin;
+
+	private int level;
+
+	private List<TreeNode> subTreeNodeList;
 
 	@Override
 	public boolean equals(Object o) {
