@@ -35,7 +35,8 @@ public class ClassificationTest {
 
 //        classificationService.saveOrUpdate(new ClassificationDTO(null, "XIANBAO", "线包组件", Arrays.asList("TIEX", "TONGX")));
 
-        classificationService.saveOrUpdate(new ClassificationDTO(null, "LINE", "引出线", Arrays.asList("XIN", "AREA", "XIANGXIAN","HUOERXIAN","LENGTH")));
-
+//        classificationService.saveOrUpdate(new ClassificationDTO(null, "LINE", "普通线", Arrays.asList("XIN", "AREA", "XIANGXIAN","HUOERXIAN","LENGTH")));
+        classificationService.saveOrUpdate(new ClassificationDTO(null, "LINE_FS", "防水线", Arrays.asList("XIN", "AREA", "JIETOU", "XIANGXIAN","HUOERXIAN","LENGTH")));
+        classificationService.saveOrUpdate(new ClassificationDTO(null, "LINE_GQ", "过桥线", Arrays.asList("LENGTH")));
     }
 }

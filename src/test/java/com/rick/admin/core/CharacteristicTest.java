@@ -43,10 +43,15 @@ public class CharacteristicTest {
                 .options(Arrays.asList(
                         new CpnConfigurer.CpnOption("亚黑"),
                         new CpnConfigurer.CpnOption("光亮"),
+                        new CpnConfigurer.CpnOption("亮黑"),
                         new CpnConfigurer.CpnOption("银色"),
                         new CpnConfigurer.CpnOption("白色"),
+                        new CpnConfigurer.CpnOption("蓝色"),
                         new CpnConfigurer.CpnOption("黄色"),
-                        new CpnConfigurer.CpnOption("蓝色")
+                        new CpnConfigurer.CpnOption("橙色"),
+                        new CpnConfigurer.CpnOption("橘黄色"),
+                        new CpnConfigurer.CpnOption("柠檬黄色"),
+                        new CpnConfigurer.CpnOption("法拉利红")
                 ))
                 .required(true)
                 .build());
@@ -54,6 +59,18 @@ public class CharacteristicTest {
 
     @Test
     public void insertOrUpdateCharacteristicLine() {
+        characteristicService.saveOrUpdate(CharacteristicDTO.builder()
+                .type(Characteristic.CharacteristicTypeEnum.TEXT)
+                .code("JIETOU")
+                .description("接头")
+                .cpnType(CpnTypeEnum.RADIO) // 单选
+                .options(Arrays.asList(
+                        new CpnConfigurer.CpnOption("公头"),
+                        new CpnConfigurer.CpnOption("母头")
+                ))
+                .required(true)
+                .build());
+
         characteristicService.saveOrUpdate(CharacteristicDTO.builder()
                 .type(Characteristic.CharacteristicTypeEnum.TEXT)
                 .code("XIN")
