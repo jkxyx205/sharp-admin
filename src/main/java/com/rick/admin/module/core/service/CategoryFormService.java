@@ -5,6 +5,7 @@ import com.rick.formflow.form.service.FormAdvice;
 import com.rick.formflow.form.service.bo.FormBO;
 import com.rick.meta.dict.service.DictService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -23,7 +24,9 @@ public class CategoryFormService implements FormAdvice {
 
     @Override
     public void beforeInstanceHandle(FormBO form, Long instanceId, Map<String, Object> values) {
-
+        if (StringUtils.isBlank((CharSequence) values.get("parentId"))) {
+            values.put("parentId", 0);
+        }
     }
 
     @Override
@@ -31,5 +34,6 @@ public class CategoryFormService implements FormAdvice {
         categoryService.rebuild();
         dictService.rebuild("core_material_category");
         dictService.rebuild(DictDOSupplierImpl.CATEGORY_PATH);
+        dictService.rebuild(DictDOSupplierImpl.TREE_CATEGORY);
     }
 }

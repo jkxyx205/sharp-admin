@@ -1,6 +1,8 @@
 package com.rick.admin.core;
 
 import com.google.common.collect.Lists;
+import com.rick.admin.plugin.ztree.model.TreeNode;
+import com.rick.admin.plugin.ztree.model.TreeNodeService;
 import com.rick.db.service.support.Params;
 import com.rick.formflow.form.cpn.core.CpnConfigurer;
 import com.rick.formflow.form.cpn.core.CpnTypeEnum;
@@ -18,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,7 +44,8 @@ public class CategoryTest {
     @Autowired
     private FormService formService;
 
-
+    @Resource
+    private TreeNodeService treeNodeService;
 
     @Test
     public void testForm() {
@@ -73,7 +77,8 @@ public class CategoryTest {
                 .cpnType(CpnTypeEnum.SELECT)
                 .name("parentId")
                 .label("上级分类")
-                .datasource("core_material_category")
+//                .datasource("core_material_category")
+                .datasource("TREE_CATEGORY")
                 .build();
 
         CpnConfigurer nameCpn = CpnConfigurer.builder()
@@ -100,7 +105,7 @@ public class CategoryTest {
                 .additionalInfo(Params.builder(1).pv("formId", "695658661183229952").build())
                 .querySql("SELECT core_material_category.id, core_material_category.parent_id, core_material_category.name, p.name parent_name, sys_user.name create_name,DATE_FORMAT(core_material_category.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM core_material_category left join sys_user on sys_user.id = core_material_category.create_by left join core_material_category p on p.id = core_material_category.parent_id WHERE core_material_category.parent_id = :parentId AND core_material_category.name like :name AND core_material_category.is_deleted = 0")
                 .queryFieldList(Arrays.asList(
-                        new QueryField("parentId", "上级分类", QueryField.Type.SELECT, "core_material_category"),
+                        new QueryField("parentId", "上级分类", QueryField.Type.SELECT, "TREE_CATEGORY"),
                         new QueryField("name", "名称", QueryField.Type.TEXT)
                 ))
                 .reportColumnList(Arrays.asList(
@@ -116,5 +121,11 @@ public class CategoryTest {
                 .sidx("id")
                 .sord(SordEnum.ASC)
                 .build());
+    }
+
+    @Test
+    public void testCategoryService() {
+        List<TreeNode> selectTreeNode = treeNodeService.getSelectTreeNode("select id, name, parent_id \"pId\" from `core_material_category` order by order_index asc");
+        System.out.println(selectTreeNode);
     }
 }

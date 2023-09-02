@@ -2,6 +2,7 @@ package com.rick.admin.module.core.service;
 
 import com.rick.admin.module.core.dao.CategoryDAO;
 import com.rick.admin.module.core.entity.Category;
+import com.rick.admin.plugin.ztree.model.TreeNodeService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -32,9 +33,16 @@ public class CategoryService implements InitializingBean {
 
     Map<Long, String> idCategoryPathMap = new HashMap<>();
 
+    TreeNodeService treeNodeService;
+
     public String getPathById(Long id) {
         return idCategoryPathMap.get(id);
     }
+
+//    public List<TreeNode> getSelectTreeNode() {
+//        List<TreeNode> selectTreeNode = treeNodeService.getSelectTreeNode("select id, name, parent_id \"pId\" from `core_material_category` order by order_index asc");
+//        return selectTreeNode;
+//    }
 
     public void rebuild() {
         idCategoryPathMap.clear();
