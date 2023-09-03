@@ -1,20 +1,21 @@
 package com.rick.admin.module.inventory.service.handler;
 
+import com.google.common.collect.Sets;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.module.inventory.dao.StockDAO;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.inventory.service.AbstractHandler;
-import com.rick.admin.module.material.dao.BatchDAO;
 import com.rick.admin.module.material.entity.CharacteristicValue;
 import com.rick.admin.module.material.model.MaterialIdBatchCode;
 import com.rick.admin.module.material.service.BatchSupport;
+import com.rick.common.http.exception.BizException;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -28,8 +29,6 @@ public class CountHandler extends AbstractHandler {
     @Resource
     private StockDAO stockDAO;
 
-    private BatchDAO batchDAO;
-
     @Override
     public InventoryDocument.TypeEnum type() {
         return InventoryDocument.TypeEnum.COUNT;
@@ -42,18 +41,23 @@ public class CountHandler extends AbstractHandler {
 
     @Override
     public void handle0(InventoryDocument inventoryDocument) {
-        Map<Long, MaterialIdBatchCode> collect = inventoryDocument.getItemList().stream().map(item -> new MaterialIdBatchCode(item.getMaterialId(),
-                        StringUtils.defaultString(BatchSupport.characteristicToCode(item.getClassificationList().stream().flatMap(p -> p.getCharacteristicValueList().stream()).map(CharacteristicValue::getValue).collect(Collectors.toList())))))
-                .collect(Collectors.toMap(MaterialIdBatchCode::getMaterialId, mb -> mb));
+       List<MaterialIdBatchCode> primaryKeyList = inventoryDocument.getItemList().stream().map(item -> new MaterialIdBatchCode(item.getMaterialId(),
+                BatchSupport.characteristicToCode(item.getClassificationList().stream().flatMap(p -> p.getCharacteristicValueList().stream()).map(CharacteristicValue::getValue).collect(Collectors.toList()))))
+        .collect(Collectors.toList());
+
+       // 检查重复
+       if (primaryKeyList.size() != Sets.newHashSet(primaryKeyList).size()) {
+            throw new BizException(500, "找到多条重复的项，请修改后再提交");
+       }
 
         Map<MaterialIdBatchCode, BigDecimal> materialIdStockQuantityMap
                 = stockDAO.getStockQuantityByMaterialIdAndBatchCode(inventoryDocument.getPlantId(),
-                collect.values());
+                primaryKeyList);
 
         Iterator<InventoryDocument.Item> iterator = inventoryDocument.getItemList().iterator();
         while (iterator.hasNext()) {
             InventoryDocument.Item item = iterator.next();
-            BigDecimal quantityInDb = ObjectUtils.defaultIfNull(materialIdStockQuantityMap.get(collect.get(item.getMaterialId())), BigDecimal.ZERO);
+            BigDecimal quantityInDb = ObjectUtils.defaultIfNull(materialIdStockQuantityMap.get(new MaterialIdBatchCode(item.getMaterialId(), BatchSupport.characteristicToCode(item.getClassificationList().stream().flatMap(p -> p.getCharacteristicValueList().stream()).map(CharacteristicValue::getValue).collect(Collectors.toList())))), BigDecimal.ZERO);
             item.setRootReferenceCode(item.getInventoryDocumentCode());
 
             BigDecimal difference = item.getQuantity().subtract(quantityInDb);
