@@ -1,5 +1,3 @@
-truncate table sys_document;
-
 -- 系统初始化
 delete from sys_role where id <> 694587732420202496;
 delete from sys_role_permission where role_id <> 694587732420202496;
