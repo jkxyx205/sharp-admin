@@ -6,10 +6,9 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * @author Rick.Xu
@@ -19,10 +18,12 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 public class TreeNodeService {
 
+    private static final int COLLAPSE_SIZE = 30;
+
     private final SharpService sharpService;
 
-    public List<TreeNode> getSelectTreeNode(String querySql) {
-        List<TreeNode> treeNodeList = getStructuredTreeNode(querySql);
+    public List<TreeNode> getSelectTreeNode(String querySql, Map<String, Object> params) {
+        List<TreeNode> treeNodeList = getStructuredTreeNode(querySql, params);
 
         List<TreeNode> containerList = new ArrayList<>();
         recursiveStructuredTreeNode(treeNodeList, treeNode -> {
@@ -33,10 +34,49 @@ public class TreeNodeService {
         return containerList;
     }
 
-    public List<TreeNode> getStructuredTreeNode(String querySql) {
-        List<TreeNode> treeNodeList = sharpService.query(querySql, null, TreeNode.class);
+    public List<TreeNode> getStructuredTreeNode(String querySql, Map<String, Object> params) {
+        List<TreeNode> treeNodeList = getTreeNode(querySql, params);
         List<TreeNode> ret = recursive(treeNodeList, 0L, 0);
         return ret;
+    }
+
+    public List<TreeNode> getTreeNode(String querySql, Map<String, Object> params) {
+       return sharpService.query(querySql, params, TreeNode.class);
+    }
+
+    public List<TreeNode> getCollapseSubNode(String querySql, Map<String, Object> params) {
+        return collapseSubNode(getTreeNode(querySql, params));
+    }
+
+    public List<TreeNode> collapseSubNode(List<TreeNode> treeList) {
+        if (treeList.size() <= COLLAPSE_SIZE) {
+            return treeList;
+        }
+
+        // 子节点收起
+        Map<Long, TreeNode> treeNodeMap = treeList.stream().collect(Collectors.toMap(TreeNode::getId, treeNode -> treeNode));
+        Set<Long> parentIds = treeList.stream().map(TreeNode::getPId).collect(Collectors.toSet());
+        Set<TreeNode> leafNodeSet = treeList.stream().filter(treeNode -> !parentIds.contains(treeNode.getId()) && treeNode.getPId() != 0).collect(Collectors.toSet());
+
+        for (TreeNode treeNode : leafNodeSet) {
+            treeNode.setOpen(false);
+
+            TreeNode parentNode = treeNodeMap.get(treeNode.getPId());
+            boolean allLeafNode = true;
+            for (TreeNode node : treeList) {
+                if (Objects.equals(node.getPId(), parentNode.getId())) {
+                    if (!leafNodeSet.contains(node)) {
+                        allLeafNode = false;
+                    }
+                }
+            }
+
+            if (allLeafNode) {
+                parentNode.setOpen(false);
+            }
+        }
+
+        return treeList;
     }
 
     private List<TreeNode> recursive(List<TreeNode> treeNodeList, Long pid, int level) {

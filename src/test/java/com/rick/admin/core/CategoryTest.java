@@ -125,7 +125,7 @@ public class CategoryTest {
 
     @Test
     public void testCategoryService() {
-        List<TreeNode> selectTreeNode = treeNodeService.getSelectTreeNode("select id, name, parent_id \"pId\" from `core_material_category` order by order_index asc");
+        List<TreeNode> selectTreeNode = treeNodeService.getSelectTreeNode("select id, name, parent_id \"pId\" from `core_material_category` order by order_index asc", null);
         System.out.println(selectTreeNode);
     }
 }

@@ -457,16 +457,16 @@ public class MaterialTest {
                         new ReportColumn("base_unit", "基本单位", false, "unit", Arrays.asList("dictConverter")),
                         new ReportColumn("category_path", "分类", false),
                         new ReportColumn("attachment", "附件"),
-                        new ReportColumn("standard_price", "标准价格(元)").setType(ReportColumn.TypeEnum.DECIMAL).setAlign(AlignEnum.RIGHT),
+//                        new ReportColumn("standard_price", "标准价格(元)").setType(ReportColumn.TypeEnum.DECIMAL).setAlign(AlignEnum.RIGHT),
                         new ReportColumn("plantId", "库房", false, "core_plant", Arrays.asList("dictConverter")),
                         new ReportColumn("stock_quantity", "库存").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
-                        new ReportColumn("stock_quantity_standard_price", "库存金额(元)").setType(ReportColumn.TypeEnum.DECIMAL).setAlign(AlignEnum.RIGHT),
+//                        new ReportColumn("stock_quantity_standard_price", "库存金额(元)").setType(ReportColumn.TypeEnum.DECIMAL).setAlign(AlignEnum.RIGHT),
                         new ReportColumn("create_name", "创建人").setColumnWidth(100),
                         new ReportColumn("create_time", "创建时间").setColumnWidth(180).setAlign(AlignEnum.CENTER)
                 ))
                 .pageable(true)
                 .sidx("id")
-                .summaryColumnNames("stock_quantity_standard_price")
+//                .summaryColumnNames("stock_quantity_standard_price")
                 .sord(SordEnum.ASC)
                 .build());
     }

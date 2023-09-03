@@ -4,6 +4,7 @@ import com.rick.admin.auth.authentication.AdminUserDetails;
 import com.rick.admin.auth.common.AuthConstants;
 import com.rick.admin.common.exception.ExceptionCodeEnum;
 import com.rick.admin.plugin.ztree.model.TreeNode;
+import com.rick.admin.plugin.ztree.model.TreeNodeService;
 import com.rick.admin.sys.permission.model.UserPermissionVO;
 import com.rick.admin.sys.permission.service.PermissionService;
 import com.rick.admin.sys.role.dao.RoleDAO;
@@ -16,7 +17,6 @@ import com.rick.admin.sys.user.service.UserService;
 import com.rick.common.http.exception.BizException;
 import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
-import com.rick.db.service.SharpService;
 import com.rick.meta.dict.service.DictService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -47,7 +47,7 @@ public class AuthController {
 
     private final RoleDAO roleDAO;
     
-    private final SharpService sharpService;
+    private final TreeNodeService treeNodeService;
 
     private final PermissionService permissionService;
 
@@ -113,16 +113,16 @@ public class AuthController {
 
         Long roleId = roleList.get(0).getId();
         RoleInfoDTO roleInfo = roleService.getSettingsInfoByRoleId(roleId);
-        // language=SQL
-        List<TreeNode> permissionFullList = sharpService.query("SELECT p.id as \"id\", p.name as \"name\", pid as \"pId\", 1 as open\n" +
-                "   FROM sys_permission P where is_deleted = 0 \n" +
-                "  order by p.permission_order asc", null, TreeNode.class);
 
         model.addAttribute("roleList", roleList);
         model.addAttribute("userList", userList);
         model.addAttribute("roleInfo", roleInfo);
         model.addAttribute("userIds", roleInfo.getUserList().stream().map(user -> String.valueOf(user.getId())).collect(Collectors.toList()));
-        model.addAttribute("permissionFullList", permissionFullList);
+
+        // language=SQL
+        model.addAttribute("permissionFullList", treeNodeService.getTreeNode("SELECT p.id as \"id\", p.name as \"name\", pid as \"pId\", 1 as open\n" +
+                "   FROM sys_permission P where is_deleted = 0 \n" +
+                "  order by p.permission_order asc", null));
 
         return "sys/auth";
     }

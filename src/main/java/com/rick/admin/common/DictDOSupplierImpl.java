@@ -39,7 +39,7 @@ public class DictDOSupplierImpl implements DictDOSupplier {
         }
 
         // 树形结构
-        List<TreeNode> selectTreeNode = treeNodeService.getSelectTreeNode("select id, name, parent_id \"pId\" from `core_material_category` order by order_index asc");
+        List<TreeNode> selectTreeNode = treeNodeService.getSelectTreeNode("select id, name, parent_id \"pId\" from `core_material_category` order by order_index asc", null);
         List<Dict> colorDict = selectTreeNode.stream().map(node -> new Dict(TREE_CATEGORY, node.getId().toString(), node.getName(), null)).collect(Collectors.toList());
         dictList.addAll(colorDict);
 
