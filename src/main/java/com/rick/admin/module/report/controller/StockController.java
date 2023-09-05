@@ -16,6 +16,7 @@ import com.rick.excel.core.model.ExcelRow;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -83,26 +84,27 @@ public class StockController {
         excelWriter.getActiveSheet().setColumnWidth(6, 3000);
 
         int col1Index = 3;
+        XSSFCellStyle rowMergeCellStyle = ExcelCellStyleHelper.createRowMergeCellStyle(excelWriter.getBook());
+        XSSFCellStyle textCellStyle = ExcelCellStyleHelper.createTextCellStyle(excelWriter.getBook());
+
         for (Map.Entry<String, Map<String, List<StockItem>>> entry : data.entrySet()) {
             Map<String, List<StockItem>> stockItemListMap = entry.getValue();
 
             int col1RowSpan = stockItemListMap.values().stream().flatMap(stockItems -> stockItems.stream()).collect(Collectors.toList()).size();
 
-            ExcelCell categoryCell = new ExcelCell(1, col1Index, heightInPoints, entry.getKey().substring(entry.getKey().indexOf("-") + 1), col1RowSpan, 1);
-            categoryCell.setStyle(ExcelCellStyleHelper.createRowMergeCellStyle(excelWriter.getBook()));
+            ExcelCell categoryCell = new ExcelCell(1, col1Index, heightInPoints, rowMergeCellStyle, entry.getKey().substring(entry.getKey().indexOf("-") + 1), col1RowSpan, 1);
             excelWriter.writeCell(categoryCell);
 
             int col2Index = col1Index;
             int i = 0;
             for (Map.Entry<String, List<StockItem>> stockItemEntry : stockItemListMap.entrySet()) {
                 List<StockItem> stockItemList = stockItemEntry.getValue();
+                ExcelCell nameCell = new ExcelCell(2, col2Index + i, heightInPoints, rowMergeCellStyle, stockItemEntry.getKey(), stockItemList.size(), 1);
 
-                ExcelCell nameCell = new ExcelCell(2, col2Index + i, heightInPoints, stockItemEntry.getKey(), stockItemList.size(), 1);
-                nameCell.setStyle(ExcelCellStyleHelper.createRowMergeCellStyle(excelWriter.getBook()));
                 excelWriter.writeCell(nameCell);
 
                 for (StockItem stockItem : stockItemList) {
-                    excelWriter.writeRow(new ExcelRow(3, col2Index + i, heightInPoints, stockItem.getMaterialCode(), stockItem.getMaterialSpecification(),
+                    excelWriter.writeRow(new ExcelRow(3, col2Index + i, heightInPoints, textCellStyle, stockItem.getMaterialCode(), stockItem.getMaterialSpecification(),
                             stockItem.getCharacteristic(), stockItem.getQuantity(), stockItem.getUnitText()));
                     i++;
                 }

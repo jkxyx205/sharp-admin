@@ -105,7 +105,7 @@ public class CountController {
             }
 
             ExcelCell categoryCell = new ExcelCell(1, y, key.substring(key.indexOf("-") + 1), valueSize + characteristicValueListSize - classificationListNumber, 1);
-            categoryCell.setStyle(ExcelCellStyleHelper.createCellStyle(excelWriter.getBook()));
+            categoryCell.setStyle(ExcelCellStyleHelper.createTextCellStyle(excelWriter.getBook()));
             excelWriter.writeCell(categoryCell);
 
             for (int i = 0; i < valueSize; i++) {
@@ -120,7 +120,7 @@ public class CountController {
                                 dictService.getDictByTypeAndName("unit", (String) value.get("base_unit")).get().getLabel(), ""
                         });
                         dataRow.setHeightInPoints(heightInPoints);
-                        dataRow.setStyle(ExcelCellStyleHelper.createCellStyle(excelWriter.getBook()));
+                        dataRow.setStyle(ExcelCellStyleHelper.createTextCellStyle(excelWriter.getBook()));
                         excelWriter.writeRow(dataRow);
 
                         y++;
@@ -134,7 +134,7 @@ public class CountController {
                     });
                     dataRow.setHeightInPoints(heightInPoints);
 
-                    dataRow.setStyle(ExcelCellStyleHelper.createCellStyle(excelWriter.getBook()));
+                    dataRow.setStyle(ExcelCellStyleHelper.createTextCellStyle(excelWriter.getBook()));
                     excelWriter.writeRow(dataRow);
 
                     y++;

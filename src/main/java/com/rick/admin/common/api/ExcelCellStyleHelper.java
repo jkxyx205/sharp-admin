@@ -32,7 +32,7 @@ public class ExcelCellStyleHelper {
     }
 
 
-    public XSSFCellStyle createCellStyle(XSSFWorkbook book) {
+    public XSSFCellStyle createTextCellStyle(XSSFWorkbook book) {
         XSSFCellStyle cellStyle = book.createCellStyle();
 
         // 垂直居中
