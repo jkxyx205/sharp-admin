@@ -37,6 +37,7 @@
                             <option value="MOVING_TO_PRODUCE">领料</option>
                             <option value="RETURN_FROM_PRODUCE">退料</option>
 <!--                            <option value="CANCEL">取消</option>-->
+                            <option value="DELETE">删除</option>
                             <option value="DISPLAY">显示</option>
                         </select>
                     </div>
@@ -215,6 +216,7 @@
             // "RETURN_FROM_PRODUCE": ["OTHER", "PDO"],
             "RETURN_FROM_PRODUCE": ["OTHER"],
             // "CANCEL": ["MATERIAL_DOCUMENT"],
+            "DELETE": ["MATERIAL_DOCUMENT"],
             "DISPLAY": ["MATERIAL_DOCUMENT"]
         }
 
@@ -266,7 +268,7 @@
 
             type = select
 
-            if (type.value === 'CANCEL' || type.value === 'DISPLAY' || type.value === 'RETURN') {
+            if (type.value === 'CANCEL' || type.value === 'DELETE' || type.value === 'DISPLAY' || type.value === 'RETURN') {
                 $editableTable.editableTablePlus('readonly', true)
             }
 
@@ -287,7 +289,7 @@
                 $("#form-item :input").prop("disabled", true);
             }
 
-            if (type.value === 'CANCEL' || type.value === 'DISPLAY' || type.value === 'RETURN') {
+            if (type.value === 'CANCEL' || type.value === 'DELETE' || type.value === 'DISPLAY' || type.value === 'RETURN') {
                 $editableTable.editableTablePlus('readonly', true)
             }
 
@@ -345,6 +347,8 @@
                         if (res.canceled) {
                             toastr.warning('物料凭证已经被取消了，不能重复取消!')
                         }
+                        $editableTable.editableTablePlus('readonly', true)
+                    } else if (type.value === 'DELETE') {
                         $editableTable.editableTablePlus('readonly', true)
                     } else if(type.value === 'RETURN' || type.value === 'INBOUND' || type.value === 'OUTBOUND' || type.value === 'MOVING_TO_PRODUCE'|| type.value === 'RETURN_FROM_PRODUCE') {
                         $editableTable.editableTablePlus('readonly', false)
