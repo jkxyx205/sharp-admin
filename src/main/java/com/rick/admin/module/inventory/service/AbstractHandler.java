@@ -3,6 +3,7 @@ package com.rick.admin.module.inventory.service;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.module.core.service.CodeHelper;
 import com.rick.admin.module.inventory.dao.InventoryDocumentDAO;
+import com.rick.admin.module.inventory.dao.InventoryDocumentItemDAO;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.inventory.entity.Stock;
 import com.rick.admin.module.material.service.BatchService;
@@ -22,6 +23,9 @@ public abstract class AbstractHandler implements MovementHandler {
 
     @Resource
     protected InventoryDocumentDAO inventoryDocumentDAO;
+
+    @Resource
+    protected InventoryDocumentItemDAO inventoryDocumentItemDAO;
 
     @Resource
     protected StockService stockService;

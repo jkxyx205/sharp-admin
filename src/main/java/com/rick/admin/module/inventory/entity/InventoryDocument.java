@@ -15,6 +15,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -46,6 +47,7 @@ public class InventoryDocument extends BaseCodeEntity {
     @Column(comment = "参考凭证号")
     String referenceCode;
 
+    @NotBlank
     @Column(comment = "root参考凭证号")
     String rootReferenceCode;
 
@@ -103,6 +105,7 @@ public class InventoryDocument extends BaseCodeEntity {
         @Column(comment = "参考凭证行项目id")
         Long referenceItemId;
 
+        @NotBlank
         @Column(comment = "root参考凭证号")
         String rootReferenceCode;
 
@@ -185,6 +188,7 @@ public class InventoryDocument extends BaseCodeEntity {
         MOVING_TO_PRODUCE("领料"),
         RETURN_FROM_PRODUCE("退料"),
         CANCEL("取消"),
+        DELETE("删除"),
         DISPLAY("显示"),
         COUNT("盘点");
 

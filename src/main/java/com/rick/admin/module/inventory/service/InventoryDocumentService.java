@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
@@ -37,14 +38,15 @@ public class InventoryDocumentService {
      * @return
      */
     public Map<Long, BigDecimal> openQuantity(InventoryDocument.MovementTypeEnum movementType, String rootReferenceCode) {
+        Assert.hasLength(rootReferenceCode, "rootReferenceCode cannot be blank");
         String sql = "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where `root_reference_code` = :rootReferenceCode group by root_reference_item_id";
         Map<Long, BigDecimal> maxReturnQuantityMap = sharpService.queryForKeyValue(sql, Params.builder(1).pv("rootReferenceCode", rootReferenceCode).build());
 
         Optional<InventoryDocument> optional = inventoryDocumentDAO.selectByCode(rootReferenceCode);
-        InventoryDocument.MovementTypeEnum originMovementType = InventoryDocument.MovementTypeEnum.valueOf(optional.get().getType().name());
-        if (movementType == originMovementType) {
-            // 同向
-            for (InventoryDocument.Item item : optional.get().getItemList()) {
+
+        for (InventoryDocument.Item item : optional.get().getItemList()) {
+            if (movementType == item.getMovementType()) {
+                // 同向
                 maxReturnQuantityMap.put(item.getRootReferenceItemId(), item.getQuantity().subtract(maxReturnQuantityMap.get(item.getRootReferenceItemId())));
             }
         }

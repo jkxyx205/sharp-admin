@@ -132,10 +132,10 @@
                     <div class="form-group row">
                         <label for="bankName" class="col-sm-3 col-form-label">开户银行</label>
                         <div class="col-sm-9">
-                            <input type="text" class="form-control" id="bankName" name="bankName" maxlength="16" v-model="bankName.value" th:value="${formBO.propertyMap.bankName.value}"
+                            <input type="text" class="form-control" id="bankName" name="bankName" maxlength="32" v-model="bankName.value" th:value="${formBO.propertyMap.bankName.value}"
                                    placeholder="请输入开户银行" value="">
                             <!--前端验证所有验证信息-->
-                            <div class="invalid-feedback">长度范围 0 - 16 个字符</div>
+                            <div class="invalid-feedback">长度范围 0 - 32 个字符</div>
                         </div>
                     </div>
                     <div class="form-group row">

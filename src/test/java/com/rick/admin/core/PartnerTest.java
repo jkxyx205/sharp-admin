@@ -160,7 +160,7 @@ public class PartnerTest {
                 .name("bankName")
                 .label("开户行")
                 .placeholder("请输入开户行")
-                .validatorList(textValidatorList)
+                .validatorList(Arrays.asList(new Length(32)))
                 .build();
 
         CpnConfigurer bankNumberCpn = CpnConfigurer.builder()
@@ -237,12 +237,12 @@ public class PartnerTest {
                 .queryFieldList(Arrays.asList(
                         new QueryField("partnerType", "类型", QueryField.Type.SELECT, "partner_type"),
                         new QueryField("code", "编号", QueryField.Type.TEXT),
-                        new QueryField("name", "名称", QueryField.Type.TEXT)
+                        new QueryField("name", "公司名称", QueryField.Type.TEXT)
                 ))
                 .reportColumnList(Arrays.asList(
                         new HiddenReportColumn("id"),
                         new ReportColumn("code", "编号"),
-                        new ReportColumn("name", "名称"),
+                        new ReportColumn("name", "公司名称"),
                         new ReportColumn("partner_type", "类型", false, "partner_type", Arrays.asList("dictConverter")),
                         new ReportColumn("contact_person", "联系人"),
                         new ReportColumn("contact_number", "联系电话"),

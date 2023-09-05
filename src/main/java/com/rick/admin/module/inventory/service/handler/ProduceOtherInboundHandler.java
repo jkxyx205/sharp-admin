@@ -44,7 +44,7 @@ public class ProduceOtherInboundHandler extends AbstractHandler {
 
         inventoryDocument.getItemList().addAll(outboundItemList);
 
-        inventoryDocument.setRootReferenceCode(inventoryDocument.getReferenceCode());
+        inventoryDocument.setRootReferenceCode(inventoryDocument.getCode());
     }
 
 }

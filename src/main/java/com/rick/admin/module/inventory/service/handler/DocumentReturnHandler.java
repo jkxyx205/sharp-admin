@@ -59,7 +59,6 @@ public class DocumentReturnHandler extends AbstractHandler {
         }
 
         InventoryDocument inventoryDocumentInDb = optional.get();
-        InventoryDocument.MovementTypeEnum oppositeMovementType = HandlerHelper.oppositeMovementType(inventoryDocumentInDb.getItemList().get(0).getMovementType());
         Map<Long, InventoryDocument.Item> idDocumentMap = inventoryDocumentInDb.getItemList().stream().collect(Collectors.toMap(InventoryDocument.Item::getId, d -> d));
 
         if (inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PO ||
@@ -70,7 +69,7 @@ public class DocumentReturnHandler extends AbstractHandler {
             for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
                 InventoryDocument.Item itemInDb = idDocumentMap.get(item.getReferenceItemId());
                 item.setReferenceType(inventoryDocument.getReferenceType());
-                item.setMovementType(oppositeMovementType);
+                item.setMovementType(HandlerHelper.oppositeMovementType(itemInDb.getMovementType()));
                 item.setRootReferenceCode(inventoryDocumentInDb.getReferenceCode());
                 item.setRootReferenceItemId(ObjectUtils.defaultIfNull(itemInDb.getRootReferenceItemId(), itemInDb.getReferenceItemId()));
             }
@@ -91,16 +90,18 @@ public class DocumentReturnHandler extends AbstractHandler {
 
         inventoryDocument.setRootReferenceCode(StringUtils.defaultString(inventoryDocumentInDb.getRootReferenceCode(), inventoryDocument.getReferenceCode()));
 
-        Map<Long, BigDecimal> itemOpenQuantityMap = inventoryDocumentService.openQuantity(HandlerHelper.oppositeMovementType(inventoryDocumentInDb.getItemList().get(0).getMovementType()),
-                inventoryDocumentInDb.getRootReferenceCode());
+        Map<Long, BigDecimal> inBoundItemOpenQuantityMap = inventoryDocumentService.openQuantity(InventoryDocument.MovementTypeEnum.INBOUND, inventoryDocumentInDb.getRootReferenceCode());
+        Map<Long, BigDecimal> outBoundItemOpenQuantityMap = inventoryDocumentService.openQuantity(InventoryDocument.MovementTypeEnum.OUTBOUND, inventoryDocumentInDb.getRootReferenceCode());
 
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
             InventoryDocument.Item itemInDb = idDocumentMap.get(item.getReferenceItemId());
+
+            item.setPlantId(itemInDb.getPlantId());
             item.setMovementType(HandlerHelper.oppositeMovementType(itemInDb.getMovementType()));
             item.setRootReferenceCode(StringUtils.defaultString(itemInDb.getRootReferenceCode(), itemInDb.getReferenceCode()));
             item.setRootReferenceItemId(ObjectUtils.defaultIfNull(itemInDb.getRootReferenceItemId(), itemInDb.getId()));
 
-            checkOpenQuantity(item.getMaterialId(), item.getQuantity(), itemOpenQuantityMap.get(item.getRootReferenceItemId()));
+            checkOpenQuantity(item.getMaterialId(), item.getQuantity(), item.getMovementType() == InventoryDocument.MovementTypeEnum.INBOUND ? inBoundItemOpenQuantityMap.get(item.getRootReferenceItemId()) : outBoundItemOpenQuantityMap.get(item.getRootReferenceItemId()));
         }
 
         handle1(inventoryDocument, inventoryDocumentInDb, idDocumentMap);

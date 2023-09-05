@@ -20,7 +20,7 @@ public class InventoryDocumentItemDAO extends EntityDAOImpl<InventoryDocument.It
     protected Object[] handleAutoFill(Object t, Object[] params, List<String> columnNameList, ColumnFillType fillType) {
         Object[] objects = super.handleAutoFill(t, params, columnNameList, fillType);
         int rootReferenceItemIdIndex = columnNameList.indexOf("root_reference_item_id");
-        if (objects[rootReferenceItemIdIndex] == null) {
+        if (rootReferenceItemIdIndex != -1 && objects[rootReferenceItemIdIndex] == null) {
             objects[rootReferenceItemIdIndex] = objects[columnNameList.indexOf(getIdColumnName())];
         }
         return objects;

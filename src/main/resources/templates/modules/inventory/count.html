@@ -209,14 +209,17 @@
 
     <script sec:authorize="hasAuthority('USER_cqk')">
         $('#plantId').val('726158903766683648')
+        $('#plantId option[value!=726158903766683648]').remove()
     </script>
 
     <script sec:authorize="hasAuthority('USER_jxk')">
         $('#plantId').val('726158996003622912')
+        $('#plantId option[value!=726158996003622912]').remove()
     </script>
 
     <script sec:authorize="hasAuthority('USER_cpk')">
         $('#plantId').val('726159086739001344')
+        $('#plantId option[value!=726159086739001344]').remove()
     </script>
 
 </th:block>
