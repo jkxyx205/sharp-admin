@@ -3,11 +3,13 @@ package com.rick.admin.module.inventory.service;
 import com.rick.admin.module.inventory.dao.InventoryDocumentDAO;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.common.util.JsonUtils;
+import com.rick.db.plugin.SQLUtils;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
@@ -16,6 +18,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author Rick.Xu
@@ -54,8 +57,13 @@ public class InventoryDocumentService {
         return maxReturnQuantityMap;
     }
 
-    public void updateInventoryDocumentByCode(String code, List<Map<String, Object>> attachmentList, String remark) {
-        inventoryDocumentDAO.update(" attachment, remark", new Object[] {JsonUtils.toJson(attachmentList), remark, code}, "code = ?");
+    public void updateInventoryDocumentByCode(String code, List<Map<String, Object>> attachmentList, String remark, Map<Long, String> itemIdRemarkMap) {
+        inventoryDocumentDAO.update(" attachment, remark", new Object[]{JsonUtils.toJson(attachmentList), remark, code}, "code = ?");
+        if (MapUtils.isNotEmpty(itemIdRemarkMap)) {
+            SQLUtils.update("inv_document_item", "remark",
+                    itemIdRemarkMap.entrySet().stream().map(entry -> new Object[]{entry.getValue(), entry.getKey()}).collect(Collectors.toList()),
+                    "id = ?");
+        }
     }
 
 }

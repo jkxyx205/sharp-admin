@@ -21,6 +21,7 @@ import com.rick.admin.module.purchase.service.PurchaseOrderService;
 import com.rick.common.http.exception.BizException;
 import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
+import com.rick.db.dto.SimpleEntity;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
 import com.rick.meta.dict.service.DictService;
@@ -324,7 +325,8 @@ public class InventoryController {
     @PutMapping("{code}")
     @ResponseBody
     public Result update(@PathVariable String code, @RequestBody InventoryDocument inventoryDocument) {
-        inventoryDocumentService.updateInventoryDocumentByCode(code, inventoryDocument.getAttachmentList(), inventoryDocument.getRemark());
+        inventoryDocumentService.updateInventoryDocumentByCode(code, inventoryDocument.getAttachmentList(), inventoryDocument.getRemark(),
+                inventoryDocument.getItemList().stream().collect(Collectors.toMap(SimpleEntity::getId, InventoryDocument.Item::getRemark)));
         return ResultUtils.success();
     }
 

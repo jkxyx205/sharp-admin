@@ -343,6 +343,8 @@
                         $remark.val(res.remark)
 
                         upload.setAttachment(res.attachmentList)
+
+                        $("#table-container table.table-tbody :input[name=remark]").prop("disabled", false).prop('readonly', false)
                     } else if (type.value === 'CANCEL') {
                         if (res.canceled) {
                             toastr.warning('物料凭证已经被取消了，不能重复取消!')
@@ -438,7 +440,8 @@
         function update() {
             let params = $.extend({},
                 $('#form-operator').form2json({allowEmptyMultiVal:true}), $('#form-header').form2json({allowEmptyMultiVal:true})); //合并参数
-
+            params['itemList'] = $editableTable.editableTablePlus('getValue')
+            
             delete params.attachment_file
             params['attachmentList'] = JSON.parse(params['attachmentList'])
 
