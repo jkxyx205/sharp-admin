@@ -54,7 +54,8 @@ head.appendChild(style)
                     .replace('{{id}}', this.modalId)
                     .replace('{{okId}}', this.okId)
                     .replace('{{title}}', this.title)
-                    .replaceAll('{{iframeId}}', this.iframeId)
+                    .replace(/{{iframeId}}/g, this.iframeId)
+                    // .replaceAll('{{iframeId}}', this.iframeId) // 老版浏览器不支持
 
                 $('body').append(dialogTpl)
 
