@@ -7,8 +7,11 @@ import com.rick.admin.module.core.model.CharacteristicDTO;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
 import com.rick.db.service.support.Params;
 import com.rick.formflow.form.cpn.core.CpnConfigurer;
+import com.rick.formflow.form.valid.Required;
+import com.rick.formflow.form.valid.core.ValidatorTypeEnum;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -74,7 +77,8 @@ public class CharacteristicManager {
                 .description(characteristic.getDescription())
                 .type(characteristic.getType())
                 .options(configurer.getOptions())
-                .required(CollectionUtils.isNotEmpty(configurer.getValidatorList()))
+                .required(CollectionUtils.isNotEmpty(configurer.getValidatorList()) && configurer.getValidatorList().stream().allMatch(validator -> validator.getValidatorType() == ValidatorTypeEnum.REQUIRED && ((Required)validator).isRequired()))
+                .placeholder(StringUtils.defaultString(characteristic.getCpnConfigurer().getPlaceholder(), ""))
                 .cpnType(configurer.getCpnType())
                 .value(characteristic.getValue())
                 .build();

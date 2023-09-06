@@ -39,6 +39,8 @@ public class CharacteristicDTO {
     @NotNull
     private Boolean required;
 
+    private String placeholder;
+
     /**
      * 控件值
      */

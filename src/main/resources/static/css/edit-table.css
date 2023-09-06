@@ -25,6 +25,10 @@
     left: -8px;
 }
 
+.table-editor .characteristic-popup .required label:before, .table-editor .characteristic-popup label.required:before {
+    left: -8px;
+}
+
 .table-editor tr td.row-number, .table-editor tr td.operator {
     padding: 0 .3rem;
 }

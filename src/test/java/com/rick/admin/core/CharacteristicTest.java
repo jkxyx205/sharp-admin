@@ -112,7 +112,7 @@ public class CharacteristicTest {
                         new CpnConfigurer.CpnOption("O型圈"),
                         new CpnConfigurer.CpnOption("MT60端子")
                 ))
-                .required(true)
+                .required(false)
                 .build());
 
         characteristicService.saveOrUpdate(CharacteristicDTO.builder()
@@ -125,13 +125,13 @@ public class CharacteristicTest {
                         new CpnConfigurer.CpnOption("SM-6A插针"),
                         new CpnConfigurer.CpnOption("SM-6Y插簧")
                 ))
-                .required(true)
+                .required(false)
                 .build());
 
         characteristicService.saveOrUpdate(CharacteristicDTO.builder()
-                .type(Characteristic.CharacteristicTypeEnum.TEXT)
+                .type(Characteristic.CharacteristicTypeEnum.NUMBER)
                 .code("LENGTH")
-                .description("线长")
+                .description("线长mm")
                 .cpnType(CpnTypeEnum.RADIO) // 单选
                 .required(true)
                 .build());
