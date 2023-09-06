@@ -423,7 +423,7 @@
 
             this._consumeUnHiddenColumnConfig((childIndex, columnConfig) => {
                 if (columnConfig.required === true) {
-                    let $input = $requiredTr.find('td:nth-child('+childIndex+') :input')
+                    let $input = $requiredTr.find('td:nth-child('+childIndex+') > :input')
                     let title = $input.attr('title') ? $input.attr('title') : '请填写' + columnConfig.title
                     $input.attr('required', true)
                         .attr('title', title)
