@@ -61,6 +61,14 @@ public class BatchService {
                 if (CollectionUtils.isNotEmpty(item.getClassificationList())) {
                     CharacteristicHelper.fillValueToClassification(item.getClassificationList().stream().map(classification -> classification.getClassification()).collect(Collectors.toList()),
                             materialProfileMap.get(MaterialProfileSupport.materialIdBatchIdString(item.getMaterialId(), item.getBatchId())).getCharacteristicValueList());
+
+                    // 特殊特征值处理
+                    item.getClassificationList().stream().flatMap(classification -> classification.getClassification().getCharacteristicList().stream())
+                            .forEach(characteristic -> {
+                                if (characteristic.getCode().equals("LENGTH")) {
+                                    characteristic.getCpnConfigurer().setDefaultValue(characteristic.getCpnConfigurer().getDefaultValue() + "mm");
+                                }
+                            });
                 }
             }
         }

@@ -33,7 +33,7 @@ public class BomTest {
                 .querySql("select id, code, description, create_time from produce_bom_template")
                 .reportColumnList(Arrays.asList(
                         new HiddenReportColumn("id"),
-                        new ReportColumn("code", "bom"),
+                        new ReportColumn("code", "物料"),
                         new ReportColumn("description", "描述"),
                         new ReportColumn("create_time", "创建时间", false,null, Arrays.asList("localDateTimeConverter")).setColumnWidth(160)
                 ))
