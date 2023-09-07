@@ -592,7 +592,6 @@
 
                                             if (characteristic.val) {
                                                 if (characteristic.type === 'NUMBER' && !(characteristic.val.match(/^\d+$/g))) {
-                                                    debugger
                                                     toastr.error('第 '+(index + 1)+' 行产成品的物料清单有【特征值】填写不正确！！')
                                                     detailValid = false
                                                     return
