@@ -27,10 +27,13 @@ delete from sys_role_permission where not exists(select 1 from sys_role where sy
 
 delete from sys_user_role where not exists(select 1 from sys_role where sys_role.id = sys_user_role.role_id) or not exists(select 1 from sys_user where sys_user.id = sys_user_role.user_id);
 
+-- 删除物料， 级联删除
 delete from `mm_classification` where not exists(select 1 from mm_material where id = mm_classification.material_id);
 delete from `mm_profile` where not exists(select 1 from mm_material where id = mm_profile.material_id);
 delete from `mm_batch` where not exists(select 1 from mm_material where id = mm_batch.material_id);
 delete from `mm_characteristic_value` where not exists(select 1 from mm_profile where id = mm_characteristic_value.`reference_id`);
+delete from `inv_document_item` where not exists(select 1 from mm_material where id = inv_document_item.material_id);
+delete from `inv_stock` where not exists(select 1 from mm_material where id = inv_stock.material_id);
 
 -- 以下是非 sys_开头的表，业务数据
 truncate table pur_source_list;
