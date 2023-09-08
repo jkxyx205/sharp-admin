@@ -438,7 +438,7 @@ public class MaterialTest {
                         "  AND mm_material.is_deleted = 0\n")
                 .queryFieldList(Arrays.asList(
                         new QueryField("keywords", "关键字", QueryField.Type.TEXT),
-                        new QueryField("plantId", "库房", QueryField.Type.SELECT, "core_plant"),
+                        new QueryField("plantId", "库房", QueryField.Type.SELECT, "core_plant"), //.setValue("719893335619162112"),
 //                        new QueryField("materialType", "类型", QueryField.Type.SELECT, "material_type"),
 //                        new QueryField("categoryId", "分类", QueryField.Type.SELECT, "core_material_category"),
                         new QueryField("categoryId", "分类", QueryField.Type.GROUP_SELECT, "material_category_select_sql")
