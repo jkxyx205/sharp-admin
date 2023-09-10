@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sp="">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sp="" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
 <head>
     <style>
         .form-check {
@@ -29,20 +29,20 @@
             <ul class="nav nav-tabs" role="tablist">
                 <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#pane-1" role="tab" aria-controls="home" aria-selected="true">基本信息</a></li>
                 <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pane-2" role="tab" aria-controls="profile" aria-selected="false">公司信息</a></li>
-                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pane-3" role="tab" aria-controls="profile" aria-selected="false">开票资料</a></li>
-                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pane-4" role="tab" aria-controls="source_list" aria-selected="false">货源清单</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pane-3" role="tab" aria-controls="profile" aria-selected="false" sec:authorize="hasAuthority('core_partner_customer') or hasAuthority('core_partner')">开票资料</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pane-4" role="tab" aria-controls="source_list" aria-selected="false" sec:authorize="hasAuthority('core_partner_vendor') or hasAuthority('core_partner')">货源清单</a></li>
             </ul>
             <div class="tab-content">
                 <div class="tab-pane active" id="pane-1" role="tabpanel">
                     <div class="form-group row">
                         <label class="col-sm-3 col-form-label required">类型</label>
                         <div class="col-sm-9">
-                            <div class="form-check col-form-label">
+                            <div class="form-check col-form-label" sec:authorize="hasAuthority('core_partner_customer') or hasAuthority('core_partner')">
                                 <input class="form-check-input" type="radio" name="partnerType" id="CUSTOMER" value="CUSTOMER" th:checked="${'CUSTOMER' eq formBO.propertyMap.partnerType.value}">
                                 <label class="form-check-label" for="CUSTOMER">客户</label>
                             </div>
 
-                            <div class="form-check col-form-label">
+                            <div class="form-check col-form-label" sec:authorize="hasAuthority('core_partner_vendor') or hasAuthority('core_partner')">
                                 <input class="form-check-input" type="radio" name="partnerType" id="VENDOR" value="VENDOR" th:checked="${'VENDOR' eq formBO.propertyMap.partnerType.value}">
                                 <label class="form-check-label" for="VENDOR">供应商</label>
                             </div>
@@ -466,5 +466,8 @@
         }
     })
 
+    if ($(':input[name=partnerType]').length === 1) {
+        $(':input[name=partnerType]').prop('checked', true)
+    }
 </script>
 </html>

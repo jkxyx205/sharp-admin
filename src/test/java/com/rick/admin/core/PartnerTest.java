@@ -257,4 +257,68 @@ public class PartnerTest {
                 .sord(SordEnum.ASC)
                 .build());
     }
+
+    @Test
+    public void testCustomerReport() {
+        reportService.saveOrUpdate(Report.builder()
+                .id(731681274753753088L)
+                .code("core_partner_customer")
+                .tplName("tpl/list")
+                .name("客户")
+                .additionalInfo(Params.builder(1).pv("formId", "695708313425285120").build())
+                .querySql("SELECT core_partner.id, core_partner.partner_type, core_partner.code, core_partner.name, core_partner.remark, core_partner.contact_person, core_partner.contact_number, core_partner.contact_mail, contact_fax, core_partner.bank_name, core_partner.account_number, core_partner.tax_code, core_partner.address, sys_user.name create_name,DATE_FORMAT(core_partner.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM core_partner left join sys_user on sys_user.id = core_partner.create_by WHERE core_partner.partner_type = :partnerType AND core_partner.code = :code AND core_partner.name like :name AND core_partner.is_deleted = 0 AND partner_type = 'CUSTOMER'")
+                .queryFieldList(Arrays.asList(
+                        new QueryField("code", "编号", QueryField.Type.TEXT),
+                        new QueryField("name", "公司名称", QueryField.Type.TEXT)
+                ))
+                .reportColumnList(Arrays.asList(
+                        new HiddenReportColumn("id"),
+                        new ReportColumn("code", "编号"),
+                        new ReportColumn("name", "公司名称"),
+                        new ReportColumn("contact_person", "联系人"),
+                        new ReportColumn("contact_number", "联系电话"),
+                        new ReportColumn("contact_mail", "联系邮箱"),
+                        new ReportColumn("contact_fax", "传真"),
+//                        new ReportColumn("address", "公司地址"),
+                        new ReportColumn("create_name", "创建人").setColumnWidth(100),
+                        new ReportColumn("create_time", "创建时间").setColumnWidth(180).setAlign(AlignEnum.CENTER)
+                ))
+                .pageable(true)
+                .sidx("id")
+                .sord(SordEnum.ASC)
+                .build());
+    }
+
+
+    @Test
+    public void testVendorReport() {
+        reportService.saveOrUpdate(Report.builder()
+                .id(731681375370911744L)
+                .code("core_partner_vendor")
+                .tplName("tpl/list")
+                .name("供应商")
+                .additionalInfo(Params.builder(1).pv("formId", "695708313425285120").build())
+                .querySql("SELECT core_partner.id, core_partner.partner_type, core_partner.code, core_partner.name, core_partner.remark, core_partner.contact_person, core_partner.contact_number, core_partner.contact_mail, contact_fax, core_partner.bank_name, core_partner.account_number, core_partner.tax_code, core_partner.address, sys_user.name create_name,DATE_FORMAT(core_partner.create_time, '%Y-%m-%d %H:%i:%s') create_time FROM core_partner left join sys_user on sys_user.id = core_partner.create_by WHERE core_partner.partner_type = :partnerType AND core_partner.code = :code AND core_partner.name like :name AND core_partner.is_deleted = 0 AND partner_type = 'VENDOR'")
+                .queryFieldList(Arrays.asList(
+                        new QueryField("code", "编号", QueryField.Type.TEXT),
+                        new QueryField("name", "公司名称", QueryField.Type.TEXT)
+                ))
+                .reportColumnList(Arrays.asList(
+                        new HiddenReportColumn("id"),
+                        new ReportColumn("code", "编号"),
+                        new ReportColumn("name", "公司名称"),
+                        new ReportColumn("partner_type", "类型", false, "partner_type", Arrays.asList("dictConverter")),
+                        new ReportColumn("contact_person", "联系人"),
+                        new ReportColumn("contact_number", "联系电话"),
+                        new ReportColumn("contact_mail", "联系邮箱"),
+                        new ReportColumn("contact_fax", "传真"),
+//                        new ReportColumn("address", "公司地址"),
+                        new ReportColumn("create_name", "创建人").setColumnWidth(100),
+                        new ReportColumn("create_time", "创建时间").setColumnWidth(180).setAlign(AlignEnum.CENTER)
+                ))
+                .pageable(true)
+                .sidx("id")
+                .sord(SordEnum.ASC)
+                .build());
+    }
 }
