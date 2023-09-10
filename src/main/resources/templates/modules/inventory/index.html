@@ -272,7 +272,7 @@
                 $editableTable.editableTablePlus('readonly', true)
             }
 
-            $('#plantId').val('719893335619162112')
+            $('#plantId').val($('#plantId option').val())
         }
 
         function changeReferenceType(select) {
@@ -441,7 +441,7 @@
             let params = $.extend({},
                 $('#form-operator').form2json({allowEmptyMultiVal:true}), $('#form-header').form2json({allowEmptyMultiVal:true})); //合并参数
             params['itemList'] = $editableTable.editableTablePlus('getValue')
-            
+
             delete params.attachment_file
             params['attachmentList'] = JSON.parse(params['attachmentList'])
 
@@ -472,6 +472,21 @@
 
         document.getElementById('referenceType').value = 'SO'
         changeReferenceType(document.getElementById('referenceType'))
+    </script>
+
+    <script sec:authorize="hasAuthority('USER_cqk')">
+        $('#plantId').val('726158903766683648')
+        $('#plantId option[value!=726158903766683648]').remove()
+    </script>
+
+    <script sec:authorize="hasAuthority('USER_jxk')">
+        $('#plantId').val('726158996003622912')
+        $('#plantId option[value!=726158996003622912]').remove()
+    </script>
+
+    <script sec:authorize="hasAuthority('USER_cpk')">
+        $('#plantId').val('726159086739001344')
+        $('#plantId option[value!=726159086739001344]').remove()
     </script>
 </th:block>
 </body>
