@@ -210,7 +210,7 @@
         let selectMapping = {
             "INBOUND": ["OTHER", "PO"],
             "OUTBOUND": ["OTHER", "SO"],
-            "RETURN": ["PO", "SO"],
+            "RETURN": ["OTHER", "PO", "SO"],
             // "RETURN": ["MATERIAL_DOCUMENT", "PO", "SO"],
             "MOVING_TO_PRODUCE": ["OTHER", "PDO"],
             // "RETURN_FROM_PRODUCE": ["OTHER", "PDO"],
@@ -268,7 +268,7 @@
 
             type = select
 
-            if (type.value === 'CANCEL' || type.value === 'DELETE' || type.value === 'DISPLAY' || type.value === 'RETURN') {
+            if (type.value === 'CANCEL' || type.value === 'DELETE' || type.value === 'DISPLAY' || (type.value === 'RETURN' && referenceTypeDom.value !== 'OTHER')) {
                 $editableTable.editableTablePlus('readonly', true)
             }
 
@@ -289,7 +289,7 @@
                 $("#form-item :input").prop("disabled", true);
             }
 
-            if (type.value === 'CANCEL' || type.value === 'DELETE' || type.value === 'DISPLAY' || type.value === 'RETURN') {
+            if (type.value === 'CANCEL' || type.value === 'DELETE' || type.value === 'DISPLAY' || (type.value === 'RETURN' && referenceTypeDom.value !== 'OTHER')) {
                 $editableTable.editableTablePlus('readonly', true)
             }
 
