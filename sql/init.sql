@@ -27,7 +27,11 @@ delete from sys_role_permission where not exists(select 1 from sys_role where sy
 
 delete from sys_user_role where not exists(select 1 from sys_role where sys_role.id = sys_user_role.role_id) or not exists(select 1 from sys_user where sys_user.id = sys_user_role.user_id);
 
+delete from produce_bom_template_component where not exists (select 1 from produce_bom_template where id = produce_bom_template_component.`bom_template_id`)
 
+delete from produce_bom_template_component_detail where type = 'MATERIAL' AND not exists(select 1 from mm_material where id = produce_bom_template_component_detail.type_instance_id);
+
+delete from produce_bom_template_component_detail where type = 'CATEGORY' AND not exists(select 1 from core_material_category where id = produce_bom_template_component_detail.type_instance_id);
 
     -- 删除物料， 级联删除
 delete from mm_material where is_deleted = 1;
