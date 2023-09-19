@@ -135,6 +135,22 @@ public class CharacteristicTest {
                 .cpnType(CpnTypeEnum.RADIO) // 单选
                 .required(true)
                 .build());
+
+        characteristicService.saveOrUpdate(CharacteristicDTO.builder()
+                .type(Characteristic.CharacteristicTypeEnum.TEXT)
+                .code("LINE_BRAND")
+                .description("供应商")
+                .cpnType(CpnTypeEnum.RADIO) // 单选
+                .options(Arrays.asList(
+                        new CpnConfigurer.CpnOption("徐州东庚电器有限公司"),
+                        new CpnConfigurer.CpnOption("苏州市威峰塑料有限公司"),
+                        new CpnConfigurer.CpnOption("天津君磊科技有限公司"),
+                        new CpnConfigurer.CpnOption("无锡联为科技有限公司"),
+                        new CpnConfigurer.CpnOption("无锡互天电子科技有限公司"),
+                        new CpnConfigurer.CpnOption("天津市海固科技有限公司")
+                ))
+                .required(false)
+                .build());
     }
 
     /**
