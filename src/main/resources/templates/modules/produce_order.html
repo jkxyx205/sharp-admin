@@ -5,6 +5,7 @@
 <head th:replace="includes/base :: common_header(~{},~{::link},~{::style})">
     <link rel="stylesheet" th:href="@{/css/tab-common.css}">
     <link rel="stylesheet" th:href="@{/css/edit-table.css}">
+    <link rel="stylesheet" th:href="@{/plugins/multiple-select/multiple-select.min.css}">
     <link rel="stylesheet" th:href="@{/plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css}">
     <style>
         .form-control:disabled, .form-control[readonly] {
@@ -90,7 +91,7 @@
 <!--                    </div>-->
                     <div class="form-group">
                         <label class="col-form-label mr-2 required" for="partnerId">客户</label>
-                        <sp:select  id="partnerId" name="partnerId" key="core_partner_customer" th:value="${po.partnerId}" class="form-control" emptyItemText required th:attr="disabled=${po.id != null}"/>
+                        <sp:select id="partnerId" name="partnerId" key="core_partner_customer" th:value="${po.partnerId}" class="form-control" required th:attr="disabled=${po.id != null}" emptyItemText="&nbsp;"/>
                     </div>
                     <div class="form-group">
                         <label class="col-form-label mr-2 required" for="contactPerson">联系人</label>
@@ -106,11 +107,19 @@
                     </div>
                     <div class="form-group">
                         <label class="col-form-label mr-2">状态</label>
-                        <sp:select  id="status" name="status" key="produce_order_status" class="form-control" th:value="${po.status}" hideAllItem/>
+                        <sp:select id="status" name="status" key="produce_order_status" class="form-control" th:value="${po.status}" hideAllItem/>
 <!--                        <select class="form-control" name="status">-->
 <!--                            <option value="PROCESSING" th:selected="${'PROCESSING' eq po.status.toString()}">进行中</option>-->
 <!--                            <option value="DONE" th:selected="${'DONE' eq po.status.toString()}">已完成</option>-->
 <!--                        </select>-->
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label mr-2" for="remark">客户订单号</label>
+                        <input class="form-control" type="text" id="sourceOrderNum" name="sourceOrderNum" th:value="${po.sourceOrderNum}">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label mr-2" for="remark">下单日期</label>
+                        <input class="form-control" type="text" id="orderDate" name="orderDate" th:value="${po.orderDate}">
                     </div>
                     <div class="form-group">
                         <label class="col-form-label mr-2" for="remark">备注</label>
@@ -180,7 +189,7 @@
                                                 <tbody>
                                                 <tr v-for="d in c.componentDetailList">
                                                     <template v-if="!d.bomTemplate">
-                                                        <td style="padding: 0;"><input class="form-control material" type="text" :disabled="d.type === 'MATERIAL'" :readonly="d.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="d.value.materialCode" :component_detail_id="d.id" :component_id="d.componentId" :type_instance_id="d.typeInstanceId" required="required" :placeholder="d.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="d.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="d.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="d.value.materialSpecification"></td><td class="characteristic-td"><input class="form-control" type="text" value="" autocomplete="off" name="characteristic" required="required" title="请填写特征值" @click="show" :value="d.classificationList.length > 0 ? d.classificationList[0].classification.characteristicValue.map(c => c.value).join(' ') : ''" style="text-align: left;" :disabled="!(d.value.materialCode && d.classificationList.length > 0)" :readonly="!(d.value.materialCode && d.classificationList.length > 0)"><div class="characteristic-popup" style="position: fixed; z-index: 999;padding: 12px; background: #ffffff; z-index: 999; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.12); display: none;"><div class="items"><template v-for="classification in d.classificationList"><div :data-classification_code="classification.classification.code"><div class="mb-2" v-for="characteristic in classification.classification.characteristicValue"><label style="width: 60px; text-align: left;" :class="characteristic.required ? 'required' : ''" :for="characteristic.code" v-text="characteristic.description"></label><input class="form-control" style="display:inline-block; border: 1px solid #e4e7ea; width: auto;" type="text" v-if="!characteristic.options" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value" :placeholder="characteristic.placeholder" :pattern="characteristic.type === 'NUMBER' ? '-?\\d+(\\.\\d+)?' : ''"><select class="form-control" v-else style="display: inline-block; width: auto;border-width: 1px;" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value"><option value=""></option><option v-for="option in characteristic.options" :name="option.name" v-text="option.label"></option></select></div></div></template></div></div></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="d.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="d.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="d.value.unit"></td><td v-if="!d.bomTemplate" style="padding: 0;"><input class="form-control" type="text" v-model="d.value.remark" autocomplete="off" name="remark"></td>
+                                                        <td style="padding: 0;"><input class="form-control material" type="text" :disabled="d.type === 'MATERIAL'" :readonly="d.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="d.value.materialCode" :component_detail_id="d.id" :component_id="d.componentId" :type_instance_id="d.typeInstanceId" required="required" :placeholder="d.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="d.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="d.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="d.value.materialSpecification"></td><td class="characteristic-td"><input class="form-control" type="text" value="" autocomplete="off" name="characteristic" required="required" title="请填写特征值" @click="show" :value="d.classificationList.length > 0 ? d.classificationList[0].classification.characteristicValue.map(c => c.value).join(' ') : ''" style="text-align: left;" :disabled="!(d.value.materialCode && d.classificationList.length > 0)" :readonly="!(d.value.materialCode && d.classificationList.length > 0)"><div class="characteristic-popup" style="position: fixed; z-index: 999;padding: 12px; background: #ffffff; z-index: 999; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.12); display: none;"><div class="items"><template v-for="classification in d.classificationList"><div :data-classification_code="classification.classification.code"><div class="mb-2" v-for="characteristic in classification.classification.characteristicValue"><label style="width: 60px; text-align: left;" :class="characteristic.required ? 'required' : ''" :for="characteristic.code" v-text="characteristic.description"></label><input class="form-control" style="display:inline-block; border: 1px solid #e4e7ea; width: auto;" type="text" v-if="!characteristic.options" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value" :placeholder="characteristic.placeholder" :pattern="characteristic.type === 'NUMBER' ? '-?\\d+(\\.\\d+)?' : ''"><select class="form-control" v-else style="display: inline-block; width: auto;border-width: 1px;" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value"><option value=""></option><option v-for="option in characteristic.options" :name="option.name" v-text="option.label"></option></select></div></div></template></div></div></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="d.quantity" :disabled="!d.modifyQuantity" required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="d.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="d.value.unit"></td><td v-if="!d.bomTemplate" style="padding: 0;"><input class="form-control" type="text" v-model="d.value.remark" autocomplete="off" name="remark"></td>
                                                     </template>
 
                                                     <!--第二层-->
@@ -206,7 +215,7 @@
                                                                         <tbody>
                                                                         <tr v-for="dd in cc.componentDetailList">
                                                                             <template v-if="!dd.bomTemplate">
-                                                                                <td style="padding: 0;"><input class="form-control material" type="text" :disabled="dd.type === 'MATERIAL'" :readonly="dd.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="dd.value.materialCode" :component_detail_id="dd.id" :component_id="dd.componentId" :type_instance_id="dd.typeInstanceId" required="required" :placeholder="dd.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="dd.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="dd.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="dd.value.materialSpecification"></td><td class="characteristic-td"><input class="form-control" type="text" value="" autocomplete="off" name="characteristic" required="required" title="请填写特征值" @click="show" :value="dd.classificationList.length > 0 ? dd.classificationList[0].classification.characteristicValue.map(c => c.value).join(' ') : ''" style="text-align: left;" :disabled="!(dd.value.materialCode && dd.classificationList.length > 0)" :readonly="!(dd.value.materialCode && dd.classificationList.length > 0)"><div class="characteristic-popup" style="position: fixed; z-index: 999;padding: 12px; background: #ffffff; z-index: 999; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.12); display: none;"><div class="items"><template v-for="classification in dd.classificationList"><div :data-classification_code="classification.classification.code"><div class="mb-2" v-for="characteristic in classification.classification.characteristicValue"><label style="width: 60px; text-align: left;" :class="characteristic.required ? 'required' : ''" :for="characteristic.code" v-text="characteristic.description"></label><input class="form-control" style="display:inline-block; border: 1px solid #e4e7ea; width: auto;" type="text" v-if="!characteristic.options" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value" :placeholder="characteristic.placeholder" :pattern="characteristic.type === 'NUMBER' ? '-?\\d+(\\.\\d+)?' : ''"><select class="form-control" v-else style="display: inline-block; width: auto;border-width: 1px;" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value"><option value=""></option><option v-for="option in characteristic.options" :name="option.name" v-text="option.label"></option></select></div></div></template></div></div></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="dd.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="dd.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="dd.value.unit"></td><td v-if="!dd.bomTemplate" style="padding: 0;"><input class="form-control" type="text" v-model="dd.value.remark" autocomplete="off" name="remark"></td>
+                                                                                <td style="padding: 0;"><input class="form-control material" type="text" :disabled="dd.type === 'MATERIAL'" :readonly="dd.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="dd.value.materialCode" :component_detail_id="dd.id" :component_id="dd.componentId" :type_instance_id="dd.typeInstanceId" required="required" :placeholder="dd.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="dd.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="dd.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="dd.value.materialSpecification"></td><td class="characteristic-td"><input class="form-control" type="text" value="" autocomplete="off" name="characteristic" required="required" title="请填写特征值" @click="show" :value="dd.classificationList.length > 0 ? dd.classificationList[0].classification.characteristicValue.map(c => c.value).join(' ') : ''" style="text-align: left;" :disabled="!(dd.value.materialCode && dd.classificationList.length > 0)" :readonly="!(dd.value.materialCode && dd.classificationList.length > 0)"><div class="characteristic-popup" style="position: fixed; z-index: 999;padding: 12px; background: #ffffff; z-index: 999; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.12); display: none;"><div class="items"><template v-for="classification in dd.classificationList"><div :data-classification_code="classification.classification.code"><div class="mb-2" v-for="characteristic in classification.classification.characteristicValue"><label style="width: 60px; text-align: left;" :class="characteristic.required ? 'required' : ''" :for="characteristic.code" v-text="characteristic.description"></label><input class="form-control" style="display:inline-block; border: 1px solid #e4e7ea; width: auto;" type="text" v-if="!characteristic.options" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value" :placeholder="characteristic.placeholder" :pattern="characteristic.type === 'NUMBER' ? '-?\\d+(\\.\\d+)?' : ''"><select class="form-control" v-else style="display: inline-block; width: auto;border-width: 1px;" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value"><option value=""></option><option v-for="option in characteristic.options" :name="option.name" v-text="option.label"></option></select></div></div></template></div></div></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="dd.quantity" :disabled="!dd.modifyQuantity" required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="dd.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="dd.value.unit"></td><td v-if="!dd.bomTemplate" style="padding: 0;"><input class="form-control" type="text" v-model="dd.value.remark" autocomplete="off" name="remark"></td>
                                                                             </template>
                                                                             <!--第三层-->
                                                                             <td colspan="7" v-if="dd.bomTemplate">
@@ -231,7 +240,7 @@
                                                                                                 <tbody>
                                                                                                 <tr v-for="ddd in ccc.componentDetailList">
                                                                                                     <template  v-if="!ddd.bomTemplate">
-                                                                                                        <td style="padding: 0;"><input class="form-control material" type="text" :disabled="ddd.type === 'MATERIAL'" :readonly="ddd.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="ddd.value.materialCode" :component_detail_id="ddd.id" :component_id="ddd.componentId" :type_instance_id="ddd.typeInstanceId" required="required" :placeholder="ddd.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="ddd.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="ddd.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="ddd.value.materialSpecification"></td><td class="characteristic-td"><input class="form-control" type="text" value="" autocomplete="off" name="characteristic" required="required" title="请填写特征值" @click="show" :value="ddd.classificationList.length > 0 ? ddd.classificationList[0].classification.characteristicValue.map(c => c.value).join(' ') : ''" style="text-align: left;" :disabled="!(ddd.value.materialCode && ddd.classificationList.length > 0)" :readonly="!(ddd.value.materialCode && ddd.classificationList.length > 0)"><div class="characteristic-popup" style="position: fixed; z-index: 999;padding: 12px; background: #ffffff; z-index: 999; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.12); display: none;"><div class="items"><template v-for="classification in ddd.classificationList"><div :data-classification_code="classification.classification.code"><div class="mb-2" v-for="characteristic in classification.classification.characteristicValue"><label style="width: 60px; text-align: left;" :class="characteristic.required ? 'required' : ''" :for="characteristic.code" v-text="characteristic.description"></label><input class="form-control" style="display:inline-block; border: 1px solid #e4e7ea; width: auto;" type="text" v-if="!characteristic.options" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value" :placeholder="characteristic.placeholder" :pattern="characteristic.type === 'NUMBER' ? '-?\\d+(\\.\\d+)?' : ''"><select class="form-control" v-else style="display: inline-block; width: auto;border-width: 1px;" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value"><option value=""></option><option v-for="option in characteristic.options" :name="option.name" v-text="option.label"></option></select></div></div></template></div></div></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="ddd.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="ddd.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="ddd.value.unit"></td><td v-if="!ddd.bomTemplate" style="padding: 0;"><input class="form-control" type="text" v-model="ddd.value.remark" autocomplete="off" name="remark"></td>
+                                                                                                        <td style="padding: 0;"><input class="form-control material" type="text" :disabled="ddd.type === 'MATERIAL'" :readonly="ddd.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="ddd.value.materialCode" :component_detail_id="ddd.id" :component_id="ddd.componentId" :type_instance_id="ddd.typeInstanceId" required="required" :placeholder="ddd.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="ddd.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="ddd.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="ddd.value.materialSpecification"></td><td class="characteristic-td"><input class="form-control" type="text" value="" autocomplete="off" name="characteristic" required="required" title="请填写特征值" @click="show" :value="ddd.classificationList.length > 0 ? ddd.classificationList[0].classification.characteristicValue.map(c => c.value).join(' ') : ''" style="text-align: left;" :disabled="!(ddd.value.materialCode && ddd.classificationList.length > 0)" :readonly="!(ddd.value.materialCode && ddd.classificationList.length > 0)"><div class="characteristic-popup" style="position: fixed; z-index: 999;padding: 12px; background: #ffffff; z-index: 999; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.12); display: none;"><div class="items"><template v-for="classification in ddd.classificationList"><div :data-classification_code="classification.classification.code"><div class="mb-2" v-for="characteristic in classification.classification.characteristicValue"><label style="width: 60px; text-align: left;" :class="characteristic.required ? 'required' : ''" :for="characteristic.code" v-text="characteristic.description"></label><input class="form-control" style="display:inline-block; border: 1px solid #e4e7ea; width: auto;" type="text" v-if="!characteristic.options" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value" :placeholder="characteristic.placeholder" :pattern="characteristic.type === 'NUMBER' ? '-?\\d+(\\.\\d+)?' : ''"><select class="form-control" v-else style="display: inline-block; width: auto;border-width: 1px;" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value"><option value=""></option><option v-for="option in characteristic.options" :name="option.name" v-text="option.label"></option></select></div></div></template></div></div></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="ddd.quantity" :disabled="!ddd.modifyQuantity" required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="ddd.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="ddd.value.unit"></td><td v-if="!ddd.bomTemplate" style="padding: 0;"><input class="form-control" type="text" v-model="ddd.value.remark" autocomplete="off" name="remark"></td>
                                                                                                     </template>
 
                                                                                                     <!--第四层-->
@@ -256,7 +265,7 @@
                                                                                                                         </thead>
                                                                                                                         <tbody>
                                                                                                                         <tr v-for="dddd in cccc.componentDetailList">
-                                                                                                                            <td style="padding: 0;"><input class="form-control material" type="text" :disabled="dddd.type === 'MATERIAL'" :readonly="dddd.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="dddd.value.materialCode" :component_detail_id="dddd.id" :component_id="dddd.componentId" :type_instance_id="dddd.typeInstanceId" required="required" :placeholder="dddd.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="dddd.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="dddd.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="dddd.value.materialSpecification"></td><td class="characteristic-td"><input class="form-control" type="text" value="" autocomplete="off" name="characteristic" required="required" title="请填写特征值" @click="show" :value="dddd.classificationList.length > 0 ? dddd.classificationList[0].classification.characteristicValue.map(c => c.value).join(' ') : ''" style="text-align: left;" :disabled="!(dddd.value.materialCode && dddd.classificationList.length > 0)" :readonly="!(dddd.value.materialCode && dddd.classificationList.length > 0)"><div class="characteristic-popup" style="position: fixed; z-index: 999;padding: 12px; background: #ffffff; z-index: 999; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.12); display: none;"><div class="items"><template v-for="classification in dddd.classificationList"><div :data-classification_code="classification.classification.code"><div class="mb-2" v-for="characteristic in classification.classification.characteristicValue"><label style="width: 60px; text-align: left;" :class="characteristic.required ? 'required' : ''" :for="characteristic.code" v-text="characteristic.description"></label><input class="form-control" style="display:inline-block; border: 1px solid #e4e7ea; width: auto;" type="text" v-if="!characteristic.options" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value" :placeholder="characteristic.placeholder" :pattern="characteristic.type === 'NUMBER' ? '-?\\d+(\\.\\d+)?' : ''"><select class="form-control" v-else style="display: inline-block; width: auto;border-width: 1px;" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value"><option value=""></option><option v-for="option in characteristic.options" :name="option.name" v-text="option.label"></option></select></div></div></template></div></div></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="dddd.quantity" disabled required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="dddd.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="dddd.value.unit"></td><td v-if="!dddd.bomTemplate" style="padding: 0;"><input class="form-control" type="text" v-model="dddd.value.remark" autocomplete="off" name="remark"></td>
+                                                                                                                            <td style="padding: 0;"><input class="form-control material" type="text" :disabled="dddd.type === 'MATERIAL'" :readonly="dddd.type === 'MATERIAL'" autocomplete="off" name="materialCode" v-model="dddd.value.materialCode" :component_detail_id="dddd.id" :component_id="dddd.componentId" :type_instance_id="dddd.typeInstanceId" required="required" :placeholder="dddd.placeholder" @click="showMaterialDialog"><input class="form-control" type="hidden" name="materialId" v-model="dddd.value.materialId" required="required" value=""></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialName" v-model="dddd.value.materialName"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="materialSpecification" v-model="dddd.value.materialSpecification"></td><td class="characteristic-td"><input class="form-control" type="text" value="" autocomplete="off" name="characteristic" required="required" title="请填写特征值" @click="show" :value="dddd.classificationList.length > 0 ? dddd.classificationList[0].classification.characteristicValue.map(c => c.value).join(' ') : ''" style="text-align: left;" :disabled="!(dddd.value.materialCode && dddd.classificationList.length > 0)" :readonly="!(dddd.value.materialCode && dddd.classificationList.length > 0)"><div class="characteristic-popup" style="position: fixed; z-index: 999;padding: 12px; background: #ffffff; z-index: 999; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.12); display: none;"><div class="items"><template v-for="classification in dddd.classificationList"><div :data-classification_code="classification.classification.code"><div class="mb-2" v-for="characteristic in classification.classification.characteristicValue"><label style="width: 60px; text-align: left;" :class="characteristic.required ? 'required' : ''" :for="characteristic.code" v-text="characteristic.description"></label><input class="form-control" style="display:inline-block; border: 1px solid #e4e7ea; width: auto;" type="text" v-if="!characteristic.options" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value" :placeholder="characteristic.placeholder" :pattern="characteristic.type === 'NUMBER' ? '-?\\d+(\\.\\d+)?' : ''"><select class="form-control" v-else style="display: inline-block; width: auto;border-width: 1px;" :id="characteristic.code" :name="characteristic.code" :required="characteristic.required" v-model="characteristic.value"><option value=""></option><option v-for="option in characteristic.options" :name="option.name" v-text="option.label"></option></select></div></div></template></div></div></td><td><input class="form-control" type="text" autocomplete="off" pattern="^\d+(\.\d{1,3})?$" title="必须数字" name="quantity" v-model="dddd.quantity" :disabled="!dddd.modifyQuantity" required="required"></td><td><input class="form-control" type="text" value="" autocomplete="off" disabled="disabled" readonly="readonly" name="unitText" v-model="dddd.value.unitText" required="required"><input class="form-control" type="hidden" name="unit" required="required" v-model="dddd.value.unit"></td><td v-if="!dddd.bomTemplate" style="padding: 0;"><input class="form-control" type="text" v-model="dddd.value.remark" autocomplete="off" name="remark"></td>
                                                                                                                         </tr>
                                                                                                                         </tbody>
                                                                                                                     </table>
@@ -349,6 +358,7 @@
     <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js}"></script>
     <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.zh-CN.min.js}"></script>
     <script type="text/javascript" th:src="@{/plugins/jquery.form2json.js}"></script>
+    <script th:src="@{/plugins/multiple-select/multiple-select.min.js}"></script>
 
     <script th:src="@{/editable-table/editable-table.js}"></script>
     <script th:src="@{/js/jquery.table.js}"></script>
@@ -388,6 +398,38 @@
             }
         }
 
+        $('#orderDate').datepicker({
+            language: "zh-CN",
+            autoclose: true,
+            clearBtn: true,
+            todayBtn: 'linked',
+            todayHighlight: true,
+            format: 'yyyy-mm-dd'
+        })
+
+        if (isAdd) {
+            let customerContactInfoMap = /*[[${customerContactInfoMap}]]*/
+            $('#partnerId option').each(function () {
+                if (this.value) {
+                    $(this).data('contactPerson', customerContactInfoMap[this.value]['contactPerson'])
+                    $(this).data('contactNumber', customerContactInfoMap[this.value]['contactNumber'])
+                    $(this).data('contactMail', customerContactInfoMap[this.value]['contactMail'])
+                }
+            })
+        }
+
+        $('#partnerId').multipleSelect({
+            filter: true,
+            onClick: function (view) {
+                // selected:true, text:"111", value:"731689942480101376", "data": {}
+                if (view.data) {
+                    $('#contactPerson').val(view.data.contactPerson)
+                    $('#contactNumber').val(view.data.contactNumber)
+                    $('#contactMail').val(view.data.contactMail)
+                }
+            }
+        })
+
         // 可编辑表格初始化
         let $editableTable = $('#table-container').editableTablePlus({
             customizeType,
@@ -396,12 +438,21 @@
             highlight: true,
             // readonly,
             rowClick: function (context, $tr, row) {
-                showBOMDetail($tr, row.materialId, row.id)
+                if (row.materialId) {
+                    if (row.materialType === 'FERT' || row.materialType === 'HALB') {
+                        // 成品 或 半成品
+                        showBOMDetail($tr, row.materialId, row.id)
+                    } else {
+                        $tr[0].form = vue.$data.form  = {}
+                    }
+                } else {
+                    $tr[0].form = vue.$data.form  = {}
+                }
             },
             beforeDeleteRow: function (context, $tr, row) {
                 // 删除对应的物料清单
                 if (context.options.activeIndex === ($tr.index() + 1)) {
-                    vue.$data.form = {}
+                    $tr[0].form = vue.$data.form  = {}
                 }
 
                 return true
@@ -410,7 +461,7 @@
                 {
                     type: "material",
                     name: "materialId",
-                    title: "产成品物料",
+                    title: "物料",
                     width: 100,
                     required: true,
                     mode: 'single', // 多选,
@@ -421,21 +472,33 @@
                     },
                     selected: function ($tr, row) {
                         row.id = row.materialId
-                        characteristic.selectedCharacteristic($tr, row);
+                        // if (row.materialType !== 'HALB') {
+                            // 非半成品获取特征值
+                            characteristic.selectedCharacteristic($tr, row);
+                        // }
 
-                        showBOMDetail($tr, row.materialId, row.item_id, true, function (form) {})
+                        if (row.materialType === 'FERT' || row.materialType === 'HALB') {
+                            // 成品 或 半成品
+                            showBOMDetail($tr, row.materialId, row.item_id, true, function (form) {})
+                        } else {
+                            $tr[0].form = vue.$data.form  = {}
+                        }
                     }
+                },
+                {
+                    type: "hidden",
+                    name: "materialType"
                 },
                 {
                     type: "label",
                     name: "materialName",
                     title: "名称"
                 },
-                // {
-                //     type: "label",
-                //     name: "materialSpecification",
-                //     title: "规格"
-                // },
+                {
+                    type: "text",
+                    name: "specification",
+                    title: "规格"
+                },
                 {
                     type: "characteristic",
                     name: "characteristic",
@@ -490,6 +553,11 @@
                 },
                 {
                     type: "text",
+                    title: "客户物料编号",
+                    name: "customerMaterialCode",
+                },
+                {
+                    type: "text",
                     title: "备注",
                     name: "remark",
                 },
@@ -507,6 +575,9 @@
                     align: 'center',
                     width: 80,
                     render: function (row) {
+                        if (row.materialType === 'ROH') {
+                            return ''
+                        }
                         return '<a href="/produce_bom/'+row.id+'/download" >下载</a>'
                     }
                 }
@@ -523,6 +594,13 @@
             var formItemValidity = formItem.checkValidity()
             formHeader.classList.add('was-validated')
             formItem.classList.add('was-validated')
+
+            if (!$('#partnerId').val()) {
+                $('#partnerId').next().addClass('is-invalid')
+            } else {
+                $('#partnerId').next().removeClass('is-invalid')
+            }
+
             return formHeaderValidity && formItemValidity;
         }
 
@@ -564,7 +642,7 @@
                     return;
                 }
 
-                if (tpl) {
+                if (tpl && tpl.componentList) {
                     for(let component of tpl.componentList) {
                         for (let componentDetail of component.componentDetailList) {
                             if (!componentDetail.value.materialId && !(componentDetail.required === false)) {
@@ -642,6 +720,13 @@
         loadItem(itemList)
         function loadItem(itemList) {
             if (itemList && itemList.length > 0) {
+                // 特征值
+                for (let item of itemList) {
+                    if (item.materialType === 'HALB') {
+                        // 半成品不显示特征值
+                        // item.classificationList = []
+                    }
+                }
                 characteristic.loadCharacteristic($editableTable, itemList)
                 $editableTable.editableTablePlus('setActiveIndex', 1)
 
@@ -712,7 +797,7 @@
                             }
 
                             for (d of c.componentDetailList) {
-                                if (d.componentId === currentMaterialDom.getAttribute('component_id') && d.typeInstanceId === currentMaterialDom.getAttribute('type_instance_id')) {
+                                if (d.id === currentMaterialDom.getAttribute('component_detail_id')) {
                                     d.value.is_batch = row.batchManagement
                                     d.value.materialId = row.id
                                     d.value.materialCode = row.code
@@ -773,7 +858,7 @@
                 if (itemList && itemList.length > 0) {
                     $editableTable
                         .editableTablePlus('each', (index, context, $tr, row) => {
-                            let value = valueMap[row.id]
+                            let value = valueMap[row.id] || {}
                             if(index === 0) {
                                 this.form = value
                             }

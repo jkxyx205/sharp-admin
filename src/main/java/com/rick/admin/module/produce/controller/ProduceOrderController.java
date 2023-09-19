@@ -106,6 +106,7 @@ public class ProduceOrderController {
      */
     @GetMapping("new")
     public String gotoDetailPage(Model model) {
+        model.addAttribute("customerContactInfoMap", customerContactInfoMapping());
         return gotoDetailPageById(null, model);
     }
 
@@ -123,8 +124,12 @@ public class ProduceOrderController {
             Map<Long, BomTemplate> itemIdBomTemplateMap = Maps.newHashMapWithExpectedSize(produceOrder.getItemList().size());
 
             for (ProduceOrder.Item item : produceOrder.getItemList()) {
-                BomTemplate bomTemplate = gotoBomForm(item.getMaterialId(), item, false);
-                itemIdBomTemplateMap.put(item.getId(), bomTemplate);
+                if (CollectionUtils.isNotEmpty(item.getItemList())) {
+                    BomTemplate bomTemplate = gotoBomForm(item.getMaterialId(), item, false);
+                    itemIdBomTemplateMap.put(item.getId(), bomTemplate);
+                } else {
+                    batchService.fillCharacteristicValue(Arrays.asList(item));
+                }
             }
 
             model.addAttribute("po", produceOrder);
@@ -325,5 +330,11 @@ public class ProduceOrderController {
         BomTemplate bomTemplate = bomService.getBomTemplateMaterialId(materialId, valueMapping, isCopy);
 
         return bomTemplate;
+    }
+
+    private Map<String, Map<String, Object>> customerContactInfoMapping() {
+        String querySql = "select id, contact_person contactPerson, contact_number contactNumber, contact_mail contactMail from core_partner where partner_type = 'CUSTOMER'";
+        List<Map<String, Object>> list = sharpService.query(querySql, null);
+        return list.stream().collect(Collectors.toMap(row -> Objects.toString(row.get("id"), ""), row -> row));
     }
 }

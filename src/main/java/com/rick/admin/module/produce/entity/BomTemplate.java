@@ -79,6 +79,9 @@ public class BomTemplate extends BaseCodeEntity {
         @Column(comment = "是否必填", value = "is_required")
         Boolean required;
 
+        @Column(comment = "是否允许修改数量", value = "is_allow_modify_quantity")
+        Boolean modifyQuantity;
+
         @Transient
         ProduceOrder.Item.Detail value;
 

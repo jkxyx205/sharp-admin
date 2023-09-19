@@ -157,7 +157,7 @@ public class ProduceOrderService {
      * @param rootReferenceCode
      */
     public void setProcessingStatus(String rootReferenceCode) {
-        setStatus(rootReferenceCode, ProduceOrder.StatusEnum.PROCESSING);
+//        setStatus(rootReferenceCode, ProduceOrder.StatusEnum.PROCESSING);
     }
 
     /**

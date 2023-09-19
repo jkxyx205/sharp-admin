@@ -98,6 +98,7 @@ public class BomService {
 
                     componentDetail.setValue(value);
                     componentDetail.setClassificationList(value.getClassificationList());
+                    componentDetail.setQuantity(value.getQuantity());
                 } else if (componentDetail.getType() == BomTemplate.TypeEnum.CATEGORY) {
                     componentDetail.setValue(new ProduceOrder.Item.Detail());
                 } else if (componentDetail.getType() == BomTemplate.TypeEnum.MATERIAL) {

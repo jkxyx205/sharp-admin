@@ -90,8 +90,10 @@ public class ProduceBOMDownloadController {
                     writeBomList(itemQuantity, subBomTemplate, excelWriter, integer);
                 } else {
                     ProduceOrder.Item.Detail value = componentDetail.getValue();
-                    excelWriter.writeRow(new ExcelRow(1, integer.getAndIncrement(), 25f, value.getMaterialName(), (StringUtils.isBlank(value.getMaterialSpecification()) ? "" : value.getMaterialSpecification() + " ") + value.getCharacteristic(),
-                            value.getQuantity().multiply(itemQuantity), value.getUnitText(), value.getRemark()));
+                    if (Objects.nonNull(value.getMaterialId())) {
+                        excelWriter.writeRow(new ExcelRow(1, integer.getAndIncrement(), 25f, value.getMaterialName(), (StringUtils.isBlank(value.getMaterialSpecification()) ? "" : value.getMaterialSpecification() + " ") + value.getCharacteristic(),
+                                value.getQuantity().multiply(itemQuantity), value.getUnitText(), value.getRemark()));
+                    }
                 }
             }
         }

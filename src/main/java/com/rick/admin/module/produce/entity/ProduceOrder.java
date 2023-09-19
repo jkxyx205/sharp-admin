@@ -14,8 +14,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -52,12 +50,18 @@ public class ProduceOrder extends BaseCodeEntity {
     @Column(comment = "联系邮箱")
     String contactMail;
 
+    @Column(comment = "客户订单号")
+    String sourceOrderNum;
+
+    @Column(comment = "下单日期")
+    LocalDate orderDate;
+
     StatusEnum status;
+
+    String remark;
 
     @OneToMany(subTable = "produce_order_item", reversePropertyName = "produceOrderId", cascadeInsertOrUpdate = true, joinValue = "produce_order_id")
     List<Item> itemList;
-
-    String remark;
 
     @Column(comment = "附件", columnDefinition = "text", value = "attachment", nullable = false)
     private List<Map<String, Object>> attachmentList;
@@ -84,6 +88,9 @@ public class ProduceOrder extends BaseCodeEntity {
         @Column(comment = "物料Code")
         String materialCode;
 
+        @Column(comment = "规格")
+        String specification;
+
         @NotNull
         @Column(comment = "数量")
         BigDecimal quantity;
@@ -99,6 +106,9 @@ public class ProduceOrder extends BaseCodeEntity {
         @NotNull
         @Column(comment = "交货日期")
         LocalDate deliveryDate;
+
+        @Column(comment = "客户物料编号")
+        String customerMaterialCode;
 
         @Column(comment = "备注")
         String remark;
@@ -125,8 +135,9 @@ public class ProduceOrder extends BaseCodeEntity {
         @Transient
         MaterialDescription materialDescription;
 
-        @Valid
-        @NotEmpty
+//        @Valid
+//        @NotEmpty
+        // 原材料无BOM
         @OneToMany(subTable = "produce_order_item_detail", reversePropertyName = "produceOrderItemId", cascadeInsertOrUpdate = true, joinValue = "produce_order_item_id")
         List<Detail> itemList;
 
@@ -195,8 +206,9 @@ public class ProduceOrder extends BaseCodeEntity {
     @AllArgsConstructor
     @Getter
     public enum StatusEnum {
-        PLANNING("计划中"),
-        PROCESSING("完成领料"),
+        PLANNING("待审核"),
+        PRODUCING("待生产"),
+//        PROCESSING("完成领料"),
         PRODUCED("生产完成"),
         DONE("订单完成");
 
