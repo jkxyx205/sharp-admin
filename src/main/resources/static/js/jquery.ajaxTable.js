@@ -244,8 +244,7 @@
                             params = {}
                         }
 
-                        this.query = $.extend({}, this.query, params)
-
+                        this.query = { ...this.query, ...params}
                         let that = this
                         // trim
                         this.queryTrim()
