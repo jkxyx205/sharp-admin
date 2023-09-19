@@ -63,6 +63,7 @@
                         "materialCode": row.code,
                         "materialText": context.labelDisplay(row),
                         "materialName": row.name,
+                        "materialType": row.materialType,
                         "materialSpecification": context.specification(row),
                         "unit": row.base_unit,
                         "unitText": row.base_unit_name,

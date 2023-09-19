@@ -31,6 +31,8 @@ public class MaterialDescription {
 
     String characteristic;
 
+    String materialType;
+
     public MaterialDescription(Long id) {
         this.id = id;
     }

@@ -151,9 +151,10 @@
         multipleSelect.forEach(f => {
             var value = urlObject[f.name]
             $('#' + f.name).multipleSelect({
-                selectAll: true,
-                single: false,
-                placeholder: '请输入' + f.label
+                // selectAll: true,
+                single: true,
+                filter: true,
+                // placeholder: '请选择' + f.label
             }).multipleSelect('setSelects', !value ? '' : value.split(','))
         })
 

@@ -40,4 +40,8 @@ public interface MaterialDescriptionHandler {
         return getMaterialDescription() == null ? null : getMaterialDescription().getBatchId();
     }
 
+    default String getMaterialType() {
+        return getMaterialDescription() == null ? null : getMaterialDescription().getMaterialType();
+    }
+
 }

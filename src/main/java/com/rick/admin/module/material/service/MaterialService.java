@@ -104,6 +104,7 @@ public class MaterialService {
                     materialDescription.setCategoryId(material.getCategoryId());
                     materialDescription.setUnitPrice(material.getStandardPrice());
                     materialDescription.setCharacteristic("");
+                    materialDescription.setMaterialType(material.getMaterialType());
                 }
 
                 fillCharacteristicText(materialDescriptionList.stream().filter(materialDescriptionHandler -> Objects.nonNull(materialDescriptionHandler.getMaterialId())).collect(Collectors.toSet()));

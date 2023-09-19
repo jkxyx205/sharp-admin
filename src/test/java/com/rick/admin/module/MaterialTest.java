@@ -549,21 +549,22 @@ public class MaterialTest {
                 .code("mm_material_template_search")
                 .tplName("tpl/query_list")
                 .name("bom模版物料查询")
-                .querySql("select cast(mm_material.id as char(20)) materialId, mm_material.code code, mm_material.name, mm_material.specification, batch_management batchManagement, base_unit, base_unit as base_unit_name,combine.item_id, combine.partner_id, combine.batch_code, combine.characteristic, combine.remark, combine.create_time  from (SELECT * FROM\n" +
-                        "(select null item_id, null partner_id, id material_id, null batch_code, null batch_id, null characteristic, remark, null create_time from mm_material where bom_template_id is NOT NULL AND material_type = 'FERT' AND is_deleted = 0) t3\n" +
-                        "UNION\n" +
+                .querySql("SELECT cast(mm_material.id as char(20)) materialId, mm_material.code code, mm_material.name, material_type materialType, mm_material.specification, batch_management batchManagement, base_unit, base_unit as base_unit_name,combine.item_id, combine.partner_id, combine.batch_code, combine.characteristic, combine.remark, combine.create_time FROM (SELECT * FROM\n" +
+                        "(select null item_id, null partner_id, id material_id, null batch_code, null batch_id, null characteristic, remark, null create_time from mm_material WHERE is_deleted = 0) t3\n" +
+                        "UNION ALL\n" +
                         "SELECT * FROM\n" +
                         "(select produce_order_item.id item_id, produce_order.partner_id, material_id, batch_code, batch_id, characteristic.characteristic, produce_order_item.remark, produce_order_item.create_time  from produce_order_item inner join produce_order on produce_order_item.produce_order_id = produce_order.id\n" +
                         "left join (select concat(material_id, ifnull(batch_id, '')) materialIdBatchIdString, group_concat(mm_characteristic_value.value SEPARATOR ' ') characteristic from mm_profile left join mm_characteristic_value on mm_profile.id = mm_characteristic_value.reference_id\n" +
                         " group by concat(material_id, ifnull(batch_id, '')) order by mm_characteristic_value.id asc) characteristic on characteristic.materialIdBatchIdString = concat(material_id, ifnull(batch_id, ''))\n" +
-                        " order by create_time desc) t4) combine join mm_material on combine.material_id = mm_material.id where material_id = :materialId and partner_id = :partnerId")
+                        " order by create_time desc) t4) combine join mm_material on combine.material_id = mm_material.id \n" +
+                        " where category_id = :categoryId AND partner_id = :partnerId AND (partner_id is NULL OR (partner_id is NOT NULL AND material_type <> 'ROH'))")
                 .queryFieldList(Arrays.asList(
 //                        new QueryField("code", "编号", QueryField.Type.TEXT),
 //                        new QueryField("keywords", "关键字", QueryField.Type.TEXT),
 //                        new QueryField("materialType", "类型", QueryField.Type.SELECT, "material_type"),
-                        new QueryField("materialId", "产成品物料", QueryField.Type.SELECT, "bom_material"),
-                        new QueryField("partnerId", "客户", QueryField.Type.SELECT, "core_partner_customer")
-//                        new QueryField("categoryId", "分类", QueryField.Type.GROUP_SELECT, "material_category_select_sql")
+//                        new QueryField("materialId", "产成品物料", QueryField.Type.SELECT, "bom_material"),
+                        new QueryField("categoryId", "分类", QueryField.Type.GROUP_SELECT, "material_category_select_sql"),
+                        new QueryField("partnerId", "客户", QueryField.Type.MULTIPLE_SELECT, "core_partner_customer")
 //                        new QueryField("categoryId", "分类", QueryField.Type.MULTIPLE_SELECT, "core_material_category")
 //                        new QueryField("categoryId", "分类", QueryField.Type.SELECT, "core_material_category")
 
@@ -574,6 +575,7 @@ public class MaterialTest {
                         new HiddenReportColumn("materialId"),
                         new HiddenReportColumn("item_id"),
                         new HiddenReportColumn("batchManagement"),
+                        new HiddenReportColumn("materialType"),
                         new HiddenReportColumn("remark"),
                         new ReportColumn("code", "物料").setColumnWidth(80),
                         new ReportColumn("name", "名称").setTooltip(true),

@@ -2,11 +2,13 @@ package com.rick.admin.module.inventory.service;
 
 import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.entity.Material;
+import com.rick.admin.module.material.service.CharacteristicConverter;
 import com.rick.admin.module.material.service.MaterialProfileService;
 import com.rick.admin.module.material.service.MaterialProfileSupport;
 import com.rick.report.core.entity.Report;
 import com.rick.report.core.service.ReportAdvice;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -27,6 +29,8 @@ public class InventoryDocumentReportAdvice implements ReportAdvice {
 
     final MaterialProfileService materialProfileService;
 
+    private final CharacteristicConverter characteristicConverter;
+
     @Override
     public void beforeSetRow(Report report, List<Map<String, Object>> rows) {
         Map<Long, Material> idMaterialMap = materialDAO.selectByIdsAsMap(rows.stream().map(row -> (Long) row.get("material_id")).collect(Collectors.toSet()));
@@ -40,6 +44,9 @@ public class InventoryDocumentReportAdvice implements ReportAdvice {
             row.put("materialSpecification", material.getSpecificationText());
             row.put("quantity", (Objects.equals(row.get("movement_type"), "INBOUND") ? "+" : "-") + row.get("quantity"));
             row.put("characteristic", characteristicTextMap.get(MaterialProfileSupport.materialIdBatchIdString(material.getId(), (Long) row.get("batch_id"))));
+            String specification = (String) row.get("materialSpecification");
+            row.put("specificationAndCharacteristic", (StringUtils.isBlank(specification) ? "" : specification + " ") + Objects.toString(row.get("characteristic"), ""));
+
         }
     }
 }

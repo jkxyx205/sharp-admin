@@ -88,7 +88,7 @@ dict:
     - type: reference_type
       map: { "OTHER": "无","MATERIAL_DOCUMENT": "物料凭证", "PO": "采购订单", "PDO": "生产单", "SO": "生产单"}
     - type: produce_order_status
-      map: { "PLANNING": "计划中","PROCESSING": "完成领料", "PRODUCED": "生产完成", "DONE": "订单完成"}
+      map: { "PLANNING": "待审核","PRODUCING": "待生产", "PRODUCED": "生产完成", "DONE": "订单完成"}
     - type: purchase_order_status
       map: { "PLANNING": "采购中", "DONE": "采购完成"}
 
