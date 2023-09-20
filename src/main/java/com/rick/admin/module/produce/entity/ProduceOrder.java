@@ -141,6 +141,9 @@ public class ProduceOrder extends BaseCodeEntity {
         @OneToMany(subTable = "produce_order_item_detail", reversePropertyName = "produceOrderItemId", cascadeInsertOrUpdate = true, joinValue = "produce_order_item_id")
         List<Detail> itemList;
 
+        @OneToMany(subTable = "produce_order_item_schedule", reversePropertyName = "produceOrderItemId", cascadeInsertOrUpdate = true, joinValue = "produce_order_item_id")
+        List<Schedule> scheduleList;
+
         public BigDecimal getAmount() {
             if (Objects.nonNull(unitPrice)) {
                 return unitPrice.multiply(quantity);
@@ -200,6 +203,24 @@ public class ProduceOrder extends BaseCodeEntity {
             @JsonProperty(access = JsonProperty.Access.READ_ONLY)
             MaterialDescription materialDescription;
 
+        }
+
+        @Getter
+        @Setter
+        @FieldDefaults(level = AccessLevel.PRIVATE)
+        @Table(value = "produce_order_item_schedule", comment = "物料生产计划")
+        public static class Schedule extends BaseEntity {
+
+            @Column(comment = "开始日期")
+            LocalDate startDate;
+
+            @Column(comment = "计划完成数量")
+            BigDecimal quantity;
+
+            @Column(comment = "状态")
+            StatusEnum status;
+
+            Long produceOrderItemId;
         }
     }
 

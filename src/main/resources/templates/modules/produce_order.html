@@ -163,6 +163,7 @@
         <div class="nav-tabs-boxed mb-5">
             <ul class="nav nav-tabs" role="tablist">
                 <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#tab-1" role="tab" aria-controls="home" aria-selected="false">BOM</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-2" role="tab" aria-controls="home" aria-selected="false" th:if="${po.id != null}">领料记录</a></li>
                 <li class="nav-item" th:if="${po.id != null}"><a class="nav-link" data-toggle="tab" href="#tab-3" role="tab" aria-controls="home" aria-selected="false" sec:authorize="hasAuthority('produce_order_edit')">出货记录</a></li>
             </ul>
             <div class="tab-content">
@@ -300,6 +301,48 @@
                         </div>
 
                         <div id="materialDetailInput" style="display: none"></div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="tab-2" role="tabpanel">
+                    <div id="goods_receipt_container" role="tabpanel">
+                        <div class="table-fixed-container">
+                            <table class="table table-responsive-sm table-bordered table-striped table-sm table-thead">
+                                <thead>
+                                <tr>
+                                    <th style="width: 50px" data-index>序号</th>
+                                    <th style="width: 100px" class="sortable active asc">物料</th>
+                                    <th style="width: 100px;">名称</th>
+                                    <th>规格</th>
+                                    <th style="width: 100px;">特征值</th>
+                                    <th style="width: 100px">基本单位</th>
+                                    <th style="width: 100px" class="sortable text-right">领料数量</th>
+                                    <th style="width: 120px" class="sortable text-right" data-sort-type="number">已领料数量</th>
+                                    <th style="width: 120px" class="sortable text-right" data-sort-type="number">待领料数量</th>
+                                    <th style="width: 90px" class="sortable">状态</th>
+                                    <th style="width: 120px">物料凭证</th>
+                                </tr>
+                                </thead>
+                            </table>
+                            <table class="table table-responsive-sm table-bordered table-striped table-sm table-tbody">
+                                <tbody>
+                                <tr th:each="s: ${goodsReceiptItemList}">
+                                    <td th:text="${sStat.index + 1}" data-index></td>
+                                    <td th:text="${s.materialCode}" th:data-sort-value="${s.materialCode}"></td>
+                                    <td th:text="${s.materialName}" th:data-sort-value="${s.materialName}"></td>
+                                    <td th:text="${s.materialSpecification}" th:data-sort-value="${s.materialSpecification}"></td>
+                                    <td th:text="${s.characteristic}" th:data-sort-value="${s.characteristic}"></td>
+                                    <td th:text="${s.unitText}" th:data-sort-value="${s.unitText}"></td>
+                                    <td th:text="${#numbers.formatDecimal(s.quantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.quantity}" th:class="text-right"></td>
+                                    <td th:text="${#numbers.formatDecimal(s.goodsReceiptQuantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.goodsReceiptQuantity}" th:class="text-right"></td>
+                                    <td th:text="${#numbers.formatDecimal(s.openQuantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.openQuantity}" th:class="text-right"></td>
+                                    <td th:class="${'status-' + s.complete}" th:data-sort-value="${s.complete}" th:text="${s.complete == true ? '已完成' : '未完成'}"></td>
+                                    <td>
+                                        <a href="javascript:;" th:onclick="openOnNewTab('[(${s.rootReferenceItemId})]', '[(${\'/reports/699659248728047616?root_reference_code=\'+s.produceOrderCode+\'&root_reference_item_id=\'+s.rootReferenceItemId+\'&material_id=\' + s.materialId})]', '物料凭证')">详情</a>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
                 <div class="tab-pane" id="tab-3" role="tabpanel" th:if="${po.id != null}">
@@ -645,8 +688,13 @@
                 if (tpl && tpl.componentList) {
                     for(let component of tpl.componentList) {
                         for (let componentDetail of component.componentDetailList) {
+                            if (!detailValid) {
+                                return;
+                            }
+
                             if (!componentDetail.value.materialId && !(componentDetail.required === false)) {
-                                toastr.error('第 '+(index + 1)+' 行产成品的物料清单有【物料】没有填写！')
+                                debugger
+                                toastr.error('第 '+(index + 1)+' 个物料的BOM有【物料】没有填写！')
                                 detailValid = false
                                 return
                             }

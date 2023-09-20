@@ -89,7 +89,10 @@ public class ProduceOrderService {
         String sql = "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where `root_reference_code` = :rootReferenceCode AND plant_id = 719893335619162112 group by root_reference_item_id";
         Map<Long, BigDecimal> histroyGoodsReceiptQuantityMap = sharpService.queryForKeyValue(sql, Params.builder(1).pv("rootReferenceCode", rootReferenceCode).build());
 
-        String sql2 = "select produce_order_item_detail.`id`, produce_order_item_detail.quantity * produce_order_item.quantity from produce_order\n" +
+        String sql2 = "select produce_order_item.id, produce_order_item.quantity  from produce_order_item\n" +
+                "inner join mm_material on mm_material.id = material_id where produce_order_item.`produce_order_code` = :rootReferenceCode AND mm_material.material_type = 'ROH'\n" +
+                "UNION ALL " +
+                "select produce_order_item_detail.`id`, produce_order_item_detail.quantity * produce_order_item.quantity from produce_order\n" +
                 "                inner join produce_order_item on produce_order_item.`produce_order_id` = produce_order.id\n" +
                 "                inner join produce_order_item_detail on produce_order_item.id = produce_order_item_detail.`produce_order_item_id`\n" +
                 "                where produce_order.code = :rootReferenceCode";

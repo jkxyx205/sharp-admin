@@ -8,7 +8,9 @@ import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.inventory.service.HandlerHelper;
 import com.rick.admin.module.inventory.service.HandlerManager;
 import com.rick.admin.module.inventory.service.InventoryDocumentService;
+import com.rick.admin.module.material.dao.ClassificationDAO;
 import com.rick.admin.module.material.dao.MaterialDAO;
+import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.produce.dao.ProduceOrderDAO;
@@ -76,6 +78,8 @@ public class InventoryController {
     final BatchService batchService;
 
     final ProduceOrderItemDetailDAO produceOrderItemDetailDAO;
+
+    final ClassificationDAO classificationDAO;
 
     @GetMapping("move")
     public String gotoInventoryPage() {
@@ -203,11 +207,11 @@ public class InventoryController {
             referenceCode = produceOrderDAO.findActiveProduceOrderByKeyCode(referenceCode);
         }
 
-        String sql = "select produce_order_item_detail.`material_id`,\n" +
-                "       mm_material.code material_code," +
-                "       produce_order_item_detail.batch_id," +
-                "       produce_order_item_detail.batch_code," +
-                "       produce_order_item_detail.`id`                               referenceItemId,\n" +
+        String sql = "select material_id, material_code, batch_id, batch_code, produce_order_item.id referenceItemId, produce_order_item.id rootReferenceItemId, produce_order_item.quantity, mm_material.base_unit unit from produce_order_item\n" +
+                "inner join mm_material on mm_material.id = material_id where produce_order_item.`produce_order_code` = :referenceCode AND mm_material.material_type = 'ROH'\n" +
+                "UNION ALL \n" +
+                "select produce_order_item_detail.`material_id`,\n" +
+                "       mm_material.code material_code,       produce_order_item_detail.batch_id,       produce_order_item_detail.batch_code,       produce_order_item_detail.`id`                               referenceItemId,\n" +
                 "       produce_order_item_detail.`id`                               rootReferenceItemId,\n" +
                 "       produce_order_item_detail.quantity * produce_order_item.quantity quantity,\n" +
                 "       mm_material.base_unit                                          unit\n" +
@@ -236,9 +240,8 @@ public class InventoryController {
 
         Map<Long, BigDecimal> itemOpenQuantityMap = produceOrderService.openQuantity(movementType, referenceCode);
 
-        Map<Long, ProduceOrder.Item.Detail> idDetailMap = produceOrderItemDetailDAO.selectByIdsAsMap(itemList.stream().map(InventoryDocument.Item::getReferenceItemId).collect(Collectors.toSet()));
-
-
+//        Map<Long, ProduceOrder.Item.Detail> idDetailMap = produceOrderItemDetailDAO.selectByIdsAsMap(itemList.stream().map(InventoryDocument.Item::getReferenceItemId).collect(Collectors.toSet()));
+        Map<Long, List<Classification>> materialIdClassificationMap = classificationDAO.findMaterialClassificationByMaterialIds(itemList.stream().map(InventoryDocument.Item::getMaterialId).collect(Collectors.toSet()));
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
             item.setType(type);
             item.setReferenceType(referenceType);
@@ -246,7 +249,8 @@ public class InventoryController {
             item.setRootReferenceCode(referenceCode);
             item.setMovementType(movementType);
             item.setQuantity(ObjectUtils.defaultIfNull(itemOpenQuantityMap.get(item.getRootReferenceItemId()), BigDecimal.ZERO));
-            item.setClassificationList(idDetailMap.get(item.getReferenceItemId()).getClassificationList());
+//            item.setClassificationList(idDetailMap.get(item.getReferenceItemId()).getClassificationList());
+            item.setClassificationList(ObjectUtils.defaultIfNull(materialIdClassificationMap.get(item.getMaterialId()), Collections.emptyList()));
         }
 
         inventoryDocument.setReferenceCode(referenceCode);
