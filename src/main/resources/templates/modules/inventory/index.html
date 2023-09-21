@@ -47,8 +47,8 @@
                             <option value="OTHER" hidden>无</option>
                             <option value="MATERIAL_DOCUMENT" hidden>物料凭证</option>
                             <option value="PO" hidden>采购订单</option>
-                            <option value="PDO" hidden>生产单</option>
-                            <option value="SO" hidden>生产单</option>
+                            <option value="PP" hidden>生产单号</option>
+                            <option value="SO" hidden>销售订单</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -212,8 +212,8 @@
             "OUTBOUND": ["OTHER", "SO"],
             "RETURN": ["OTHER", "PO", "SO"],
             // "RETURN": ["MATERIAL_DOCUMENT", "PO", "SO"],
-            "MOVING_TO_PRODUCE": ["OTHER", "PDO"],
-            // "RETURN_FROM_PRODUCE": ["OTHER", "PDO"],
+            "MOVING_TO_PRODUCE": ["OTHER", "PP"],
+            // "RETURN_FROM_PRODUCE": ["OTHER", "PP"],
             "RETURN_FROM_PRODUCE": ["OTHER"],
             // "CANCEL": ["MATERIAL_DOCUMENT"],
             "DELETE": ["MATERIAL_DOCUMENT"],

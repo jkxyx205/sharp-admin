@@ -17,6 +17,7 @@ import com.rick.admin.module.produce.dao.ProduceOrderDAO;
 import com.rick.admin.module.produce.dao.ProduceOrderItemDetailDAO;
 import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.admin.module.produce.service.ProduceOrderService;
+import com.rick.admin.module.produce.service.ProduceScheduleService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
 import com.rick.admin.module.purchase.service.PurchaseOrderService;
@@ -81,6 +82,8 @@ public class InventoryController {
 
     final ClassificationDAO classificationDAO;
 
+    final ProduceScheduleService produceScheduleService;
+
     @GetMapping("move")
     public String gotoInventoryPage() {
         return "modules/inventory/index";
@@ -116,7 +119,7 @@ public class InventoryController {
                 InventoryDocument.MovementTypeEnum oppositeMovementType = HandlerHelper.oppositeMovementType(inventoryDocument.getItemList().get(0).getMovementType());
                 if (inventoryDocument.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PO) {
                     itemOpenQuantityMap = purchaseOrderService.openQuantity(oppositeMovementType, inventoryDocument.getRootReferenceCode());
-                } else if (inventoryDocument.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PDO) {
+                } else if (inventoryDocument.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PP) {
                     itemOpenQuantityMap = produceOrderService.openQuantity(oppositeMovementType, inventoryDocument.getRootReferenceCode());
                 } else if (inventoryDocument.getReferenceType() == InventoryDocument.ReferenceTypeEnum.SO) {
                     itemOpenQuantityMap = produceOrderService.salesOpenQuantity(oppositeMovementType, inventoryDocument.getRootReferenceCode());
@@ -136,8 +139,8 @@ public class InventoryController {
             materialService.fillMaterialDescription(inventoryDocument.getItemList());
         } else if (referenceType == InventoryDocument.ReferenceTypeEnum.PO) {
             inventoryDocument = getDocumentFromPurchaseOrder(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.OUTBOUND : InventoryDocument.MovementTypeEnum.INBOUND, type, referenceType, referenceCode);
-        } else if (referenceType == InventoryDocument.ReferenceTypeEnum.PDO) {
-            inventoryDocument = getDocumentFromProduceOrder(type == InventoryDocument.TypeEnum.RETURN_FROM_PRODUCE ? InventoryDocument.MovementTypeEnum.INBOUND : InventoryDocument.MovementTypeEnum.OUTBOUND, type, referenceType, referenceCode);
+        } else if (referenceType == InventoryDocument.ReferenceTypeEnum.PP) {
+            inventoryDocument = getDocumentFromProduceSchedule(type == InventoryDocument.TypeEnum.RETURN_FROM_PRODUCE ? InventoryDocument.MovementTypeEnum.INBOUND : InventoryDocument.MovementTypeEnum.OUTBOUND, type, referenceType, referenceCode);
         }  else if (referenceType == InventoryDocument.ReferenceTypeEnum.SO) {
             inventoryDocument =  getDocumentFromSalesOrder(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.INBOUND : InventoryDocument.MovementTypeEnum.OUTBOUND, type, referenceType, referenceCode);
         } else {
@@ -202,28 +205,25 @@ public class InventoryController {
         return inventoryDocument;
     }
 
-    private InventoryDocument getDocumentFromProduceOrder(InventoryDocument.MovementTypeEnum movementType, InventoryDocument.TypeEnum type, InventoryDocument.ReferenceTypeEnum referenceType, String referenceCode) {
-        if (!referenceCode.startsWith("PDO")) {
-            referenceCode = produceOrderDAO.findActiveProduceOrderByKeyCode(referenceCode);
+    private InventoryDocument getDocumentFromProduceSchedule(InventoryDocument.MovementTypeEnum movementType, InventoryDocument.TypeEnum type, InventoryDocument.ReferenceTypeEnum referenceType, String referenceCode) {
+        if (!referenceCode.startsWith("PP")) {
+            referenceCode = produceScheduleService.findActiveProduceScheduleByKeyCode(referenceCode);
         }
 
-        String sql = "select material_id, material_code, batch_id, batch_code, produce_order_item.id referenceItemId, produce_order_item.id rootReferenceItemId, produce_order_item.quantity, mm_material.base_unit unit from produce_order_item\n" +
-                "inner join mm_material on mm_material.id = material_id where produce_order_item.`produce_order_code` = :referenceCode AND mm_material.material_type = 'ROH'\n" +
-                "UNION ALL \n" +
-                "select produce_order_item_detail.`material_id`,\n" +
+        String sql = "select produce_order_item_detail.`material_id`,\n" +
                 "       mm_material.code material_code,       produce_order_item_detail.batch_id,       produce_order_item_detail.batch_code,       produce_order_item_detail.`id`                               referenceItemId,\n" +
                 "       produce_order_item_detail.`id`                               rootReferenceItemId,\n" +
-                "       produce_order_item_detail.quantity * produce_order_item.quantity quantity,\n" +
+                "       produce_order_item_detail.quantity * produce_order_item_schedule.quantity quantity,\n" +
                 "       mm_material.base_unit                                          unit\n" +
-                "from produce_order\n" +
-                "         inner join produce_order_item on produce_order_item.`produce_order_id` = produce_order.id\n" +
+                "from produce_order_item_schedule\n" +
+                "         inner join produce_order_item on produce_order_item.id = produce_order_item_schedule.produce_order_item_id\n" +
                 "         inner join produce_order_item_detail on produce_order_item.id = produce_order_item_detail.`produce_order_item_id`\n" +
                 "         inner join mm_material on mm_material.id = produce_order_item_detail.`material_id`\n" +
-                "where produce_order.code = :referenceCode";
+                "where produce_order_item_schedule.code = :referenceCode";
 
         List<InventoryDocument.Item> itemList = sharpService.query(sql, Params.builder(1).pv("referenceCode", referenceCode).build(), InventoryDocument.Item.class);
         if (CollectionUtils.isEmpty(itemList)) {
-            throw new BizException(ExceptionCodeEnum.PDO_DOCUMENT_NOT_FOUND_ERROR, new Object[]{referenceCode});
+            throw new BizException(ExceptionCodeEnum.PP_DOCUMENT_NOT_FOUND_ERROR, new Object[]{referenceCode});
         }
 
         InventoryDocument inventoryDocument = InventoryDocument.builder()
@@ -238,7 +238,7 @@ public class InventoryController {
 
         inventoryDocument.setItemList(itemList);
 
-        Map<Long, BigDecimal> itemOpenQuantityMap = produceOrderService.openQuantity(movementType, referenceCode);
+        Map<Long, BigDecimal> itemOpenQuantityMap = produceScheduleService.openQuantity(movementType, referenceCode);
 
 //        Map<Long, ProduceOrder.Item.Detail> idDetailMap = produceOrderItemDetailDAO.selectByIdsAsMap(itemList.stream().map(InventoryDocument.Item::getReferenceItemId).collect(Collectors.toSet()));
         Map<Long, List<Classification>> materialIdClassificationMap = classificationDAO.findMaterialClassificationByMaterialIds(itemList.stream().map(InventoryDocument.Item::getMaterialId).collect(Collectors.toSet()));
@@ -259,12 +259,12 @@ public class InventoryController {
 
     private InventoryDocument getDocumentFromSalesOrder(InventoryDocument.MovementTypeEnum movementType, InventoryDocument.TypeEnum type, InventoryDocument.ReferenceTypeEnum referenceType, String referenceCode2) {
         String referenceCode = referenceCode2;
-        if (!referenceCode2.startsWith("PDO")) {
+        if (!referenceCode2.startsWith("SO")) {
             referenceCode = produceOrderDAO.findActiveProduceOrderByKeyCode(referenceCode2);
         }
 
         com.rick.admin.module.produce.entity.ProduceOrder produceOrder = produceOrderDAO.selectByCode(referenceCode)
-                .orElseThrow(() -> new BizException(ExceptionCodeEnum.PDO_DOCUMENT_NOT_FOUND_ERROR, new Object[]{referenceCode2}));
+                .orElseThrow(() -> new BizException(ExceptionCodeEnum.PP_DOCUMENT_NOT_FOUND_ERROR, new Object[]{referenceCode2}));
         InventoryDocument inventoryDocument = InventoryDocument.builder()
                 .type(type)
                 .referenceType(referenceType)

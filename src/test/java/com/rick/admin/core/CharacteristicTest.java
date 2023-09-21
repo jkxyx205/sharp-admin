@@ -168,8 +168,8 @@ public class CharacteristicTest {
 //        insertOrUpdateCharacteristicWithName("DG", "端盖", 719895400634404864L);
 
 //        insertOrUpdateCharacteristicWithName("NCQ", "内齿圈", 719895746853228544L);
-//        insertOrUpdateCharacteristicWithName("FTL", "辐条轮毂组件", 719895198196322304L);
-//        insertOrUpdateCharacteristicWithName("YTL", "一体轮毂组件", 719895241229881344L);
+//        insertOrUpdateCharacteristicWithName("FTL", "辐条轮毂", 719895198196322304L);
+//        insertOrUpdateCharacteristicWithName("YTL", "一体轮毂", 719895241229881344L);
 
 //        insertOrUpdateCharacteristic("TIEX", "铁芯", 720624056151330816L);
 //        insertOrUpdateCharacteristicWithName("TONGX", "铜线", 725412632437219328L);

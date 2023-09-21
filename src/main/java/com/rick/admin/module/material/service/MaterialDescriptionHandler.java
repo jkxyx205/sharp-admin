@@ -17,7 +17,7 @@ public interface MaterialDescriptionHandler {
     }
 
     default String getMaterialText() {
-        return getMaterialName() + " " + getMaterialSpecification();
+        return (getMaterialName() + " " + getMaterialSpecification()).trim();
     }
 
     default String getMaterialName() {

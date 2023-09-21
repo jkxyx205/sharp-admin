@@ -54,13 +54,17 @@ public class BatchService {
     public void fillCharacteristicValue(Collection<? extends BatchHandler> batchHandlerList) {
         if (CollectionUtils.isNotEmpty(batchHandlerList)) {
             Map<String, MaterialProfile> materialProfileMap = materialProfileService.getMaterialProfile(batchHandlerList.stream()
+                            .filter(batchHandler -> Objects.nonNull(batchHandler.getMaterialId()))
                     .map(batchHandler -> MaterialProfileSupport.materialIdBatchIdString(batchHandler.getMaterialId(), batchHandler.getBatchId())).collect(Collectors.toSet()));
 
             // 获取特征值
             for (BatchHandler item : batchHandlerList) {
                 if (CollectionUtils.isNotEmpty(item.getClassificationList())) {
-                    CharacteristicHelper.fillValueToClassification(item.getClassificationList().stream().map(classification -> classification.getClassification()).collect(Collectors.toList()),
-                            materialProfileMap.get(MaterialProfileSupport.materialIdBatchIdString(item.getMaterialId(), item.getBatchId())).getCharacteristicValueList());
+                    MaterialProfile materialProfile = materialProfileMap.get(MaterialProfileSupport.materialIdBatchIdString(item.getMaterialId(), item.getBatchId()));
+                    if (materialProfile != null) {
+                        CharacteristicHelper.fillValueToClassification(item.getClassificationList().stream().map(classification -> classification.getClassification()).collect(Collectors.toList()),
+                                materialProfile.getCharacteristicValueList());
+                    }
                 }
             }
         }

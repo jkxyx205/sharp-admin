@@ -13,6 +13,7 @@ import com.rick.db.plugin.dao.annotation.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.collections4.CollectionUtils;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -157,6 +158,20 @@ public class ProduceOrder extends BaseCodeEntity {
             this.itemList = itemList;
         }
 
+        public void setProduceOrderId(Long produceOrderId) {
+            this.produceOrderId = produceOrderId;
+            if (CollectionUtils.isNotEmpty(this.scheduleList)) {
+                this.scheduleList.forEach(schedule -> schedule.setProduceOrderId(produceOrderId));
+            }
+        }
+
+        public void setProduceOrderCode(String produceOrderCode) {
+            if (CollectionUtils.isNotEmpty(this.scheduleList)) {
+                this.scheduleList.forEach(schedule -> schedule.setProduceOrderCode(produceOrderCode));
+            }
+            this.produceOrderCode = produceOrderCode;
+        }
+
         @Getter
         @Setter
         @NoArgsConstructor
@@ -166,7 +181,7 @@ public class ProduceOrder extends BaseCodeEntity {
         @Table(value = "produce_order_item_detail", comment = "物料BOM实例详情")
         public static class Detail extends BaseEntity implements MaterialDescriptionHandler, BatchHandler {
 
-            @NotNull
+//            @NotNull
             @Column(comment = "物料")
             Long materialId;
 
@@ -175,7 +190,7 @@ public class ProduceOrder extends BaseCodeEntity {
             @NotNull
             BigDecimal quantity;
 
-            @NotNull
+//            @NotNull
             String unit;
 
             String remark;
@@ -196,9 +211,6 @@ public class ProduceOrder extends BaseCodeEntity {
 
             Long produceOrderItemId;
 
-            @Column(value = "is_complete", comment = "完成")
-            Boolean complete;
-
             @Transient
             @JsonProperty(access = JsonProperty.Access.READ_ONLY)
             MaterialDescription materialDescription;
@@ -209,7 +221,7 @@ public class ProduceOrder extends BaseCodeEntity {
         @Setter
         @FieldDefaults(level = AccessLevel.PRIVATE)
         @Table(value = "produce_order_item_schedule", comment = "物料生产计划")
-        public static class Schedule extends BaseEntity {
+        public static class Schedule extends BaseCodeEntity {
 
             @Column(comment = "开始日期")
             LocalDate startDate;
@@ -217,8 +229,22 @@ public class ProduceOrder extends BaseCodeEntity {
             @Column(comment = "计划完成数量")
             BigDecimal quantity;
 
+            @NotNull
+            String unit;
+
+            @Transient
+            String unitText;
+
             @Column(comment = "状态")
             StatusEnum status;
+
+            String remark;
+
+            @Column(updatable = false)
+            Long produceOrderId;
+
+            @Column(updatable = false)
+            String produceOrderCode;
 
             Long produceOrderItemId;
         }

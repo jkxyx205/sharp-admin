@@ -62,7 +62,7 @@ public class DocumentReturnHandler extends AbstractHandler {
         Map<Long, InventoryDocument.Item> idDocumentMap = inventoryDocumentInDb.getItemList().stream().collect(Collectors.toMap(InventoryDocument.Item::getId, d -> d));
 
         if (inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PO ||
-                inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PDO ||
+                inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PP ||
                 inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.SO) {
             inventoryDocument.setReferenceCode(inventoryDocumentInDb.getReferenceCode());
 
@@ -77,9 +77,9 @@ public class DocumentReturnHandler extends AbstractHandler {
             if (inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PO) {
                 inventoryDocument.setReferenceType(InventoryDocument.ReferenceTypeEnum.PO);
                 purchaseOrderReturnHandler.handle0(inventoryDocument);
-            } else if (inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PDO) {
+            } else if (inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PP) {
                 produceOrderReturnHandler.handle0(inventoryDocument);
-                inventoryDocument.setReferenceType(InventoryDocument.ReferenceTypeEnum.PDO);
+                inventoryDocument.setReferenceType(InventoryDocument.ReferenceTypeEnum.PP);
             } else if (inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.SO) {
                 salesOrderReturnHandler.handle0(inventoryDocument);
                 inventoryDocument.setReferenceType(InventoryDocument.ReferenceTypeEnum.SO);

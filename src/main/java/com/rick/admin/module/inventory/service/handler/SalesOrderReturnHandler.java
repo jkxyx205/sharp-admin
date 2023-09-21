@@ -47,7 +47,7 @@ public class SalesOrderReturnHandler extends AbstractHandler {
     public void handle0(InventoryDocument inventoryDocument) {
         Optional<ProduceOrder> optional = produceOrderDAO.selectByCode(inventoryDocument.getReferenceCode());
         if (!optional.isPresent()) {
-            throw new BizException(ExceptionCodeEnum.PDO_DOCUMENT_NOT_FOUND_ERROR, new Object[]{inventoryDocument.getReferenceCode()});
+            throw new BizException(ExceptionCodeEnum.SO_DOCUMENT_NOT_FOUND_ERROR, new Object[]{inventoryDocument.getReferenceCode()});
         }
 
         ProduceOrder produceOrder = optional.get();

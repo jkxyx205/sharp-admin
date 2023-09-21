@@ -423,7 +423,21 @@ public class MaterialTest {
                         "         left join sys_user on sys_user.id = mm_material.create_by\n" +
                         "         left join (select stock.*\n" +
                         "                    from (select plant_id, material_id, batch_id, sum(quantity) quantity\n" +
-                        "                          from inv_stock\n" +
+                        "                          from (" +
+
+                        "select -1 plant_id, receiving.material_id, receiving.batch_id, (receiving.quantity - ifnull(received.received_quantity, 0)) quantity from(\n" +
+                        "select pur_purchase_order_item.* from `pur_purchase_order`, pur_purchase_order_item where pur_purchase_order.status = 'PLANNING' and pur_purchase_order.is_deleted = 0\n" +
+                        "AND pur_purchase_order.id = pur_purchase_order_item.`purchase_order_id` AND pur_purchase_order_item.`is_complete` = 0) receiving left join \n" +
+                        "(\n" +
+                        "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) received_quantity from inv_document_item \n" +
+                        "where Exists(select 1 from `pur_purchase_order`, pur_purchase_order_item where pur_purchase_order.status = 'PLANNING' and pur_purchase_order.is_deleted = 0\n" +
+                        "AND pur_purchase_order.id = pur_purchase_order_item.`purchase_order_id` AND pur_purchase_order_item.`is_complete` = 0 AND pur_purchase_order_item.id = root_reference_item_id)\n" +
+                        "group by root_reference_item_id\n" +
+                        ") received on receiving.id = received.root_reference_item_id\n" +
+                        "union all\n" +
+                        "select plant_id, material_id, batch_id, quantity from inv_stock" +
+                        "" +
+                        ") inv_stock\n" +
                         "                          group by plant_id, material_id, batch_id) stock\n" +
                         "                             left join (select mm_profile.material_id,\n" +
                         "                                               mm_profile.batch_id\n" +
@@ -438,7 +452,7 @@ public class MaterialTest {
                         "  AND mm_material.is_deleted = 0\n")
                 .queryFieldList(Arrays.asList(
                         new QueryField("keywords", "关键字", QueryField.Type.TEXT),
-                        new QueryField("plantId", "库房", QueryField.Type.SELECT, "core_plant"), //.setValue("719893335619162112"),
+                        new QueryField("plantId", "库房", QueryField.Type.SELECT, "core_plant2"), //.setValue("719893335619162112"),
 //                        new QueryField("materialType", "类型", QueryField.Type.SELECT, "material_type"),
 //                        new QueryField("categoryId", "分类", QueryField.Type.SELECT, "core_material_category"),
                         new QueryField("categoryId", "分类", QueryField.Type.GROUP_SELECT, "material_category_select_sql")
@@ -458,7 +472,7 @@ public class MaterialTest {
                         new ReportColumn("category_path", "分类", false),
                         new ReportColumn("attachment", "附件"),
 //                        new ReportColumn("standard_price", "标准价格(元)").setType(ReportColumn.TypeEnum.DECIMAL).setAlign(AlignEnum.RIGHT),
-                        new ReportColumn("plantId", "库房", false, "core_plant", Arrays.asList("dictConverter")),
+                        new ReportColumn("plantId", "库房", false, "core_plant2", Arrays.asList("dictConverter")),
                         new ReportColumn("stock_quantity", "库存").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
 //                        new ReportColumn("stock_quantity_standard_price", "库存金额(元)").setType(ReportColumn.TypeEnum.DECIMAL).setAlign(AlignEnum.RIGHT),
                         new ReportColumn("create_name", "创建人").setColumnWidth(100),
@@ -549,11 +563,12 @@ public class MaterialTest {
                 .code("mm_material_template_search")
                 .tplName("tpl/query_list")
                 .name("bom模版物料查询")
-                .querySql("SELECT cast(mm_material.id as char(20)) materialId, mm_material.code code, mm_material.name, material_type materialType, mm_material.specification, batch_management batchManagement, base_unit, base_unit as base_unit_name,combine.item_id, combine.partner_id, combine.batch_code, combine.characteristic, combine.remark, combine.create_time FROM (SELECT * FROM\n" +
-                        "(select null item_id, null partner_id, id material_id, null batch_code, null batch_id, null characteristic, remark, null create_time from mm_material WHERE is_deleted = 0) t3\n" +
+                .reportAdviceName("materialBomSearchReportAdvice")
+                .querySql("SELECT cast(mm_material.id as char(20)) materialId, mm_material.code code, mm_material.name, material_type materialType, combine.specification, batch_management batchManagement, base_unit, base_unit as base_unit_name,combine.item_id, combine.partner_id, combine.batch_code, combine.characteristic, combine.remark, combine.create_time FROM (SELECT * FROM\n" +
+                        "(select null item_id, null partner_id, id material_id, mm_material.specification, null batch_code, null batch_id, null characteristic, remark, null create_time from mm_material WHERE is_deleted = 0) t3\n" +
                         "UNION ALL\n" +
                         "SELECT * FROM\n" +
-                        "(select produce_order_item.id item_id, produce_order.partner_id, material_id, batch_code, batch_id, characteristic.characteristic, produce_order_item.remark, produce_order_item.create_time  from produce_order_item inner join produce_order on produce_order_item.produce_order_id = produce_order.id\n" +
+                        "(select produce_order_item.id item_id, produce_order.partner_id, material_id, produce_order_item.specification, batch_code, batch_id, characteristic.characteristic, produce_order_item.remark, produce_order_item.create_time  from produce_order_item inner join produce_order on produce_order_item.produce_order_id = produce_order.id\n" +
                         "left join (select concat(material_id, ifnull(batch_id, '')) materialIdBatchIdString, group_concat(mm_characteristic_value.value SEPARATOR ' ') characteristic from mm_profile left join mm_characteristic_value on mm_profile.id = mm_characteristic_value.reference_id\n" +
                         " group by concat(material_id, ifnull(batch_id, '')) order by mm_characteristic_value.id asc) characteristic on characteristic.materialIdBatchIdString = concat(material_id, ifnull(batch_id, ''))\n" +
                         " order by create_time desc) t4) combine join mm_material on combine.material_id = mm_material.id \n" +
@@ -577,10 +592,13 @@ public class MaterialTest {
                         new HiddenReportColumn("batchManagement"),
                         new HiddenReportColumn("materialType"),
                         new HiddenReportColumn("remark"),
+                        new HiddenReportColumn("specification"),
+                        new HiddenReportColumn("characteristic"),
                         new ReportColumn("code", "物料").setColumnWidth(80),
                         new ReportColumn("name", "名称").setTooltip(true),
+                        new ReportColumn("specificationAndCharacteristic", "规格 & 特征值"),
 //                        new ReportColumn("specification", "规格", false, null, Arrays.asList("characteristicConverter")).setTooltip(true),
-                        new ReportColumn("characteristic", "特征值"),
+//                        new ReportColumn("characteristic", "特征值"),
 //                        new ReportColumn("base_unit_name", "基本单位", false, "unit", Arrays.asList("dictConverter")),
                         new HiddenReportColumn("base_unit"),
                         // String name, String label, Boolean sortable, String context, List<String> valueConverterNameList, Integer columnWidth, AlignEnum align, Boolean hidden, Boolean tooltip, TypeEnum type

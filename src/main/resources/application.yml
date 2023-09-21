@@ -65,6 +65,8 @@ dict:
       sql: "select id, name from core_partner where partner_type = 'CUSTOMER' AND is_deleted = 0 order by name asc"
     - type: core_plant
       sql: "select id, name from core_plant where is_deleted = 0 order by id asc"
+    - type: core_plant2
+      sql: "select id, name from core_plant where is_deleted = 0 union all select -1 id, '在途' name from dual"
     - type: sys_dict_type
       sql: "select distinct type, type from sys_dict order by sort asc"
     - type: unit
@@ -86,9 +88,11 @@ dict:
     - type: inv_type
       map: { "INBOUND": "收货", "OUTBOUND": "出货", "RETURN": "退货", "MOVING_TO_PRODUCE": "领料", "RETURN_FROM_PRODUCE": "退料", "CANCEL":"取消", "COUNT": "盘点"}
     - type: reference_type
-      map: { "OTHER": "无","MATERIAL_DOCUMENT": "物料凭证", "PO": "采购订单", "PDO": "生产单", "SO": "生产单"}
+      map: { "OTHER": "无","MATERIAL_DOCUMENT": "物料凭证", "PO": "采购订单", "PP": "生产订单", "SO": "销售订单"}
     - type: produce_order_status
       map: { "PLANNING": "待审核","PRODUCING": "待生产", "PRODUCED": "生产完成", "DONE": "订单完成"}
+    - type: produce_schedule_status
+      map: { "PRODUCING": "待生产", "PRODUCED": "生产完成"}
     - type: purchase_order_status
       map: { "PLANNING": "采购中", "DONE": "采购完成"}
 

@@ -435,8 +435,9 @@
                         //     }
                         // }),
                         datasource: $('#core_material_category'),
-                        onchange: function ($tr, value) {
+                        onchange: function (context, value) {
                             // alert(value)
+                            let $tr = context.$tr
                             $tr.find(':input[name=materialId]').val('')
                             $tr.find(':input[name=materialCode]').val('')
                             $tr.find(':input[name=materialText]').val('')

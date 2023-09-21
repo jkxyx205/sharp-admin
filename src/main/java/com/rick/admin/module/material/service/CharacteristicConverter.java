@@ -23,6 +23,10 @@ public class CharacteristicConverter implements ValueConverter<String> {
             return null;
         }
 
+        if (!(value.startsWith("[") && value.endsWith("]"))) {
+            return value;
+        }
+
         List<List> characteristicList = JsonUtils.toList(value, List.class);
         if (CollectionUtils.isEmpty(characteristicList)) {
             return null;

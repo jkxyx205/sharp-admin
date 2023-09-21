@@ -142,6 +142,15 @@ public class ProduceOrderController {
             materialService.fillMaterialDescription(Stream.concat(produceOrder.getItemList().stream(), goodsReceiptItemList.stream()).collect(Collectors.toSet()));
             materialService.fillMaterialDescription(produceOrder.getItemList());
 
+            // 生产计划
+            for (ProduceOrder.Item item : produceOrder.getItemList()) {
+                if (CollectionUtils.isNotEmpty(item.getScheduleList())) {
+                    for (ProduceOrder.Item.Schedule schedule : item.getScheduleList()) {
+                        schedule.setUnitText(item.getUnitText());
+                    }
+                }
+            }
+
             // 发货记录
             List<ProduceOrderController.GoodsIssueItem> goodsIssueItemList = Lists.newArrayListWithExpectedSize(produceOrder.getItemList().size());
 
@@ -178,10 +187,7 @@ public class ProduceOrderController {
                 "       t1.quantity,\n" +
                 "       IFNULL(t2.quantity, 0)                 goodsReceiptQuantity,\n" +
                 "       (t1.quantity - IFNULL(t2.quantity, 0)) openQuantity\n" +
-                "from (select produce_order_item.id, material_id, batch_id, batch_code, produce_order_item.quantity  from produce_order_item\n" +
-                "inner join mm_material on mm_material.id = material_id where produce_order_item.`produce_order_code` = :produceOrderCode AND mm_material.material_type = 'ROH'\n" +
-                "UNION ALL " +
-                "select produce_order_item_detail.`id`,\n" +
+                "from (select produce_order_item_detail.`id`,\n" +
                 "             produce_order_item_detail.material_id,\n" +
                 "             produce_order_item_detail.batch_id,\n" +
                 "             produce_order_item_detail.batch_code,\n" +
@@ -192,7 +198,7 @@ public class ProduceOrderController {
                 "      where produce_order.code = :produceOrderCode) t1\n" +
                 "         left join (select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity\n" +
                 "                    from inv_document_item\n" +
-                "                    where plant_id = '719893335619162112' AND `root_reference_code` = :produceOrderCode\n" +
+                "                    where exists (select 1 from produce_order_item_schedule where produce_order_code = :produceOrderCode AND inv_document_item.root_reference_code = produce_order_item_schedule.code) AND plant_id = 719893335619162112" +
                 "                    group by root_reference_item_id) t2 on t1.id = t2.root_reference_item_id\n" +
                 "         left join `mm_material` on mm_material.id = t1.material_id";
 
@@ -217,6 +223,15 @@ public class ProduceOrderController {
     @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT})
     @ResponseBody
     public ProduceOrder saveOrUpdate(@RequestBody ProduceOrder produceOrder) {
+        if (!UserContextHolder.get().getAuthorityList().contains("produce_order_add")) {
+            // 回写到 produceOrder
+            ProduceOrder produceOrderInDb = produceOrderDAO.selectByParamsWithoutCascade(ProduceOrder.builder().id(produceOrder.getId()).build()).get(0);
+            produceOrder.setPartnerId(produceOrderInDb.getPartnerId());
+            produceOrder.setContactPerson(produceOrderInDb.getContactPerson());
+            produceOrder.setContactNumber(produceOrderInDb.getContactNumber());
+            produceOrder.setContactMail(produceOrderInDb.getContactMail());
+            produceOrder.setSourceOrderNum(produceOrderInDb.getSourceOrderNum());
+        }
         produceOrderService.saveOrUpdate(produceOrder);
         return produceOrder;
     }

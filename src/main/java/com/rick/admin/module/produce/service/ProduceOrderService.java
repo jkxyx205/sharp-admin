@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -54,27 +55,38 @@ public class ProduceOrderService {
      */
     public void saveOrUpdate(ProduceOrder order) {
         if (order.getId() == null) {
-            order.setCode(CodeHelper.generateCode("PDO"));
+            order.setCode(CodeHelper.generateCode("SO"));
         }
 
+        AtomicInteger atomicInteger = new AtomicInteger(0);
         order.getItemList().forEach(item -> {
             item.setProduceOrderCode(order.getCode());
 
             if (Objects.isNull(item.getId())) {
                 item.setComplete(false);
-                item.getItemList().forEach(detail -> detail.setComplete(false));
-            } else {
-                if (order.getStatus() != ProduceOrder.StatusEnum.PLANNING) {
-                    item.getItemList().forEach(detail -> detail.setComplete(true));
+            }
+
+            if (order.getStatus() == ProduceOrder.StatusEnum.DONE) {
+                item.setComplete(true);
+            }
+
+            for (ProduceOrder.Item.Schedule schedule : item.getScheduleList()) {
+                if (order.getStatus() == ProduceOrder.StatusEnum.PRODUCED || order.getStatus() == ProduceOrder.StatusEnum.DONE || item.getComplete()) {
+                    schedule.setStatus(ProduceOrder.StatusEnum.PRODUCED);
                 }
 
-                if (order.getStatus() == ProduceOrder.StatusEnum.DONE) {
-                    item.setComplete(true);
+                if (Objects.isNull(schedule.getId())) {
+                    schedule.setCode(CodeHelper.generateCode("PP") + (atomicInteger.incrementAndGet()));
                 }
             }
+
         });
 
-        batchService.saveBatch(Stream.concat(order.getItemList().stream(), order.getItemList().stream().flatMap(item -> item.getItemList().stream())).collect(Collectors.toSet()));
+        if (order.getItemList().stream().allMatch(item -> item.getComplete())) {
+            order.setStatus(ProduceOrder.StatusEnum.DONE);
+        }
+
+        batchService.saveBatch(Stream.concat(order.getItemList().stream(), order.getItemList().stream().flatMap(item -> CollectionUtils.isNotEmpty(item.getItemList()) ? item.getItemList().stream() : Stream.empty())).collect(Collectors.toSet()));
         produceOrderDAO.insertOrUpdate(order);
     }
 
@@ -159,34 +171,34 @@ public class ProduceOrderService {
      *
      * @param rootReferenceCode
      */
-    public void setProcessingStatus(String rootReferenceCode) {
-//        setStatus(rootReferenceCode, ProduceOrder.StatusEnum.PROCESSING);
-    }
+//    public void setProcessingStatus(String rootReferenceCode) {
+////        setStatus(rootReferenceCode, ProduceOrder.StatusEnum.PROCESSING);
+//    }
 
     /**
      * 设置状态： 计划中
      *
-     * @param rootReferenceCode
+//     * @param rootReferenceCode
      */
-    public void setPlanningStatus(String rootReferenceCode) {
-        setStatus(rootReferenceCode, ProduceOrder.StatusEnum.PLANNING);
-    }
+//    public void setPlanningStatus(String rootReferenceCode) {
+//        setStatus(rootReferenceCode, ProduceOrder.StatusEnum.PLANNING);
+//    }
 
-    public void setProcessingComplete(List<Long> completeIdList) {
-        setProcessingUnComplete(completeIdList, true);
-    }
+//    public void setProcessingComplete(List<Long> completeIdList) {
+//        setProcessingUnComplete(completeIdList, true);
+//    }
+//
+//    public void setProcessingUnComplete(List<Long> completeIdList) {
+//       setProcessingUnComplete(completeIdList, false);
+//    }
 
-    public void setProcessingUnComplete(List<Long> completeIdList) {
-       setProcessingUnComplete(completeIdList, false);
-    }
-
-    private void setProcessingUnComplete(List<Long> completeIdList, boolean complete) {
-        if (CollectionUtils.isNotEmpty(completeIdList)) {
-            produceOrderItemDetailDAO.update("is_complete"
-                    , Params.builder(2).pv("completeIdList", completeIdList).pv("is_complete", complete).build(),
-                    "id IN (:completeIdList)");
-        }
-    }
+//    private void setProcessingUnComplete(List<Long> completeIdList, boolean complete) {
+//        if (CollectionUtils.isNotEmpty(completeIdList)) {
+//            produceOrderItemDetailDAO.update("is_complete"
+//                    , Params.builder(2).pv("completeIdList", completeIdList).pv("is_complete", complete).build(),
+//                    "id IN (:completeIdList)");
+//        }
+//    }
 
     /**
      * 发货完成

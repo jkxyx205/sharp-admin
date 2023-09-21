@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+>
+<body class="app">
+    <div class="container-fluid">
+        <table class="table table-responsive-sm table-bordered table-sm">
+            <tbody>
+                <tr>
+                    <td colspan="3"><span class="bold">生产单号：</span><span th:text="${schedule.code}"></span></td>
+                    <td colspan="2"><span class="bold">交货日期：</span><span th:text="${deliveryDate}"></span></td>
+                </tr>
+                <tr>
+                    <td colspan="3"><span class="bold">计划生产日期：</span><span th:text="${startDate}"></span></td>
+                    <td colspan="2"><a th:href="${'/produce_bom/schedule/' + schedule.id + '/download'}">下载BOM</a></td>
+                </tr>
+                <tr>
+                    <td colspan="5"><span class="bold">备注：</span><span th:text="${remark}"></span></td>
+                </tr>
+                <tr>
+                    <td class="bold">产成品名称</td>
+                    <td class="bold">规格 & 特征值</td>
+                    <td class="bold">数量</td>
+                    <td class="bold">单位</td>
+                    <td class="bold">备注</td>
+                </tr>
+                <tr>
+                    <td th:text="${item.materialName}"></td>
+                    <td><div th:text="${itemMaterialSpecification}" style="max-width: 240px; white-space: pre-wrap;"></div></td>
+                    <td th:text="${scheduleQuantity}"></td>
+                    <td th:text="${item.unitText}"></td>
+                    <td th:text="${item.remark}"></td>
+                </tr>
+                <tr>
+                    <td class="bold" colspan="5">BOM</td>
+                </tr>
+                <tr th:each="row : ${data}">
+                    <td th:text="${row[0]}"></td>
+                    <td><div th:text="${row[1]}" style="max-width: 240px; white-space: pre-wrap;"></div></td>
+                    <td th:text="${row[2]}"></td>
+                    <td th:text="${row[3]}"></td>
+                    <td th:text="${row[4]}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

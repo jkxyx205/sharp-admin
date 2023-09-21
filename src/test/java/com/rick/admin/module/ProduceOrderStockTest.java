@@ -45,13 +45,13 @@ public class ProduceOrderStockTest {
                         "                            sum(produce_order_item.quantity * produce_order_item_detail.quantity) quantity\n" +
                         "                     from `produce_order`\n" +
                         "                              left join produce_order_item on produce_order.id = produce_order_item.`produce_order_id`\n" +
-                        "                              inner join produce_order_item_detail on produce_order_item_detail.produce_order_item_id = produce_order_item.id WHERE produce_order.`status` = 'PLANNING'\n" +
+                        "                              inner join produce_order_item_detail on produce_order_item_detail.produce_order_item_id = produce_order_item.id join produce_order_item_schedule on produce_order_item_schedule.`produce_order_id` = produce_order.id AND produce_order_item_schedule.`status` = 'PRODUCING' WHERE produce_order.`status` = 'PRODUCING'\n" +
                         "                     group by produce_order_item_detail.material_id, produce_order_item_detail.batch_code) po on po.material_id = mm_material.id\n" +
                         "         left join (select material_id, batch_code, sum(quantity) quantity from inv_stock where plant_id = 719893335619162112 group by material_id, batch_code ) stock\n" +
                         "                   on stock.material_id = mm_material.id AND ifnull(stock.batch_code, '') = ifnull(po.batch_code, '')\n" +
                         "\t\t left join(select inv_document_item.material_id, inv_document_item.batch_code,\n" +
                         "                                               ABS(ifnull(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity), 0)) quantity\n" +
-                        "                                        from inv_document_item where plant_id = '719893335619162112' AND reference_type='PDO' AND exists (select 1 from produce_order where produce_order.`status` = 'PLANNING' AND root_reference_code = produce_order.code) group by inv_document_item.material_id, inv_document_item.batch_code) pdo_receive on pdo_receive.material_id = mm_material.id AND ifnull(pdo_receive.batch_code, '') = ifnull(po.batch_code, '')\n" +
+                        "                                        from inv_document_item where plant_id = '719893335619162112' AND reference_type='PP' AND exists (select 1 from produce_order_item_schedule where produce_order_item_schedule.`status` = 'PRODUCING' AND root_reference_code = produce_order_item_schedule.code)  group by inv_document_item.material_id, inv_document_item.batch_code) pdo_receive on pdo_receive.material_id = mm_material.id AND ifnull(pdo_receive.batch_code, '') = ifnull(po.batch_code, '')\n" +
                         "         left join (select material_id, batch_code,\n" +
                         "                           sum(pur_purchase_order_item.quantity - ifnull(receive.quantity, 0)) open_quantity\n" +
                         "                    from `pur_purchase_order_item`\n" +
