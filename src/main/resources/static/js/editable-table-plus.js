@@ -54,22 +54,25 @@
                     _this._formatTr($tr)
                     _this._rebuildIndex()
                     _this._setRequired();
+                    _this.options.addEmptyLineCallback && _this.options.addEmptyLineCallback(_this, $tr)
                 },
-                beforeRemoveCallback: function ($parent) {
-                    if ( _this.options.beforeDeleteRow) {
-                        let deleted =  _this.options.beforeDeleteRow(_this, $parent, _this._getValue($parent))
-                        if (deleted) {
-                            _this.options.activeIndex--
-                        }
-                        return deleted
+                beforeRemoveCallback: function ($tr) {
+                    if (_this.options.beforeDeleteRow) {
+                        return _this.options.beforeDeleteRow(_this, $tr, _this._getValue($tr))
                     }
 
                     return true
                 },
-                afterRemoveCallback: function ($parent) {
+                afterRemoveCallback: function (removedIndex) {
                     _this._rebuildIndex()
                     _this._setRequired();
-                    return true
+                    if (_this.options.activeIndex) {
+                        if (removedIndex + 1  ==  _this.options.activeIndex) {
+                            _this.options.activeIndex = undefined
+                        } else if (removedIndex + 1 < _this.options.activeIndex) {
+                            _this.options.activeIndex--
+                        }
+                    }
                 }
             })
 
@@ -91,12 +94,13 @@
             // 注册事件
             if (this.options.rowClick || this.options.highlight) {
                 this.$table.delegate('tr', 'click', (e) => {
-                    let $tr = $(e.target).parents('tr')
+                    let fromActiveRow = this.getActiveRowValue();
+                    let $tr = (e.target.tagName === 'TR' ? $(e.target) : $(e.target).parents('tr'))
                     this.options.activeIndex = $tr.index() + 1 // 第一行从 1 开始
 
                     if (this.focusRow !== $tr[0]) {
                         // 多次点击 保证只触发一次请求
-                        this.options.rowClick(this, $tr, this._getValue($tr))
+                        this.options.rowClick && this.options.rowClick(this, $tr, this._getValue($tr), fromActiveRow)
                         this.focusRow = $tr[0]
 
                         this.setActiveIndex(this.options.activeIndex)
@@ -106,10 +110,13 @@
 
             for (let i = 0; i < this.options.columnConfigs.length; i++) {
                 let columnConfig = this.options.columnConfigs[i];
+                this.options.customizeType &&
                 this.options.customizeType[columnConfig.type] &&
                 this.options.customizeType[columnConfig.type].mounted &&
                 this.options.customizeType[columnConfig.type].mounted(columnConfig)
             }
+
+            this.options.afterCreated && this.options.afterCreated()
         },
         getEditRow: function () {
             return this.$table.find('input[name=id][value]').parent()
@@ -121,6 +128,15 @@
             })
 
             return valueList
+        },
+        mergeValue: function (value, $tr, withOutLastTr) {
+            if ($tr) {
+                this._setRowValue($tr, value, true)
+            } else {
+                this.each( (index, dom, $dom) => {
+                    this._setRowValue($dom, value, true)
+                }, withOutLastTr)
+            }
         },
         setValue: function (value, $tr) {
             if ($tr) { // 修改行数据
@@ -146,15 +162,20 @@
             }
         },
         getActiveRowValue: function () {
-            let $tr =  this.$table.find('tbody tr:nth-child('+this.options.activeIndex+')')
-            return {
-                activeIndex: this.options.activeIndex,
-                $tr,
-                value: this._getValue($tr)
+            if (this.options.activeIndex) {
+                let $tr =  this.$table.find('tbody tr:nth-child('+this.options.activeIndex+')')
+                return {
+                    activeIndex: this.options.activeIndex,
+                    $tr,
+                    value: this._getValue($tr)
+                }
             }
+
+            return false
         },
-        each: function (callback) {
-            this.$table.find('tbody tr:not(:last-child)').each((index, elem) => {
+        each: function (callback, withOutLastTr) {
+            withOutLastTr = (withOutLastTr === undefined) ? true : withOutLastTr;
+            this.$table.find('tbody tr' + (withOutLastTr ? ':not(:last-child)' : '')).each((index, elem) => {
                 callback(index, this, $(elem), this._getValue($(elem)))
             })
         },
@@ -201,9 +222,14 @@
                 this._setRowValue($tr, row)
             }
         },
-        _setRowValue:function ($tr, row) {
+        _setRowValue:function ($tr, row, ignoreUndefined) {
+            ignoreUndefined = (ignoreUndefined === undefined) ? false : ignoreUndefined
             $tr.show()
             $tr.find(":input[name]").each(function () {
+                if (ignoreUndefined && row[this.name] === undefined) {
+                    return
+                }
+
                 if ($(this).attr('type') === 'switch') {
                     $(this).prop('checked', eval(row[this.name]))
                 } if ($(this).attr('type') === 'checkbox') {
@@ -225,7 +251,7 @@
 
             this._consumeUnHiddenColumnConfig((childIndex, columnConfig) => {
                 if (columnConfig.type === 'render') {
-                    $tr.find('td:nth-child('+childIndex+')').html(columnConfig.render(row))
+                    $tr.find('td:nth-child('+childIndex+')').html(columnConfig.render({...this._getValue($tr), ...row}))
                 }
             })
         },

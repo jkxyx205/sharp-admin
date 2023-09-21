@@ -100,6 +100,15 @@
                 $td.find('input[type=text]').on('click keydown', function(event) {
                     // if ((event.keyCode && event.keyCode === 13) || !event.keyCode) {
                     if ((event.keyCode && event.keyCode !== 9) || !event.keyCode) {
+                        if (event.keyCode === 8) {
+                            // 删除 TODO
+                            // let $tr = $(currentMaterialDom).parent().parent()
+                            // $editableTable.editableTablePlus('setValue', _this.materialDataMap({}, _this), $tr)
+
+                            event.preventDefault();
+                            return;
+                        }
+
                         currentMaterialDom = this
                         let context = {
                             params: {}
@@ -304,39 +313,39 @@
             }
         },
         _render: function($input, classificationList, characteristicValueConsumer) {
-        if (classificationList.length > 0) {
-            $input.attr('disabled', false).attr('readonly', false)
+            if (classificationList.length > 0) {
+                $input.attr('disabled', false).attr('readonly', false)
 
-            let html = []
-            for (let classification of classificationList) {
-                for (let characteristicValue of classification.characteristicValue) {
-                    let item
-                    if (characteristicValue.options && characteristicValue.options.length > 0) {
-                       item = "<div class='mb-2'>\n" +
-                            "            <label style='width: 60px; text-align: left' class='"+(characteristicValue.required ? 'required = \"required\"' : '')+"' for=\"" + characteristicValue.code + "\">" + characteristicValue.description + "</label>\n" +
-                            "            <select class='form-control' style='display: inline-block; width: auto;border-width: 1px;' id=\"" + characteristicValue.code + "\" name=\"" + characteristicValue.code + "\" " + (characteristicValue.required ? 'required = "required"' : '') + ">\n" +
-                            "<option value=''></option>" +
-                            "" + characteristicValue.options.map(d => {
-                                return '<option value="' + d.name + '">' + d.label + '</option>'
-                            }).join('') + "" +
-                            "            </select>\n" +
-                            "        </div>\n"
-                    } else {
-                        item = "<div class='mb-2'>\n" +
-                            "            <label style='width: 60px; text-align: left' class='"+(characteristicValue.required ? 'required = "required"' : '')+"' for=\"" + characteristicValue.code + "\">" + characteristicValue.description + "</label>\n" +
-                            "            <input class='form-control' style='display: inline-block; width: auto;border-width: 1px;' id=\"" + characteristicValue.code + "\" name=\"" + characteristicValue.code + "\" " + (characteristicValue.required ? 'required = "required"' : '') + " placeholder='"+characteristicValue.placeholder+"'" +
-                            " "+(characteristicValue.type === 'NUMBER' ? 'pattern="-?\\d+(\\.\\d+)?"' : '')+">\n" +
-                            "        </div>\n"
+                let html = []
+                for (let classification of classificationList) {
+                    for (let characteristicValue of classification.characteristicValue) {
+                        let item
+                        if (characteristicValue.options && characteristicValue.options.length > 0) {
+                           item = "<div class='mb-2'>\n" +
+                                "            <label style='width: 60px; text-align: left' class='"+(characteristicValue.required ? 'required = \"required\"' : '')+"' for=\"" + characteristicValue.code + "\">" + characteristicValue.description + "</label>\n" +
+                                "            <select class='form-control' style='display: inline-block; width: auto;border-width: 1px;' id=\"" + characteristicValue.code + "\" name=\"" + characteristicValue.code + "\" " + (characteristicValue.required ? 'required = "required"' : '') + ">\n" +
+                                "<option value=''></option>" +
+                                "" + characteristicValue.options.map(d => {
+                                    return '<option value="' + d.name + '">' + d.label + '</option>'
+                                }).join('') + "" +
+                                "            </select>\n" +
+                                "        </div>\n"
+                        } else {
+                            item = "<div class='mb-2'>\n" +
+                                "            <label style='width: 60px; text-align: left' class='"+(characteristicValue.required ? 'required = "required"' : '')+"' for=\"" + characteristicValue.code + "\">" + characteristicValue.description + "</label>\n" +
+                                "            <input class='form-control' style='display: inline-block; width: auto;border-width: 1px;' id=\"" + characteristicValue.code + "\" name=\"" + characteristicValue.code + "\" " + (characteristicValue.required ? 'required = "required"' : '') + " placeholder='"+characteristicValue.placeholder+"'" +
+                                " "+(characteristicValue.type === 'NUMBER' ? 'pattern="-?\\d+(\\.\\d+)?"' : '')+">\n" +
+                                "        </div>\n"
+                        }
+
+                        html.push(item)
+                        characteristicValueConsumer && characteristicValueConsumer(characteristicValue)
                     }
 
-                    html.push(item)
-                    characteristicValueConsumer && characteristicValueConsumer(characteristicValue)
+                    $input.next().find('.items').html('<div data-classification_code="' + classification.code + '">' + html.join('') + '</div>')
                 }
-
-                $input.next().find('.items').html('<div data-classification_code="' + classification.code + '">' + html.join('') + '</div>')
             }
         }
-    }
 
     }
 })()
