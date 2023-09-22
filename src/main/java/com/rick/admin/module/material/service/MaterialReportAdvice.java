@@ -82,7 +82,7 @@ public class MaterialReportAdvice implements ReportAdvice {
         // 添加样式
 //        report.getAdditionalInfo().put("css", "#report-list div.card-body-scroll-panel > table > thead > th:nth-child(10) { color: red;}");
 //        report.getAdditionalInfo().put("css", "div {color: red;}");
-        report.getAdditionalInfo().put("js", "$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock/produce\"><i class=\"fa fa-upload\"></i> 生产库存报表</a>');$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock\"><i class=\"fa fa-upload\"></i> 仓库报表</a>'); $('#exportBtn').hide();");
+        report.getAdditionalInfo().put("js", "$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock/produce\"><i class=\"fa fa-upload\"></i> 线边库存报表</a>');$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock\"><i class=\"fa fa-upload\"></i> 材料库存报表</a>'); $('#exportBtn').hide();");
 
         // language=javascript
 //        String js = "setTimeout(function () {\n" +
