@@ -4,9 +4,9 @@ import com.rick.admin.module.material.entity.Classification;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -25,7 +25,7 @@ public class BatchSupport {
                     p.getCharacteristicValueList().forEach(characteristicValue -> characteristicValue.setClassificationCode(p.getClassificationCode()));
                     return p.getCharacteristicValueList().stream();
                 })
-                .filter(characteristicValue -> Objects.nonNull(characteristicValue.getValue()))
+                .filter(characteristicValue -> StringUtils.isNotBlank(characteristicValue.getValue()))
                 .map(characteristicValue -> characteristicValue.getClassificationCode() + ":" + characteristicValue.getCharacteristicCode() + ":" + characteristicValue.getValue())
                 .sorted()
                 .collect(Collectors.toList());

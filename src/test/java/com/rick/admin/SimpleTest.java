@@ -1,6 +1,9 @@
 package com.rick.admin;
 
+import com.rick.admin.module.material.entity.CharacteristicValue;
+import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.entity.Material;
+import com.rick.admin.module.material.service.BatchSupport;
 import com.rick.common.util.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
@@ -61,10 +64,53 @@ public class SimpleTest {
 
     @Test
     public void testStringHashCode() {
-        System.out.println("a".hashCode());
-        System.out.println("a".hashCode());
-        System.out.println("ab".hashCode());
-        System.out.println("ba".hashCode());
+//        System.out.println("a".hashCode());
+//        System.out.println("a".hashCode());
+//        System.out.println("ab".hashCode());
+//        System.out.println("ba".hashCode());
+
+//        System.out.println(DigestUtils
+//                .md5Hex("aa"));
+//        System.out.println(DigestUtils
+//                .md5Hex("aa"));
+//        System.out.println(DigestUtils
+//                .md5Hex("aa"));
+//        System.out.println(DigestUtils
+//                .md5Hex("aa"));
+//        System.out.println(DigestUtils
+//                .md5Hex("aa"));
+//        System.out.println(DigestUtils
+//                .md5Hex("aa"));
+//        System.out.println(DigestUtils
+//                .md5Hex("aa"));
+//        System.out.println(DigestUtils
+//                .md5Hex("aa"));
+
+        String s1 = BatchSupport.characteristicToCode(Arrays.asList(
+                Classification.builder()
+                .classificationCode("LINE_FS").characteristicValueList(Arrays.asList(
+                        CharacteristicValue.builder().characteristicCode("XIN").value("九芯").build(),
+                        CharacteristicValue.builder().characteristicCode("AREA").value("1.5平方").build(),
+                        CharacteristicValue.builder().characteristicCode("JIETOU").value("公头").build(),
+                        CharacteristicValue.builder().characteristicCode("XIANGXIAN").value("").build(),
+                        CharacteristicValue.builder().characteristicCode("HUOERXIAN").value("").build(),
+                        CharacteristicValue.builder().characteristicCode("LENGTH").value("410").build()
+                        ))
+                .build()));
+
+        String s2 = BatchSupport.characteristicToCode(Arrays.asList(Classification.builder()
+                .classificationCode("LINE_FS")
+                .characteristicValueList(Arrays.asList(
+                        CharacteristicValue.builder().characteristicCode("XIN").value("九芯").build(),
+                        CharacteristicValue.builder().characteristicCode("AREA").value("1.5平方").build(),
+                        CharacteristicValue.builder().characteristicCode("JIETOU").value("公头").build(),
+                        CharacteristicValue.builder().characteristicCode("XIANGXIAN").value("").build(),
+                        CharacteristicValue.builder().characteristicCode("HUOERXIAN").value("").build(),
+                        CharacteristicValue.builder().characteristicCode("LENGTH").value("410").build(),
+                        CharacteristicValue.builder().characteristicCode("BRAND").value("").build()))
+                .build()));
+        System.out.println(s1);
+        System.out.println(s2);
     }
 
     private void dd(List<List<String>> data, int index, String value) {

@@ -3,7 +3,6 @@ package com.rick.admin.module.inventory.service;
 import com.rick.admin.module.material.entity.CharacteristicValue;
 import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.entity.MaterialProfile;
-import com.rick.admin.module.material.service.BatchSupport;
 import com.rick.db.plugin.dao.core.EntityDAO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.jupiter.api.Test;
@@ -34,8 +33,6 @@ public class BatchCodeUpdateTest {
     public void testUpdate() {
         List<MaterialProfile> materialProfiles = materialProfileDAO.selectByParams("category=BATCH");
 
-//        Map<Long, List<Classification>> map = Maps.newHashMap();
-
         for (MaterialProfile materialProfile : materialProfiles) {
             List<CharacteristicValue> characteristicValueList = materialProfile.getCharacteristicValueList();
 
@@ -54,11 +51,17 @@ public class BatchCodeUpdateTest {
                 }
             }
 
-            String batchCode = BatchSupport.characteristicToCode(classificationList);
-            Long profileId = materialProfile.getId();
-            jdbcTemplate.update("update mm_profile set batch_code = ? where id = ?", new Object[]{batchCode, profileId});
-            jdbcTemplate.update("update mm_batch set code = ? where profile_id = ?", new Object[]{batchCode, profileId});
-            jdbcTemplate.update("update inv_stock set batch_code = ? where batch_id = ? AND batch_id is not null", new Object[]{batchCode, materialProfile.getBatchId()});
+//            String batchCode = BatchSupport.characteristicToCode(classificationList);
+//            Long profileId = materialProfile.getId();
+
+//            jdbcTemplate.update("update mm_profile set batch_code = ? where id = ?", new Object[]{batchCode, profileId});
+//            jdbcTemplate.update("update mm_batch set code = ? where profile_id = ?", new Object[]{batchCode, profileId});
+//            jdbcTemplate.update("update inv_stock set batch_code = ? where batch_id = ? AND batch_id is not null", new Object[]{batchCode, materialProfile.getBatchId()});
+//
+//            jdbcTemplate.update("update inv_document_item set batch_code = ? where batch_id = ? AND batch_id is not null", new Object[]{batchCode, materialProfile.getBatchId()});
+//            jdbcTemplate.update("update produce_order_item set batch_code = ? where batch_id = ? AND batch_id is not null", new Object[]{batchCode, materialProfile.getBatchId()});
+//            jdbcTemplate.update("update produce_order_item_detail set batch_code = ? where batch_id = ? AND batch_id is not null", new Object[]{batchCode, materialProfile.getBatchId()});
+//            jdbcTemplate.update("update pur_purchase_order_item set batch_code = ? where batch_id = ? AND batch_id is not null", new Object[]{batchCode, materialProfile.getBatchId()});
         }
 
     }
