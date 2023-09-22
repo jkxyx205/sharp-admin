@@ -451,7 +451,7 @@ public class MaterialTest {
                         "  AND category_id = :categoryId\n" +
                         "  AND mm_material.is_deleted = 0\n")
                 .queryFieldList(Arrays.asList(
-                        new QueryField("keywords", "关键字", QueryField.Type.TEXT),
+                        new QueryField("keywords", "关键字", QueryField.Type.TEXT).setPlaceholder("多个关键词用空格分隔"),
                         new QueryField("plantId", "库房", QueryField.Type.SELECT, "core_plant2"), //.setValue("719893335619162112"),
 //                        new QueryField("materialType", "类型", QueryField.Type.SELECT, "material_type"),
 //                        new QueryField("categoryId", "分类", QueryField.Type.SELECT, "core_material_category"),
@@ -496,7 +496,7 @@ public class MaterialTest {
                 .querySql("SELECT cast(mm_material.id as char(20)) id, mm_material.code, mm_material.name, specification, material_type, mm_material.category_id, mm_material.category_id as categoryText, base_unit, base_unit as base_unit_name, standard_price unitPrice, batch_management batchManagement FROM mm_material WHERE material_type = :materialType AND category_id = :categoryId AND mm_material.is_deleted = 0 AND id = :id AND id IN (:ids)")
                 .queryFieldList(Arrays.asList(
 //                        new QueryField("code", "编号", QueryField.Type.TEXT),
-                        new QueryField("keywords", "关键字", QueryField.Type.TEXT),
+                        new QueryField("keywords", "关键字", QueryField.Type.TEXT).setPlaceholder("多个关键词用空格分隔"),
 //                        new QueryField("materialType", "类型", QueryField.Type.SELECT, "material_type"),
                         new QueryField("categoryId", "分类", QueryField.Type.GROUP_SELECT, "material_category_select_sql")
 //                        new QueryField("categoryId", "分类", QueryField.Type.MULTIPLE_SELECT, "core_material_category")
