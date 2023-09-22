@@ -58,6 +58,15 @@ public class SimpleTest {
         dd(data, 0, "");
     }
 
+
+    @Test
+    public void testStringHashCode() {
+        System.out.println("a".hashCode());
+        System.out.println("a".hashCode());
+        System.out.println("ab".hashCode());
+        System.out.println("ba".hashCode());
+    }
+
     private void dd(List<List<String>> data, int index, String value) {
         if (index >= data.size()) {
             return;

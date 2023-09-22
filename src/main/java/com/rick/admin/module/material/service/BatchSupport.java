@@ -1,9 +1,12 @@
 package com.rick.admin.module.material.service;
 
+import com.rick.admin.module.material.entity.Classification;
 import lombok.experimental.UtilityClass;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -13,19 +16,27 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class BatchSupport {
 
-    public static String characteristicToCode(List<String> characteristicList) {
-        if (CollectionUtils.isEmpty(characteristicList)) {
+    public static String characteristicToCode(List<Classification> classificationList) {
+        if (CollectionUtils.isEmpty(classificationList)) {
             return "";
         }
 
-        String string = characteristicList.stream().collect(Collectors.joining("#"));
+        List<String> valueList = classificationList.stream().flatMap(p -> {
+                    p.getCharacteristicValueList().forEach(characteristicValue -> characteristicValue.setClassificationCode(p.getClassificationCode()));
+                    return p.getCharacteristicValueList().stream();
+                })
+                .filter(characteristicValue -> Objects.nonNull(characteristicValue.getValue()))
+                .map(characteristicValue -> characteristicValue.getClassificationCode() + ":" + characteristicValue.getCharacteristicCode() + ":" + characteristicValue.getValue())
+                .sorted()
+                .collect(Collectors.toList());
 
-        StringBuilder unicodeBuilder = new StringBuilder();
-        for (int i = 0; i < string.length(); i++) {
-            char nextChar = string.charAt(i);
-            unicodeBuilder.append("u");
-            unicodeBuilder.append(Integer.toHexString(nextChar));
+        if (CollectionUtils.isEmpty(valueList)) {
+            return "";
         }
-        return unicodeBuilder.toString();
+
+        String valueString = valueList.stream().collect(Collectors.joining("#"));
+        return DigestUtils
+                .md5Hex(valueString);
     }
+
 }

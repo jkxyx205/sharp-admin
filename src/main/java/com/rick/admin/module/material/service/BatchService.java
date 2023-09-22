@@ -77,12 +77,12 @@ public class BatchService {
             return;
         }
 
-        Set<String> materialIdBatchCodeStringCollection = batchHandlerList.stream().map(batchHandler -> batchHandler.getMaterialId() + BatchSupport.characteristicToCode(batchHandler.getClassificationList().stream().flatMap(p -> p.getCharacteristicValueList().stream()).map(CharacteristicValue::getValue).collect(Collectors.toList()))).collect(Collectors.toSet());
+        Set<String> materialIdBatchCodeStringCollection = batchHandlerList.stream().map(batchHandler -> batchHandler.getMaterialId() + BatchSupport.characteristicToCode(batchHandler.getClassificationList())).collect(Collectors.toSet());
         Map<String, Long> materialIdBatchCodeStringBatchIdMap = getMaterialIdBatchCodeStringBatchIdMap(materialIdBatchCodeStringCollection);
 
         for (BatchHandler item : batchHandlerList) {
             if (CollectionUtils.isNotEmpty(item.getClassificationList())) {
-                String batchCode = BatchSupport.characteristicToCode(item.getClassificationList().stream().flatMap(p -> p.getCharacteristicValueList().stream()).map(CharacteristicValue::getValue).collect(Collectors.toList()));
+                String batchCode = BatchSupport.characteristicToCode(item.getClassificationList());
                 Long batchId = materialIdBatchCodeStringBatchIdMap.get(item.getMaterialId() + batchCode);
                 if (batchId == null) {
                     Batch batch = Batch.builder()
