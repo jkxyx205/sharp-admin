@@ -45,7 +45,7 @@ public class ProduceOrderStockTest {
                         "                            sum(produce_order_item.quantity * produce_order_item_detail.quantity) quantity\n" +
                         "                     from `produce_order`\n" +
                         "                              left join produce_order_item on produce_order.id = produce_order_item.`produce_order_id`\n" +
-                        "                              inner join produce_order_item_detail on produce_order_item_detail.produce_order_item_id = produce_order_item.id join produce_order_item_schedule on produce_order_item_schedule.`produce_order_id` = produce_order.id AND produce_order_item_schedule.`status` = 'PRODUCING' WHERE produce_order.`status` = 'PRODUCING'\n" +
+                        "                              inner join produce_order_item_detail on produce_order_item_detail.produce_order_item_id = produce_order_item.id join produce_order_item_schedule on produce_order_item_schedule.`produce_order_id` = produce_order.id AND produce_order_item_schedule.`produce_order_item_id` = produce_order_item.id AND produce_order_item_schedule.`status` = 'PRODUCING' WHERE produce_order.`status` = 'PRODUCING'\n" +
                         "                     group by produce_order_item_detail.material_id, produce_order_item_detail.batch_code) po on po.material_id = mm_material.id\n" +
                         "         left join (select material_id, batch_code, sum(quantity) quantity from inv_stock where plant_id = 719893335619162112 group by material_id, batch_code ) stock\n" +
                         "                   on stock.material_id = mm_material.id AND ifnull(stock.batch_code, '') = ifnull(po.batch_code, '')\n" +
