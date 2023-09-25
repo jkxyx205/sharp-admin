@@ -575,6 +575,11 @@
             return urlObj
         }
 
+        function replaceAndOpenOnNewTab(tabId, url, name, hash) {
+            openOnNewTab(tabId, url, name, hash)
+            delTab()
+        }
+
         function openOnNewTab(tabId, url, name, hash) {
             if (hash)
                 url += '#' + hash
@@ -591,6 +596,10 @@
 
         function openOnNewTabLink(url, name) {
             return '<a href="javascript:;" onclick="openOnNewTab(\''+url+'\', \''+name+'\')">'+name+'</a>'
+        }
+
+        function replaceTabLink(url, name) {
+            return '<a href="javascript:;" onclick="replaceAndOpenOnNewTab(\''+url+'\', \''+name+'\')">'+name+'</a>'
         }
 
         function delTab(tabId) {

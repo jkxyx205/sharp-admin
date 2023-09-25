@@ -225,14 +225,20 @@
         _setRowValue:function ($tr, row, ignoreUndefined) {
             ignoreUndefined = (ignoreUndefined === undefined) ? false : ignoreUndefined
             $tr.show()
+            let _this = this
             $tr.find(":input[name]").each(function () {
                 if (ignoreUndefined && row[this.name] === undefined) {
                     return
                 }
 
+                let columnConfig = _this.nameColumnConfigsMap[this.name]
+                if (columnConfig && columnConfig.valueFormat) {
+                    row[this.name] = columnConfig.valueFormat(row, row[this.name])
+                }
+
                 if ($(this).attr('type') === 'switch') {
                     $(this).prop('checked', eval(row[this.name]))
-                } if ($(this).attr('type') === 'checkbox') {
+                } else if ($(this).attr('type') === 'checkbox') {
                     if ($(this).data('type') === 'multi_checkbox') {
                         if (row[this.name] && row[this.name].length > 0) {
                             for (let id of row[this.name]) {
@@ -250,7 +256,7 @@
             })
 
             this._consumeUnHiddenColumnConfig((childIndex, columnConfig) => {
-                if (columnConfig.type === 'render') {
+                if (columnConfig.type === 'render' && columnConfig.render) {
                     $tr.find('td:nth-child('+childIndex+')').html(columnConfig.render({...this._getValue($tr), ...row}))
                 }
             })
