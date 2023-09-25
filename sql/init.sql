@@ -18,8 +18,6 @@ truncate table core_partner;
 
 delete from produce_bom_template_component_detail where type = 'MATERIAL' AND exists (select 1 from mm_material where material_type = 'ROH' and id = produce_bom_template_component_detail.`type_instance_id`);
 
-
-
 -- 以下是非 sys_开头的表，业务数据
 truncate table pur_source_list;
 truncate table sys_document;
