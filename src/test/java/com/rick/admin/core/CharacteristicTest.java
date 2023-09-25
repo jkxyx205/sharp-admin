@@ -137,6 +137,22 @@ public class CharacteristicTest {
                 .build());
 
         characteristicService.saveOrUpdate(CharacteristicDTO.builder()
+                .type(Characteristic.CharacteristicTypeEnum.NUMBER)
+                .code("BP_LENGTH")
+                .description("剥皮mm")
+                .cpnType(CpnTypeEnum.RADIO) // 单选
+                .required(false)
+                .build());
+
+        characteristicService.saveOrUpdate(CharacteristicDTO.builder()
+                .type(Characteristic.CharacteristicTypeEnum.NUMBER)
+                .code("ZX_LENGTH")
+                .description("沾锡mm")
+                .cpnType(CpnTypeEnum.RADIO) // 单选
+                .required(false)
+                .build());
+
+        characteristicService.saveOrUpdate(CharacteristicDTO.builder()
                 .type(Characteristic.CharacteristicTypeEnum.TEXT)
                 .code("LINE_BRAND")
                 .description("供应商")

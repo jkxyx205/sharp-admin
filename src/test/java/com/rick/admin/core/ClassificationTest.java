@@ -1,10 +1,13 @@
 package com.rick.admin.core;
 
+import com.rick.admin.module.core.model.ClassificationDTO;
 import com.rick.admin.module.core.service.ClassificationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
+
 /**
  * @author Rick.Xu
  * @date 2023/7/20 17:00
@@ -34,7 +37,8 @@ public class ClassificationTest {
 //        classificationService.saveOrUpdate(new ClassificationDTO(null, "XIANBAO", "线包组件", Arrays.asList("TIEX", "TONGX")));
 
 //        classificationService.saveOrUpdate(new ClassificationDTO(null, "LINE", "普通线", Arrays.asList("XIN", "AREA", "XIANGXIAN","HUOERXIAN","LENGTH", "LINE_BRAND")));
-//        classificationService.saveOrUpdate(new ClassificationDTO(null, "LINE_FS", "防水线", Arrays.asList("XIN", "AREA", "JIETOU", "XIANGXIAN","HUOERXIAN","LENGTH", "LINE_BRAND")));
+        classificationService.saveOrUpdate(new ClassificationDTO(null, "LINE_FS", "防水线", Arrays.asList("XIN", "AREA", "XIANGXIAN","HUOERXIAN","LENGTH", "JIETOU", "BP_LENGTH", "ZX_LENGTH", "LINE_BRAND")));
+//        classificationService.saveOrUpdate(new ClassificationDTO(null, "LINE_FS_M", "防水线（母头）", Arrays.asList("XIN", "AREA", "XIANGXIAN","HUOERXIAN","LENGTH", "BP_LENGTH", "ZX_LENGTH", "LINE_BRAND")));
 //        classificationService.saveOrUpdate(new ClassificationDTO(null, "LINE_GQ", "过桥线", Arrays.asList("LENGTH", "LINE_BRAND")));
     }
 }
