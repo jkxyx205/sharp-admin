@@ -1,6 +1,8 @@
 package com.rick.admin.module.purchase.entity;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.rick.admin.module.core.entity.ContactInfo;
+import com.rick.admin.module.core.model.ReferenceTypeEnum;
 import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.service.BatchHandler;
 import com.rick.admin.module.material.service.CharacteristicHelper;
@@ -119,9 +121,23 @@ public class PurchaseOrder extends BaseCodeEntity {
         @Column(updatable = false)
         String purchaseOrderCode;
 
+        @Column(value = "is_purchase_send", comment = "采购直发")
+        Boolean purchaseSend;
+
         Long batchId;
 
         String batchCode;
+
+        ReferenceTypeEnum referenceType1;
+
+        Long referenceId1;
+
+        ReferenceTypeEnum referenceType2;
+
+        Long referenceId2;
+
+        @OneToMany(oneToOne = true, subTable = "core_contact", joinValue = "instance_id", cascadeInsertOrUpdate = true, reversePropertyName = "instanceId")
+        private ContactInfo contactInfo;
 
         /**
          * 特征值
@@ -132,6 +148,11 @@ public class PurchaseOrder extends BaseCodeEntity {
 
         @Transient
         MaterialDescription materialDescription;
+
+        @Transient
+        @Sql(value = "select produce_order.id, produce_order.code, produce_order.partner_id, core_partner.name from produce_order_item, produce_order, core_partner where produce_order_item.produce_order_id = produce_order.`id` AND core_partner.id = produce_order.partner_id AND\n" +
+                "produce_order_item.id = :referenceId2", params = "referenceId2@referenceId2", nullWhenParamsIsNull = {"referenceId2"})
+        private Map<String, Object> soInfo;
 
         public BigDecimal getAmount() {
             if (Objects.nonNull(unitPrice)) {

@@ -2,6 +2,7 @@ package com.rick.admin.module.produce.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.rick.admin.module.core.entity.ContactInfo;
 import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.service.BatchHandler;
 import com.rick.admin.module.material.service.CharacteristicHelper;
@@ -120,6 +121,8 @@ public class ProduceOrder extends BaseCodeEntity {
 
         String batchCode;
 
+        ItemCategoryEnum itemCategory;
+
         /**
          * 特征值
          */
@@ -144,6 +147,9 @@ public class ProduceOrder extends BaseCodeEntity {
 
         @OneToMany(subTable = "produce_order_item_schedule", reversePropertyName = "produceOrderItemId", cascadeInsertOrUpdate = true, joinValue = "produce_order_item_id")
         List<Schedule> scheduleList;
+
+        @OneToMany(oneToOne = true, subTable = "core_contact", joinValue = "instance_id", cascadeInsertOrUpdate = true, reversePropertyName = "instanceId")
+        private ContactInfo contactInfo;
 
         public BigDecimal getAmount() {
             if (Objects.nonNull(unitPrice)) {
@@ -267,6 +273,24 @@ public class ProduceOrder extends BaseCodeEntity {
         private final String label;
 
         public static ProduceOrder.StatusEnum valueOfCode(String code) {
+            return valueOf(code);
+        }
+    }
+
+    @AllArgsConstructor
+    @Getter
+    public enum ItemCategoryEnum {
+        PRODUCT("产品"),
+        PURCHASE_SEND("采购直发");
+
+        @JsonValue
+        public String getCode() {
+            return this.name();
+        }
+
+        private final String label;
+
+        public static ProduceOrder.ItemCategoryEnum valueOfCode(String code) {
             return valueOf(code);
         }
     }

@@ -1,14 +1,19 @@
 package com.rick.admin.module.produce.service;
 
+import com.google.common.collect.Lists;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
+import com.rick.admin.module.core.model.ReferenceTypeEnum;
 import com.rick.admin.module.core.service.CodeHelper;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.produce.dao.ProduceOrderItemDAO;
 import com.rick.admin.module.produce.dao.ProduceOrderItemDetailDAO;
 import com.rick.admin.module.produce.entity.ProduceOrder;
+import com.rick.admin.module.purchase.entity.PurchaseRequisition;
+import com.rick.admin.module.purchase.service.PurchaseRequisitionItemService;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
+import com.rick.db.plugin.dao.support.BaseEntityUtils;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
 import lombok.AccessLevel;
@@ -16,7 +21,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
@@ -48,11 +55,14 @@ public class ProduceOrderService {
 
     BatchService batchService;
 
+    PurchaseRequisitionItemService purchaseRequisitionItemService;
+
     /**
      * 新增或修改
      *
      * @param order
      */
+    @Transactional(rollbackFor = Exception.class)
     public void saveOrUpdate(ProduceOrder order) {
         if (order.getId() == null) {
             order.setCode(CodeHelper.generateCode("SO"));
@@ -88,6 +98,10 @@ public class ProduceOrderService {
 
         batchService.saveBatch(Stream.concat(order.getItemList().stream(), order.getItemList().stream().flatMap(item -> CollectionUtils.isNotEmpty(item.getItemList()) ? item.getItemList().stream() : Stream.empty())).collect(Collectors.toSet()));
         produceOrderDAO.insertOrUpdate(order);
+
+        if (order.getStatus() == ProduceOrder.StatusEnum.PRODUCING) {
+            handlePurchaseSendType(order.getItemList().stream().filter(item -> item.getItemCategory() == ProduceOrder.ItemCategoryEnum.PURCHASE_SEND).collect(Collectors.toList()));
+        }
     }
 
     /**
@@ -231,6 +245,26 @@ public class ProduceOrderService {
 
     public void setStatus(String rootReferenceCode, ProduceOrder.StatusEnum status) {
         produceOrderDAO.update("status", new Object[]{status.getCode(), rootReferenceCode}, "code = ?");
+    }
+
+    private void handlePurchaseSendType(List<ProduceOrder.Item> purchaseSendItem) {
+        if (CollectionUtils.isEmpty(purchaseSendItem)) {
+            return;
+        }
+
+        List<PurchaseRequisition.Item> itemList = Lists.newArrayListWithExpectedSize(purchaseSendItem.size());
+        for (ProduceOrder.Item item : purchaseSendItem) {
+            PurchaseRequisition.Item prItem = new PurchaseRequisition.Item();
+            BeanUtils.copyProperties(item, prItem);
+            prItem.setReferenceType(ReferenceTypeEnum.SO);
+            prItem.setReferenceId(item.getId());
+            prItem.setPurchaseRequisitionId(1L);
+            prItem.setPurchaseRequisitionCode("STANDARD");
+            BaseEntityUtils.resetAdditionalFields(prItem);
+            itemList.add(prItem);
+        }
+
+        purchaseRequisitionItemService.insertOrUpdateByReferenceIds(itemList);
     }
 
 }

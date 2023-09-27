@@ -111,10 +111,56 @@
 
         <div class="nav-tabs-boxed" th:if="${po.id != null}">
             <ul class="nav nav-tabs" role="tablist">
-                <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#tab-1" role="tab" aria-controls="home" aria-selected="false">收货记录</a></li>
+                <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#tab-1" role="tab" aria-controls="home" aria-selected="false">收货信息</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-3" role="tab" aria-controls="home" aria-selected="false" id="so_tab">关联销售单</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-2" role="tab" aria-controls="home" aria-selected="false">收货记录</a></li>
             </ul>
             <div class="tab-content">
-                <div class="tab-pane active" id="tab-1" role="tabpanel">
+                <div class="tab-pane active" id="tab-1" role="tabpanel" th:if="${po.id != null}">
+                    <form id="receiveContactInfo">
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label">联系人</label>
+                            <div class="col-sm-4">
+                                <input class="form-control" type="text" name="receiveContactPerson">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label">联系电话</label>
+                            <div class="col-sm-4">
+                                <input class="form-control" type="text" name="receiveContactNumber">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label">联系邮箱</label>
+                            <div class="col-sm-4">
+                                <input class="form-control" type="text" name="receiveContactMail">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label">收货地址</label>
+                            <div class="col-sm-11">
+                                <input class="form-control" type="text" name="address">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="tab-pane" id="tab-3" role="tabpanel">
+                    <form id="soInfo">
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label">销售单号</label>
+                            <div class="col-sm-11">
+                                <input class="form-control" type="text" name="soCode" disabled>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label">客户名称</label>
+                            <div class="col-sm-11">
+                                <input class="form-control" type="text" name="customerName" disabled>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="tab-pane" id="tab-2" role="tabpanel">
                     <div id="goods_receipt_container" role="tabpanel">
                         <div class="table-fixed-container">
                             <table class="table table-responsive-sm table-bordered table-striped table-sm table-thead" style="margin-bottom: 0">
@@ -122,7 +168,7 @@
                                 <tr>
                                     <th style="width: 50px" data-index>序号</th>
                                     <th style="width: 100px" class="sortable active asc">物料</th>
-                                    <th style="width: 100px;">名称</th>
+                                    <th style="width: 150px;">名称</th>
 <!--                                    <th style="width: 200px;">规格</th>-->
                                     <th>规格 & 特征值</th>
                                     <th style="width: 80px">基本单位</th>
@@ -175,6 +221,7 @@
     <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js}"></script>
     <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.zh-CN.min.js}"></script>
     <script type="text/javascript" th:src="@{/plugins/jquery.form2json.js}"></script>
+    <script type="text/javascript" th:src="@{/js/table/jquery.formautofill.min.js}"></script>
     <script th:src="@{/js/jquery.dialog.js}"></script>
 
     <script th:src="@{/editable-table/editable-table.js}"></script>
@@ -196,6 +243,8 @@
         let isAdd = /*[[${po.id == null}]]*/
         let formHeader = document.getElementById('form-header');
         let formItem = document.getElementById('form-item');
+        let $receiveContactInfo = $('#receiveContactInfo')
+        let $soInfo = $('#soInfo')
 
         let value = [
             // {
@@ -209,6 +258,30 @@
             showRowNumber: true, // 是否显示行号
             // readonly, // 只读
             allowEmpty: false, // 表格允许为空
+            highlight: true,
+            rowClick: function (context, $tr, row, fromActiveRow) {
+                // 保存 receiveContactInfo
+                if (fromActiveRow) {
+                    fromActiveRow.$tr[0].receiveContactInfo = $receiveContactInfo.form2json({allowEmptyMultiVal:true})
+                }
+                $receiveContactInfo.autofill({...{
+                        'receiveContactPerson': '',
+                        'receiveContactNumber': '',
+                        'receiveContactMail': '',
+                        'address': '',
+                    }, ...$tr[0].receiveContactInfo})
+
+                $soInfo.autofill({...{
+                        'soCode': '',
+                        'customerName': ''
+                    }, ...($tr[0].soInfo ? $tr[0].soInfo : {})})
+
+                // if (row.referenceType2 === 'SO') {
+                //     $('#so_tab').show()
+                // } else {
+                //     $('#so_tab').hide()
+                // }
+            },
             columnConfigs: [
                 {
                     type: "material",
@@ -305,16 +378,57 @@
                     required: true,
                 },
                 {
+                    type: "checkbox",
+                    name: "purchaseSend",
+                    width: 80,
+                    title: "采购直发",
+                    afterValueSet(value, $tr, $input) {
+                        if (value.referenceType1 === 'PR') {
+                            setTimeout(() => {
+                                $input.attr('disabled', true).attr('readonly', true)
+                            }, 100)
+                        }
+                    }
+                },
+                {
                     type: "text",
                     title: "备注",
                     name: "remark",
+                },
+                {
+                    type: "hidden",
+                    name: "referenceType1",
+                    valueFormat:function (row, value) {
+                        if (value) {
+                            return value.code;
+                        }
+                        return null;
+                    }
+                },
+                {
+                    type: "hidden",
+                    name: "referenceId1",
+                },
+                {
+                    type: "hidden",
+                    name: "referenceType2",
+                    valueFormat:function (row, value) {
+                        if (value) {
+                            return value.code;
+                        }
+                        return null;
+                    }
+                },
+                {
+                    type: "hidden",
+                    name: "referenceId2",
                 },
                 {
                     type: isAdd ? "hidden": "checkbox",
                     title: "收货完成",
                     name: "complete",
                     align: 'center',
-                    width: 100,
+                    width: 80,
                 },
                 // {
                 //     type: "checkbox",
@@ -340,10 +454,7 @@
                 //     }
                 // }
             ],
-            value, // 初始化值
-            rowClick: function (context, $tr, row) {
-                console.log(row)
-            }
+            value // 初始化值
         })
 
         // end
@@ -413,6 +524,28 @@
 
             characteristic.getCharacteristicParams($editableTable, params['itemList'])
 
+            // 保存当前 active 到 DOM 中
+            let activeTr = $editableTable.editableTablePlus('getActiveRowValue').$tr[0];
+            activeTr.receiveContactInfo = $receiveContactInfo.form2json({allowEmptyMultiVal:true})
+
+            for (let index in params['itemList']) {
+                let item = params['itemList'][index]
+                let trDom = $('#table-container table.table-tbody tbody tr').eq(index)[0]
+
+                // 收货地址
+                item['contactInfo'] = (trDom.receiveContactInfo && Object.values(trDom.receiveContactInfo).filter(v => v).length === 0) ? null : {
+                    "contactPerson": trDom.receiveContactInfo.receiveContactPerson,
+                    "contactNumber": trDom.receiveContactInfo.receiveContactNumber,
+                    "contactMail": trDom.receiveContactInfo.receiveContactMail,
+                    "address": trDom.receiveContactInfo.address
+                }
+
+                if (item.purchaseSend && (!item.contactInfo || !item.contactInfo.address || !item.contactInfo.contactPerson || !item.contactInfo.contactNumber)) {
+                    toastr.error('采购直发客户收货信息不能为空！')
+                    return;
+                }
+            }
+
             console.log(params)
 
             $.ajax({
@@ -459,13 +592,49 @@
         function loadItem(itemList) {
             if (itemList) {
                 characteristic.loadCharacteristic($editableTable, itemList)
-
+                $editableTable.editableTablePlus('setActiveIndex', 1)
                 calcTotalAmount()
 
                 // 历史的不能修改物料和删除
                 let $trs = $editableTable.editableTablePlus('getEditRow')
                 $trs.find('[name=materialCode]').attr('disabled', true)
                 // $trs.find('td.operator').hide()
+
+                let firstContactInfo;
+                let soInfo;
+                for(let i = 0; i < itemList.length; i++) {
+                    if (itemList[i].contactInfo) {
+                        $trs[i].receiveContactInfo = {
+                            "receiveContactPerson": itemList[i].contactInfo['contactPerson'],
+                            "receiveContactNumber": itemList[i].contactInfo['contactNumber'],
+                            "receiveContactMail": itemList[i].contactInfo['contactMail'],
+                            "address": itemList[i].contactInfo['address']
+                        }
+
+                        $trs[i].soInfo = {
+                            "soCode": itemList[i].soInfo ? itemList[i].soInfo.code : '',
+                            "customerName": itemList[i].soInfo ? itemList[i].soInfo.name : ''
+                        }
+                    }
+                    else {
+                        $trs[i].receiveContactInfo = {}
+                        $trs[i].soInfo = {}
+                    }
+
+                    if (i == 0) {
+                        firstContactInfo = $trs[i].receiveContactInfo
+                        soInfo = $trs[i].soInfo
+
+                        // if (itemList[i].referenceType2 === 'SO') {
+                        //     $('#so_tab').show()
+                        // } else {
+                        //     $('#so_tab').hide()
+                        // }
+                    }
+                }
+
+                $receiveContactInfo.autofill(firstContactInfo)
+                $soInfo.autofill(soInfo)
             }
         }
 

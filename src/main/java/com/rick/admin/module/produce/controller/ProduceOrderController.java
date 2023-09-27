@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.rick.admin.auth.common.UserContextHolder;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
+import com.rick.admin.module.core.model.ReferenceTypeEnum;
 import com.rick.admin.module.material.dao.ClassificationDAO;
 import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.service.BatchService;
@@ -17,10 +18,12 @@ import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.admin.module.produce.service.BomService;
 import com.rick.admin.module.produce.service.ProduceOrderService;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
+import com.rick.admin.module.purchase.entity.PurchaseRequisition;
 import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
 import com.rick.common.util.Time2StringUtils;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
+import com.rick.db.plugin.dao.core.EntityDAO;
 import com.rick.db.plugin.dao.support.BaseEntityUtils;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
@@ -55,6 +58,8 @@ public class ProduceOrderController {
     EntityCodeDAO<ProduceOrder, Long> produceOrderDAO;
 
     ProduceOrderItemDAO produceOrderItemDAO;
+
+    EntityDAO<PurchaseRequisition.Item, Long> purchaseRequisitionItemDAO;
 
     ProduceOrderService produceOrderService;
 
@@ -257,7 +262,35 @@ public class ProduceOrderController {
             itemList.add(item);
         }
 
-        Map<Long, List<com.rick.admin.module.material.entity.Classification>> materialIdClassificationMap = materialClassificationDAO.findMaterialClassificationByMaterialIds(itemList.stream().map(PurchaseOrder.Item::getMaterialId).collect(Collectors.toSet()));
+        handleCharacteristic(itemList);
+        model.addAttribute("itemList", itemList);
+        return "modules/purchase/purchase_order_batch";
+    }
+
+    @GetMapping("purchase_order_purchase_send")
+    public String batch(Model model, Long[] itemIds) {
+        List<PurchaseOrder.Item> itemList = new ArrayList<>();
+
+        List<PurchaseRequisition.Item> prItemList = purchaseRequisitionItemDAO.selectByIds(itemIds);
+
+        for (PurchaseRequisition.Item soItem : prItemList) {
+            PurchaseOrder.Item poItem = new PurchaseOrder.Item();
+            BeanUtils.copyProperties(soItem, poItem);
+            poItem.setReferenceType1(ReferenceTypeEnum.PR);
+            poItem.setReferenceId1(soItem.getId());
+            poItem.setReferenceType2(ReferenceTypeEnum.SO);
+            poItem.setReferenceId2(soItem.getReferenceId());
+            poItem.setPurchaseSend(true);
+            itemList.add(poItem);
+        }
+
+        handleCharacteristic(itemList);
+        model.addAttribute("itemList", itemList);
+        return "modules/purchase/purchase_order_batch";
+    }
+
+    private void handleCharacteristic(List<PurchaseOrder.Item> itemList) {
+        Map<Long, List<Classification>> materialIdClassificationMap = materialClassificationDAO.findMaterialClassificationByMaterialIds(itemList.stream().map(PurchaseOrder.Item::getMaterialId).collect(Collectors.toSet()));
 
         materialService.fillMaterialDescription(itemList);
 
@@ -280,8 +313,6 @@ public class ProduceOrderController {
         });
 
         batchService.fillCharacteristicValue(itemList);
-        model.addAttribute("itemList", itemList);
-        return "modules/purchase/purchase_order_batch";
     }
 
     /**

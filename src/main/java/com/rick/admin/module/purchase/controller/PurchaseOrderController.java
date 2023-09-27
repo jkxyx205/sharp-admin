@@ -5,21 +5,27 @@ import com.rick.admin.auth.common.UserContextHolder;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
 import com.rick.admin.module.core.dao.PartnerDAO;
+import com.rick.admin.module.core.entity.ContactInfo;
 import com.rick.admin.module.core.entity.Partner;
+import com.rick.admin.module.core.model.ReferenceTypeEnum;
+import com.rick.admin.module.core.service.ContactInfoService;
 import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
 import com.rick.admin.module.purchase.service.PurchaseOrderService;
+import com.rick.admin.module.purchase.service.PurchaseRequisitionItemService;
 import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
 import com.rick.common.util.Time2StringUtils;
+import com.rick.db.plugin.dao.support.BaseEntityUtils;
 import com.rick.meta.dict.entity.Dict;
 import com.rick.meta.dict.service.DictService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Controller;
@@ -57,6 +63,10 @@ public class PurchaseOrderController {
     final PartnerDAO partnerDAO;
 
     final BatchService batchService;
+
+    final ContactInfoService contactInfoService;
+
+    final PurchaseRequisitionItemService purchaseRequisitionItemService;
 
     @PostMapping
     @ResponseBody
@@ -103,16 +113,41 @@ public class PurchaseOrderController {
             value.put("contactNumber", partner.getContactNumber());
             value.put("contactMail", partner.getContactMail());
             value.put("status", PurchaseOrder.StatusEnum.PLANNING);
-            purchaseOrderList.add(purchaseOrderDAO.mapToEntity(value));
+            PurchaseOrder purchaseOrder = purchaseOrderDAO.mapToEntity(value);
+
+            // TODO 添加参考信息 SO
+            purchaseOrderList.add(purchaseOrder);
         }
-        purchaseOrderService.save(purchaseOrderList);
 
+        handleReferenceValue(purchaseOrderList.stream().flatMap(purchaseOrder -> purchaseOrder.getItemList().stream())
+                .filter(purchaseOrderItem -> purchaseOrderItem.getReferenceType1() == ReferenceTypeEnum.PR).collect(Collectors.toList()));
         // 更新物料的价格
-        List<Object[]> paramList = purchaseOrderList.stream().flatMap(purchaseOrder -> purchaseOrder.getItemList().stream()).filter(item -> Objects.nonNull(item.getUnitPrice()))
-                .map(item -> new Object[]{item.getUnitPrice(), item.getMaterialId()}).collect(Collectors.toList());
-        materialDAO.updatePrice(paramList);
+//        List<Object[]> paramList = purchaseOrderList.stream().flatMap(purchaseOrder -> purchaseOrder.getItemList().stream()).filter(item -> Objects.nonNull(item.getUnitPrice()))
+//                .map(item -> new Object[]{item.getUnitPrice(), item.getMaterialId()}).collect(Collectors.toList());
+//        materialDAO.updatePrice(paramList);
 
+        purchaseOrderService.save(purchaseOrderList);
         return ResultUtils.success();
+    }
+
+    private void handleReferenceValue(List<PurchaseOrder.Item> itemList) {
+        if (CollectionUtils.isEmpty(itemList)) {
+            return;
+        }
+
+        Set<Long> produceItemIds = itemList.stream().map(PurchaseOrder.Item::getReferenceId2).collect(Collectors.toSet());
+        Set<Long> prItemIds = itemList.stream().map(PurchaseOrder.Item::getReferenceId1).collect(Collectors.toSet());
+        Map<Long, ContactInfo> instanceIdEntityMap = contactInfoService.getInstanceIdEntityMap(produceItemIds);
+
+        for (PurchaseOrder.Item item : itemList) {
+            BaseEntityUtils.resetAdditionalFields(item);
+            ContactInfo contactInfo = instanceIdEntityMap.get(item.getReferenceId2());
+            BaseEntityUtils.resetAdditionalFields(contactInfo);
+            // TODO 销售订单如果修改了地址，采购订单的地址该如何更新？
+            item.setContactInfo(contactInfo);
+        }
+
+        purchaseRequisitionItemService.markCompleted(prItemIds);
     }
 
     @GetMapping

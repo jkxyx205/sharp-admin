@@ -29,10 +29,10 @@ import com.rick.meta.props.service.PropertyUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.core.io.ClassPathResource;
@@ -243,7 +243,7 @@ public class PurchaseOrderService {
 
         ExcelWriter excelWriter = new ExcelWriter(new XSSFWorkbook(new ByteArrayInputStream(bytes)));
 
-        excelWriter.writeCell(new ExcelCell(7, 3, "PO NO: "+ purchaseOrder.getCode()));
+        excelWriter.writeCell(new ExcelCell(8, 3, "PO NO: "+ purchaseOrder.getCode()));
         excelWriter.writeCell(new ExcelCell(1, 5, "供方（Vendor）：" + partner.getName()));
         excelWriter.writeCell(new ExcelCell(2, 6, purchaseOrder.getContactPerson() + " " + purchaseOrder.getContactNumber()));
         excelWriter.writeCell(new ExcelCell(2, 7, partner.getContactFax()));
@@ -261,11 +261,12 @@ public class PurchaseOrderService {
         for (int i = 0; i < purchaseOrder.getItemList().size(); i++) {
             PurchaseOrder.Item item = purchaseOrder.getItemList().get(i);
             MaterialDescription materialDescription = item.getMaterialDescription();
-            //        data.add(new Object[]{1, "资材编号1", "品 名", "型号规格", 3, "单位", 1, 11, "2022-11-16"});
+            //        data.add(new Object[]{1, "资材编号1", "品 名", "型号规格", 3, "单位", 1, 11, "2022-11-16", "备注"});
             data.add(new Object[] {i + 1, materialDescription.getCode(), materialDescription.getName(),
                     materialDescription.getSpecification() + " " + materialDescription.getCharacteristic(),
                     item.getQuantity(), materialDescription.getUnitText(), item.getUnitPrice(), item.getAmount(),
-                    StringUtils.isNotBlank(item.getRemark()) ? item.getRemark() : Time2StringUtils.format(item.getDeliveryDate())
+                    Time2StringUtils.format(item.getDeliveryDate()),
+                    item.getRemark() + (MapUtils.isNotEmpty(item.getSoInfo()) ? "\n客户：" + item.getSoInfo().get("name") : "")
             });
         }
 
@@ -302,7 +303,19 @@ public class PurchaseOrderService {
         excelWriter.writeCell(new ExcelCell(3, 13 + rowSize, "¥" + amount));
         excelWriter.writeCell(new ExcelCell(3, 14 + rowSize, "RMB" + amount));
         excelWriter.writeCell(new ExcelCell(2, 15 + rowSize, purchaseOrder.getRemark()));
-        excelWriter.writeCell(new ExcelCell(4, 28 + rowSize, "本公司确认：方慧" + downloadDate));
+
+        // 地址表
+        int addressSize = 0;
+        for (int i = 0; i < purchaseOrder.getItemList().size(); i++) {
+            PurchaseOrder.Item item = purchaseOrder.getItemList().get(i);
+            if (item.getPurchaseSend()) {
+                excelWriter.insertAndWriteCell(new ExcelCell(1, 16 + rowSize + addressSize, 30f, cellStyles[1],
+                        (MapUtils.isNotEmpty(item.getSoInfo()) ? item.getSoInfo().get("name") + ":" : "") + item.getContactInfo(), 1, 10));
+                addressSize++;
+            }
+        }
+
+        excelWriter.writeCell(new ExcelCell(4, 28 + rowSize + addressSize, "本公司确认：方慧" + downloadDate));
 
         excelWriter.getBook().setSheetName(0, downloadDate);
 
@@ -324,7 +337,7 @@ public class PurchaseOrderService {
         //画图的顶级管理器，一个sheet只能获取一个（一定要注意这点）
         XSSFDrawing patriarch = sheet.createDrawingPatriarch();
         //anchor主要用于设置图片的属性
-        XSSFClientAnchor anchor = new XSSFClientAnchor(0, 0, 0, 0, (short) 7, 19 + rowSize, (short) 9, 30 + rowSize);
+        XSSFClientAnchor anchor = new XSSFClientAnchor(0, 0, 0, 0, (short) 8, 19 + rowSize + addressSize, (short) 10, 30 + rowSize +addressSize);
         anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_AND_RESIZE);
         //插入图片
         patriarch.createPicture(anchor, workbook.addPicture(byteArrayOut.toByteArray(), XSSFWorkbook.PICTURE_TYPE_PNG));

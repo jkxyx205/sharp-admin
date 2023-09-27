@@ -165,7 +165,8 @@
                 <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#tab-1" role="tab" aria-controls="home" aria-selected="false">BOM</a></li>
                 <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-4" role="tab" aria-controls="home" aria-selected="false">生产计划</a></li>
                 <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-2" role="tab" aria-controls="home" aria-selected="false" th:if="${po.id != null}">领料记录</a></li>
-                <li class="nav-item" th:if="${po.id != null}"><a class="nav-link" data-toggle="tab" href="#tab-3" role="tab" aria-controls="home" aria-selected="false">出货记录</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-5" role="tab" aria-controls="home" aria-selected="false">客户收货信息</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-3" role="tab" aria-controls="home" aria-selected="false" th:if="${po.id != null}">出货记录</a></li>
             </ul>
             <div class="tab-content">
                 <div class="tab-pane active" id="tab-1" role="tabpanel">
@@ -348,6 +349,34 @@
                         </div>
                     </div>
                 </div>
+                <div class="tab-pane" id="tab-5" role="tabpanel">
+                    <form id="receiveContactInfo">
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label">联系人</label>
+                            <div class="col-sm-4">
+                                <input class="form-control" type="text" name="receiveContactPerson">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label">联系电话</label>
+                            <div class="col-sm-4">
+                                <input class="form-control" type="text" name="receiveContactNumber">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label">联系邮箱</label>
+                            <div class="col-sm-4">
+                                <input class="form-control" type="text" name="receiveContactMail">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label">收货地址</label>
+                            <div class="col-sm-11">
+                                <input class="form-control" type="text" name="address">
+                            </div>
+                        </div>
+                    </form>
+                </div>
                 <div class="tab-pane" id="tab-3" role="tabpanel" th:if="${po.id != null}">
                     <div id="goods_issue_container" role="tabpanel">
                         <div class="table-fixed-container">
@@ -404,6 +433,7 @@
     <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js}"></script>
     <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.zh-CN.min.js}"></script>
     <script type="text/javascript" th:src="@{/plugins/jquery.form2json.js}"></script>
+    <script type="text/javascript" th:src="@{/js/table/jquery.formautofill.min.js}"></script>
     <script th:src="@{/plugins/multiple-select/multiple-select.min.js}"></script>
 
     <script th:src="@{/editable-table/editable-table.js}"></script>
@@ -424,8 +454,9 @@
 
         let isAdd = /*[[${po.id == null}]]*/
         let formHeader = document.getElementById('form-header');
-        let formItem = document.getElementById('form-item');
+        let formItem = document.getElementById('form-item')
         let $scheduleDom = $('#schedule')
+        let $receiveContactInfo = $('#receiveContactInfo')
 
         function showBOMDetail($tr, materialId, itemId, isCopy, callback) {
             if (materialId && $tr[0].form && materialId === $tr[0].form.materialId) {
@@ -499,9 +530,10 @@
                     $scheduleDom.hide()
                 }
 
-                // 保存 schedule
+                // 保存 schedule && receiveContactInfo
                 if (fromActiveRow) {
                     fromActiveRow.$tr[0].schedule = $scheduleTable.editableTablePlus('getValue')
+                    fromActiveRow.$tr[0].receiveContactInfo = $receiveContactInfo.form2json({allowEmptyMultiVal:true})
                 }
 
                 if (row.materialId) {
@@ -514,6 +546,12 @@
                     $scheduleTable.editableTablePlus('setValue', [])
                 }
 
+                $receiveContactInfo.autofill({...{
+                        'receiveContactPerson': '',
+                        'receiveContactNumber': '',
+                        'receiveContactMail': '',
+                        'address': '',
+                    }, ...$tr[0].receiveContactInfo})
             },
             beforeDeleteRow: function (context, $tr, row) {
                 // 删除对应的物料清单
@@ -530,7 +568,7 @@
                     type: "material",
                     name: "materialId",
                     title: "物料",
-                    width: 100,
+                    width: 80,
                     required: true,
                     mode: 'single', // 多选,
                     reportId: '719185652091981824',
@@ -605,11 +643,32 @@
                     required: false,
                 },
                 {
+                    type: "select",
+                    name: "itemCategory",
+                    title: "类型",
+                    required: true,
+                    width: 95,
+                    datasource: [
+                        {
+                            name: "",
+                            value: ""
+                        },
+                        {
+                            name: "PRODUCT",
+                            value: "产品"
+                        },
+                        {
+                            name: "PURCHASE_SEND",
+                            value: "采购直发"
+                        }
+                    ],
+                },
+                {
                     type: readonly ? "hidden": "decimal",
                     name: "unitPrice",
                     title: "含税单价",
                     align: 'right',
-                    width: 100,
+                    width: 80,
                     required: false,
                     keyup: function ($tr, event, value) {
                         calcAmount($tr);
@@ -632,6 +691,7 @@
                 {
                     type: "text",
                     title: "客户物料编号",
+                    width: 120,
                     name: "customerMaterialCode",
                 },
                 {
@@ -814,12 +874,24 @@
             }
 
             // 保存当前 active 到 DOM 中
-            $editableTable.editableTablePlus('getActiveRowValue').$tr[0].schedule = $scheduleTable.editableTablePlus('getValue')
+            let activeTr = $editableTable.editableTablePlus('getActiveRowValue').$tr[0];
+            activeTr.schedule = $scheduleTable.editableTablePlus('getValue')
+            activeTr.receiveContactInfo = $receiveContactInfo.form2json({allowEmptyMultiVal:true})
 
             for (let index in params['itemList']) {
                 let item = params['itemList'][index]
+                let trDom = $('#table-container table.table-tbody tbody tr').eq(index)[0]
+
+                // 收货地址
+                item['contactInfo'] = (trDom.receiveContactInfo && Object.values(trDom.receiveContactInfo).filter(v => v).length === 0)? {} : {
+                    "contactPerson": trDom.receiveContactInfo.receiveContactPerson,
+                    "contactNumber": trDom.receiveContactInfo.receiveContactNumber,
+                    "contactMail": trDom.receiveContactInfo.receiveContactMail,
+                    "address": trDom.receiveContactInfo.address
+                }
+
                 // 生产计划
-                item['scheduleList'] = $('#table-container table.table-tbody tbody tr').eq(index)[0].schedule
+                item['scheduleList'] = trDom.schedule
                 // 检查数量
                 if (item['scheduleList'] && item['scheduleList'].length > 0) {
                     for (let schedule of item['scheduleList']) {
@@ -847,10 +919,25 @@
                 }
                 // 生产计划 end
 
+                if (!item.contactInfo.contactPerson) {
+                    item.contactInfo.contactPerson = $('#contactPerson').val()
+                }
+
+                if (!item.contactInfo.contactNumber) {
+                    item.contactInfo.contactNumber = $('#contactNumber').val()
+                }
+
+                if (strictValid && item.itemCategory === 'PURCHASE_SEND') {
+                    if (!item.contactInfo.address) {
+                        toastr.error('采购直发客户收货地址不能为空!')
+
+                        return;
+                    }
+                }
                 // 获取BOM
                 // 获取value
                 let valueList = []
-                checkAndGetValueList($('#table-container table.table-tbody tbody tr').eq(index)[0].form, valueList, parseInt(index))
+                checkAndGetValueList(trDom.form, valueList, parseInt(index))
                 if (!detailValid) {
                     return;
                 }
@@ -968,9 +1055,28 @@
                     $scheduleTable.editableTablePlus('setValue', itemList[0]['scheduleList'])
                 }
 
+                let firstContactInfo;
                 for(let i = 0; i < itemList.length; i++) {
                     $trs[i].schedule = itemList[i]['scheduleList']
+
+                    if (itemList[i].contactInfo) {
+                        $trs[i].receiveContactInfo = {
+                            "receiveContactPerson": itemList[i].contactInfo['contactPerson'],
+                            "receiveContactNumber": itemList[i].contactInfo['contactNumber'],
+                            "receiveContactMail": itemList[i].contactInfo['contactMail'],
+                            "address": itemList[i].contactInfo['address']
+                        }
+                    }
+                    else {
+                        $trs[i].receiveContactInfo = {}
+                    }
+
+                    if (i == 0) {
+                        firstContactInfo = $trs[i].receiveContactInfo
+                    }
                 }
+
+                $receiveContactInfo.autofill(firstContactInfo)
             }
         }
 

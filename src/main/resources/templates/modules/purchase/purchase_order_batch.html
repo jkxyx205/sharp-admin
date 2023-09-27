@@ -140,6 +140,13 @@
                                 }).join(''))
                             })
                         }
+                    },
+                    afterValueSet(value, $tr, $input) {
+                        if (value.referenceType1 === 'PR') {
+                            setTimeout(() => {
+                                $input.prev().attr('disabled', true).attr('readonly', true)
+                            }, 100)
+                        }
                     }
                 },
                 {
@@ -161,7 +168,14 @@
                     // width: 80,
                     title: "特征值",
                     required: true,
-                    disabled: true
+                    disabled: true,
+                    afterValueSet(value, $tr, $input) {
+                        if (value.referenceType1 === 'PR') {
+                            setTimeout(() => {
+                                $input.attr('disabled', true).attr('readonly', true)
+                            }, 100)
+                        }
+                    }
                 },
                 {
                     type: "decimal",
@@ -172,6 +186,13 @@
                     align: 'right',
                     keyup: function ($tr, event, value) {
                         calcAmount($tr);
+                    },
+                    afterValueSet(value, $tr, $input) {
+                        if (value.referenceType1 === 'PR') {
+                            setTimeout(() => {
+                                $input.attr('disabled', true).attr('readonly', true)
+                            }, 100)
+                        }
                     }
                 },
                 {
@@ -208,6 +229,19 @@
                     required: true,
                 },
                 {
+                    type: "checkbox",
+                    name: "purchaseSend",
+                    width: 80,
+                    title: "采购直发",
+                    afterValueSet(value, $tr, $input) {
+                        if (value.referenceType1 === 'PR') {
+                            setTimeout(() => {
+                                $input.attr('disabled', true).attr('readonly', true)
+                            }, 100)
+                        }
+                    }
+                },
+                {
                     type: "select",
                     title: "供应商",
                     name: "partnerId",
@@ -217,6 +251,34 @@
                     type: "text",
                     title: "备注",
                     name: "remark",
+                },
+                {
+                    type: "hidden",
+                    name: "referenceType1",
+                    valueFormat:function (row, value) {
+                        if (value) {
+                            return value.code;
+                        }
+                        return null;
+                    }
+                },
+                {
+                    type: "hidden",
+                    name: "referenceId1",
+                },
+                {
+                    type: "hidden",
+                    name: "referenceType2",
+                    valueFormat:function (row, value) {
+                        if (value) {
+                            return value.code;
+                        }
+                        return null;
+                    }
+                },
+                {
+                    type: "hidden",
+                    name: "referenceId2",
                 }
             ],
             value,
@@ -279,10 +341,7 @@
 
             var params = $('#form-header').form2json({allowEmptyMultiVal:true})
             params['itemList'] = $editableTable.editableTablePlus('getValue')
-
             characteristic.getCharacteristicParams($editableTable, params['itemList'])
-
-            console.log(params)
 
             $.ajax({
                 url: '/purchase_order/batch',

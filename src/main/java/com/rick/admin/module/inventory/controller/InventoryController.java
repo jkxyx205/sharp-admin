@@ -177,6 +177,10 @@ public class InventoryController {
         inventoryDocument.setItemList(Lists.newArrayListWithExpectedSize(purchaseOrder.getItemList().size()));
 
         for (PurchaseOrder.Item item : purchaseOrder.getItemList()) {
+            if (item.getPurchaseSend()) {
+                continue;
+            }
+
             inventoryDocument.getItemList()
                     .add(InventoryDocument.Item.builder()
                             .type(type)
