@@ -256,9 +256,14 @@
             })
 
             this._consumeUnHiddenColumnConfig((childIndex, columnConfig) => {
+                let value = {...this._getValue($tr), ...row}
+                let $input = $tr.find('[name='+columnConfig.name+']')
                 if (columnConfig.type === 'render' && columnConfig.render) {
-                    $tr.find('td:nth-child('+childIndex+')').html(columnConfig.render({...this._getValue($tr), ...row}))
+                    $tr.find('td:nth-child('+childIndex+')').html(columnConfig.render(value, $tr, $input))
+                    value = this._getValue($tr)
                 }
+
+                columnConfig.afterValueSet && columnConfig.afterValueSet(value, $tr, $input)
             })
         },
         _getValue: function ($tr) {

@@ -344,6 +344,9 @@
 
                     $input.next().find('.items').html('<div data-classification_code="' + classification.code + '">' + html.join('') + '</div>')
                 }
+            } else {
+                $input.attr('disabled', true).attr('readonly', true)
+                $input.next().find('.items').html('')
             }
         }
 
