@@ -366,7 +366,7 @@
                         <div class="form-group row">
                             <label class="col-sm-1 col-form-label">联系邮箱</label>
                             <div class="col-sm-4">
-                                <input class="form-control" type="text" name="receiveContactMail">
+                                <input class="form-control" type="text" name="receiveContactMail" placeholder="可选">>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -927,7 +927,7 @@
                     item.contactInfo.contactNumber = $('#contactNumber').val()
                 }
 
-                if (strictValid && item.itemCategory === 'PURCHASE_SEND') {
+                if (item.itemCategory === 'PURCHASE_SEND') {
                     if (!item.contactInfo.address) {
                         toastr.error('采购直发客户收货地址不能为空!')
 

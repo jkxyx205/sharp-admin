@@ -3,6 +3,7 @@ package com.rick.admin.module.produce.controller;
 import com.google.common.collect.Lists;
 import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.material.service.MaterialService;
+import com.rick.admin.module.produce.dao.ProduceOrderDAO;
 import com.rick.admin.module.produce.dao.ProduceOrderItemDAO;
 import com.rick.admin.module.produce.entity.BomTemplate;
 import com.rick.admin.module.produce.entity.ProduceOrder;
@@ -57,6 +58,8 @@ public class ProduceBOMDownloadController {
 
     ProduceScheduleService produceScheduleService;
 
+    ProduceOrderDAO produceOrderDAO;
+
     @PutMapping("schedule/{scheduleId}")
     @ResponseBody
     public Result markStatus(@PathVariable Long scheduleId) {
@@ -78,7 +81,7 @@ public class ProduceBOMDownloadController {
 
         model.addAttribute("startDate", Time2StringUtils.format(schedule.getStartDate()));
         model.addAttribute("deliveryDate", Time2StringUtils.format(item.getDeliveryDate()));
-        model.addAttribute("remark", Objects.toString(item.getRemark(), "") + Objects.toString(schedule.getRemark(), ""));
+        model.addAttribute("remark", Objects.toString(produceOrderDAO.selectSingleValueById(item.getProduceOrderId(), "remark", String.class).get(), "") +  Objects.toString(item.getRemark(), "") + Objects.toString(schedule.getRemark(), ""));
         model.addAttribute("itemMaterialSpecification", (StringUtils.isBlank(item.getMaterialSpecification()) ? "" : item.getMaterialSpecification() + " ") + item.getCharacteristic() +    " " + item.getSpecification());
         model.addAttribute("scheduleQuantity", schedule.getQuantity().stripTrailingZeros().toPlainString());
         return "modules/produce_schedule_detail";
@@ -86,6 +89,7 @@ public class ProduceBOMDownloadController {
 
     @GetMapping("schedule/{scheduleId}/download")
     public void scheduleDownload(@PathVariable Long scheduleId, HttpServletRequest request, HttpServletResponse response) throws IOException {
+
         ProduceOrder.Item.Schedule schedule = produceOrderItemScheduleDAO.selectById(scheduleId).get();
         ProduceOrder.Item item = produceOrderItemDAO.selectById(schedule.getProduceOrderItemId()).get();
         BomTemplate bomTemplate = resolveItemAndReturnBomTemplate(item);
@@ -101,7 +105,7 @@ public class ProduceBOMDownloadController {
         excelWriter.writeRow(new ExcelRow(3,1, heightInPoints, new Object[]{"交货日期：" + Time2StringUtils.format(item.getDeliveryDate())}));
 
         excelWriter.writeRow(new ExcelRow(1,2, heightInPoints, new Object[]{"计划生产日期：" + startDate}));
-        excelWriter.writeRow(new ExcelRow(1,3, heightInPoints, new Object[]{"备注：" + Objects.toString(item.getRemark(), "") + Objects.toString(schedule.getRemark(), "")}));
+        excelWriter.writeRow(new ExcelRow(1,3, heightInPoints, new Object[]{"备注：" + Objects.toString(produceOrderDAO.selectSingleValueById(item.getProduceOrderId(), "remark", String.class).get(), "") +  Objects.toString(item.getRemark(), "") + Objects.toString(schedule.getRemark(), "")}));
 
         excelWriter.writeRow(new ExcelRow(1,4, heightInPoints, new Object[]{"产成品名称", "规格 & 特征值", "数量", "单位", "备注"}));
         excelWriter.writeRow(new ExcelRow(1,5, heightInPoints, new Object[]{item.getMaterialName(), (StringUtils.isBlank(item.getMaterialSpecification()) ? "" : item.getMaterialSpecification() + " ") + item.getCharacteristic() +    " " + item.getSpecification(),

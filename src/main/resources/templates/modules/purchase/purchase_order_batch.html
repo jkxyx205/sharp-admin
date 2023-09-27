@@ -87,20 +87,6 @@
         let formItem = document.getElementById('form-item');
 
         let value = /*[[${itemList}]]*/
-        if (value) {
-            // 获取供应商
-            $.get("/purchase_order/materials/vendors?materialIds=" + value.map(row => row.materialId).join(','), (res) => {
-                let $tr = $editableTable.find("tbody tr:eq(0)")
-                for (let row of value) {
-                    if (res[row.materialId]) {
-                        $tr.find(':input[name=partnerId]').html(res[row.materialId].map(d => {
-                            return '<option value="'+d.name+'">'+d.label+'</option>'
-                        }).join(''))
-                    }
-                    $tr = $tr.next()
-                }
-            })
-        }
 
         // 可编辑表格初始化
         var $editableTable = $('#table-container').editableTablePlus({
@@ -119,14 +105,23 @@
                     selected: function ($tr, value) {
                         characteristic.selectedCharacteristic($tr, value);
 
+                        setTimeout(() => {
+                            $tr.find(':input[name=LINE_BRAND]').on('change', function () {
+                                let vendor = $tr.find(':input[name=LINE_BRAND]').val()
+                                if (vendor) {
+                                    $tr.find(':input[name=partnerId]').val($tr.find(':input[name=partnerId] option:contains(\''+vendor+'\')').val())
+                                }
+                            })
+                        }, 1000)
+
                         if (Array.isArray(value)) {
                             // 获取供应商
                             $.get("/purchase_order/materials/vendors?materialIds=" + value.map(row => row.id).join(','), (res) => {
                                 let $cursorTr = $tr
                                 for (let row of value) {
                                     if (res[row.id]) {
-                                        $cursorTr.find(':input[name=partnerId]').html(res[row.id].map(d => {
-                                            return '<option value="'+d.name+'">'+d.label+'</option>'
+                                        $cursorTr.find(':input[name=partnerId]').html('<option></option>' + res[row.id].map(d => {
+                                            return '<option value="'+d.name+'" '+(res[row.id].length === 1 ? 'selected' : '')+'>'+d.label+'</option>'
                                         }).join(''))
                                     }
                                     $cursorTr = $cursorTr.next()
@@ -135,8 +130,8 @@
                         } else {
                             // 获取供应商
                             $.get(`/purchase_order/materials/${value.id}/vendors`, (res) => {
-                                $tr.find(':input[name=partnerId]').html(res.map(d => {
-                                    return '<option value="'+d.name+'">'+d.label+'</option>'
+                                $tr.find(':input[name=partnerId]').html('<option></option>' + res.map(d => {
+                                    return '<option value="'+d.name+'" '+(res.length === 1 ? 'selected' : '')+'>'+d.label+'</option>'
                                 }).join(''))
                             })
                         }
@@ -288,6 +283,22 @@
             value.forEach((row, i) => {
                 let $input = $editableTable.find("tbody tr:eq("+(i++)+") input[name=characteristic]")
                 characteristic.setInputCharacteristic($input, row.classificationList)
+            })
+
+            // 获取供应商
+            $.get("/purchase_order/materials/vendors?materialIds=" + value.map(row => row.materialId).join(','), (res) => {
+                let $tr = $editableTable.find("tbody tr:eq(0)")
+                for (let row of value) {
+                    if (res[row.materialId]) {
+                        // 根据特征值的供应商自动选择供应商
+                        let vendor = $tr.find('[name=LINE_BRAND]').val()
+                        $tr.find(':input[name=partnerId]').html('<option></option>' + res[row.materialId].map(d => {
+                            return '<option value="'+d.name+'" ' +(vendor ? (d.label === vendor ? 'selected' : '') : (res[row.materialId].length === 1 ? 'selected' : ''))+'>'+d.label+'</option>'
+                        }).join(''))
+                    }
+
+                    $tr = $tr.next()
+                }
             })
         }
 
