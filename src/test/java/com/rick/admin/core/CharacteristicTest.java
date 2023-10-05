@@ -44,6 +44,7 @@ public class CharacteristicTest {
                         new CpnConfigurer.CpnOption("亚黑"),
                         new CpnConfigurer.CpnOption("光亮"),
                         new CpnConfigurer.CpnOption("亮黑"),
+                        new CpnConfigurer.CpnOption("黑光亮"),
                         new CpnConfigurer.CpnOption("银色"),
                         new CpnConfigurer.CpnOption("白色"),
                         new CpnConfigurer.CpnOption("蓝色"),

@@ -366,7 +366,7 @@
                         <div class="form-group row">
                             <label class="col-sm-1 col-form-label">联系邮箱</label>
                             <div class="col-sm-4">
-                                <input class="form-control" type="text" name="receiveContactMail" placeholder="可选">>
+                                <input class="form-control" type="text" name="receiveContactMail" placeholder="可选">
                             </div>
                         </div>
                         <div class="form-group row">
@@ -910,7 +910,7 @@
                 } else {
                     if (item.materialType !== 'ROH') {
                         item['scheduleList'] = [{
-                            startDate: ((d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + d.getDate())(new Date()),
+                            startDate: ((d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"))(new Date()),
                             quantity: item.quantity,
                             unit: item.unit,
                             status: 'PRODUCING'
