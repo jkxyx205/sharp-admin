@@ -73,6 +73,10 @@
                             _this.options.activeIndex--
                         }
                     }
+
+                    if (_this.options.afterDeleteRow) {
+                        return _this.options.afterDeleteRow(_this)
+                    }
                 }
             })
 
