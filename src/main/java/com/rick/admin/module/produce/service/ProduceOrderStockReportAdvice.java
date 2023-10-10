@@ -35,11 +35,14 @@ public class ProduceOrderStockReportAdvice implements ReportAdvice {
         Map<String, String> characteristicTextMap = materialProfileService.getCharacteristicText(materialIdBatchIdStringCollection);
 
         for (Map<String, Object> row : rows) {
+            BigDecimal needPurchase = ((BigDecimal) row.get("stock_quantity")).add((BigDecimal) row.get("open_quantity")).add((BigDecimal) row.get("receive_quantity")).subtract((BigDecimal) row.get("quantity"));
+
             row.put("needPurchase",
-                    ((BigDecimal)row.get("stock_quantity")).add((BigDecimal)row.get("open_quantity")).add((BigDecimal) row.get("receive_quantity")).subtract((BigDecimal)row.get("quantity")).compareTo(BigDecimal.ZERO) == -1);
+                    needPurchase.compareTo(BigDecimal.ZERO) == -1);
+
 
             row.put("diffQuantity",
-                    ((BigDecimal)row.get("stock_quantity")).add((BigDecimal)row.get("open_quantity")).add((BigDecimal) row.get("receive_quantity")).subtract((BigDecimal)row.get("quantity")));
+                    needPurchase.compareTo(BigDecimal.ZERO) == -1 ? needPurchase : BigDecimal.ZERO);
 
             row.put("characteristic", characteristicTextMap.get(MaterialProfileSupport.materialIdBatchIdString((Long) row.get("id"), (Long) row.get("batch_id"))));
             String specification = characteristicConverter.convert(null, (String) row.get("specification"));

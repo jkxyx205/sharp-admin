@@ -25,12 +25,28 @@ public class ProduceOrderPurchaseSendTest {
                 .id(737912419505934336L)
                 .code("produce_order_purchase_send")
                 .tplName("tpl/list")
-                .name("采购直发")
+                .name("采购申请")
                 .reportAdviceName("produceOrderPurchaseSendAdvice")
-                .querySql("select pur_purchase_requisition_item.id, pur_purchase_requisition_item.material_id, pur_purchase_requisition_item.material_code, mm_material.name material_name,  mm_material.specification, pur_purchase_requisition_item.batch_id, pur_purchase_requisition_item.batch_code, pur_purchase_requisition_item.quantity, pur_purchase_requisition_item.unit, pur_purchase_requisition_item.`delivery_date`, pur_purchase_requisition_item.remark, pur_purchase_requisition_item.reference_id, produce_order_item.produce_order_code, partner_id\n" +
-                        "from pur_purchase_requisition_item, `produce_order_item`, produce_order, mm_material\n" +
-                        "where produce_order.id = produce_order_item.produce_order_id AND pur_purchase_requisition_item.reference_id = produce_order_item.id\n" +
-                        "AND pur_purchase_requisition_item.is_complete = 0 AND mm_material.id = pur_purchase_requisition_item.material_id AND mm_material.material_code = :materialCode")
+                .querySql("SELECT pur_purchase_requisition_item.id,\n" +
+                        "        pur_purchase_requisition_item.material_id,\n" +
+                        "        pur_purchase_requisition_item.material_code,\n" +
+                        "        pur_purchase_requisition_item.batch_id,\n" +
+                        "        pur_purchase_requisition_item.batch_code,\n" +
+                        "        pur_purchase_requisition_item.quantity,\n" +
+                        "        pur_purchase_requisition_item.unit,\n" +
+                        "        pur_purchase_requisition_item.`delivery_date`,\n" +
+                        "        pur_purchase_requisition_item.remark,\n" +
+                        "        pur_purchase_requisition_item.reference_id,\n" +
+                        "        mm_material.name material_name,\n" +
+                        "        mm_material.specification,\n" +
+                        "        produce_order_code,\n" +
+                        "        partner_id\n" +
+                        "         FROM pur_purchase_requisition_item, mm_material,\n" +
+                        "         (select distinct reference_id, produce_order.id produce_id, produce_order.code produce_order_code, partner_id  from  pur_purchase_requisition_item,produce_order_item, produce_order where pur_purchase_requisition_item.is_complete = 0\n" +
+                        "AND produce_order.id = produce_order_item.produce_order_id\n" +
+                        "AND (pur_purchase_requisition_item.reference_id = produce_order.id or pur_purchase_requisition_item.reference_id = produce_order_item.id)) t\n" +
+                        "        where mm_material.id = pur_purchase_requisition_item.material_id\n" +
+                        "        and t.reference_id = pur_purchase_requisition_item.reference_id AND pur_purchase_requisition_item.is_complete = 0 and mm_material.code = :materialCode")
                 .queryFieldList(Arrays.asList(
                         new QueryField("materialCode", "物料", QueryField.Type.TEXT)
                 ))

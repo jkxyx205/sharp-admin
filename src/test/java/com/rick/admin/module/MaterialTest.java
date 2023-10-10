@@ -564,21 +564,59 @@ public class MaterialTest {
                 .tplName("tpl/query_list")
                 .name("bom模版物料查询")
                 .reportAdviceName("materialBomSearchReportAdvice")
-                .querySql("SELECT cast(mm_material.id as char(20)) materialId, mm_material.code code, mm_material.name, material_type materialType, combine.specification, batch_management batchManagement, base_unit, base_unit as base_unit_name,combine.item_id, combine.partner_id, combine.batch_code, combine.characteristic, combine.remark, combine.create_time FROM (SELECT * FROM\n" +
-                        "(select null item_id, null partner_id, id material_id, mm_material.specification, null batch_code, null batch_id, null characteristic, remark, null create_time from mm_material WHERE is_deleted = 0) t3\n" +
-                        "UNION ALL\n" +
-                        "SELECT * FROM\n" +
-                        "(select produce_order_item.id item_id, produce_order.partner_id, material_id, produce_order_item.specification, batch_code, batch_id, characteristic.characteristic, produce_order_item.remark, produce_order_item.create_time  from produce_order_item inner join produce_order on produce_order_item.produce_order_id = produce_order.id\n" +
-                        "left join (select concat(material_id, ifnull(batch_id, '')) materialIdBatchIdString, group_concat(mm_characteristic_value.value SEPARATOR ' ') characteristic from mm_profile left join mm_characteristic_value on mm_profile.id = mm_characteristic_value.reference_id\n" +
-                        " group by concat(material_id, ifnull(batch_id, '')) order by mm_characteristic_value.id asc) characteristic on characteristic.materialIdBatchIdString = concat(material_id, ifnull(batch_id, ''))\n" +
-                        " order by create_time desc) t4) combine join mm_material on combine.material_id = mm_material.id \n" +
-                        " where category_id = :categoryId AND partner_id = :partnerId AND (partner_id is NULL OR (partner_id is NOT NULL AND material_type <> 'ROH'))")
+//                .querySql("SELECT cast(mm_material.id as char(20)) materialId, mm_material.code code, mm_material.name, material_type materialType, combine.specification, batch_management batchManagement, base_unit, base_unit as base_unit_name,combine.item_id, combine.partner_id, combine.batch_code, combine.characteristic, combine.remark, combine.create_time FROM (SELECT * FROM\n" +
+//                        "(select null item_id, null partner_id, id material_id, mm_material.specification, null batch_code, null batch_id, null characteristic, remark, null create_time from mm_material WHERE is_deleted = 0) t3\n" +
+//                        "UNION ALL\n" +
+//                        "SELECT * FROM\n" +
+//                        "(select produce_order_item.id item_id, produce_order.partner_id, material_id, produce_order_item.specification, batch_code, batch_id, characteristic.characteristic, produce_order_item.remark, produce_order_item.create_time  from produce_order_item inner join produce_order on produce_order_item.produce_order_id = produce_order.id\n" +
+//                        "left join (select concat(material_id, ifnull(batch_id, '')) materialIdBatchIdString, group_concat(mm_characteristic_value.value SEPARATOR ' ') characteristic from mm_profile left join mm_characteristic_value on mm_profile.id = mm_characteristic_value.reference_id\n" +
+//                        " group by concat(material_id, ifnull(batch_id, '')) order by mm_characteristic_value.id asc) characteristic on characteristic.materialIdBatchIdString = concat(material_id, ifnull(batch_id, ''))\n" +
+//                        " order by create_time desc) t4) combine join mm_material on combine.material_id = mm_material.id \n" +
+//                        " where category_id = :categoryId AND partner_id = :partnerId AND (partner_id is NULL OR (partner_id is NOT NULL AND material_type <> 'ROH'))")
+                        .querySql("SELECT cast(mm_material.id as char(20)) materialId,\n" +
+                                "       mm_material.code                 code,\n" +
+                                "       mm_material.name,\n" +
+                                "       material_type                    materialType,\n" +
+                                "       combine.specification,\n" +
+                                "       batch_management                 batchManagement,\n" +
+                                "       base_unit,\n" +
+                                "       base_unit as                     base_unit_name,\n" +
+                                "       combine.item_id,\n" +
+                                "       combine.partner_id,\n" +
+                                "       combine.batch_code,\n" +
+                                "       combine.characteristic,\n" +
+                                "       combine.remark,\n" +
+                                "       combine.create_time\n" +
+                                "FROM (\n" +
+                                "      SELECT *\n" +
+                                "      FROM (select produce_order_item.id item_id,\n" +
+                                "                   produce_order.partner_id,\n" +
+                                "                   material_id,\n" +
+                                "                   produce_order_item.specification,\n" +
+                                "                   batch_code,\n" +
+                                "                   batch_id,\n" +
+                                "                   characteristic.characteristic,\n" +
+                                "                   produce_order_item.remark,\n" +
+                                "                   produce_order_item.create_time\n" +
+                                "            from produce_order_item\n" +
+                                "                     inner join produce_order on produce_order_item.produce_order_id = produce_order.id\n" +
+                                "                     left join (select concat(material_id, ifnull(batch_id, ''))                 materialIdBatchIdString,\n" +
+                                "                                       group_concat(mm_characteristic_value.value SEPARATOR ' ') characteristic\n" +
+                                "                                from mm_profile\n" +
+                                "                                         left join mm_characteristic_value\n" +
+                                "                                                   on mm_profile.id = mm_characteristic_value.reference_id\n" +
+                                "                                group by concat(material_id, ifnull(batch_id, ''))\n" +
+                                "                                order by mm_characteristic_value.id asc) characteristic\n" +
+                                "                               on characteristic.materialIdBatchIdString = concat(material_id, ifnull(batch_id, ''))\n" +
+                                "            order by create_time desc) t4) combine\n" +
+                                "         join mm_material on combine.material_id = mm_material.id\n" +
+                                "where material_type <> 'ROH' AND partner_id = :partnerId AND mm_material.id = :materialId")
                 .queryFieldList(Arrays.asList(
 //                        new QueryField("code", "编号", QueryField.Type.TEXT),
 //                        new QueryField("keywords", "关键字", QueryField.Type.TEXT),
 //                        new QueryField("materialType", "类型", QueryField.Type.SELECT, "material_type"),
 //                        new QueryField("materialId", "产成品物料", QueryField.Type.SELECT, "bom_material"),
-                        new QueryField("categoryId", "分类", QueryField.Type.GROUP_SELECT, "material_category_select_sql"),
+//                        new QueryField("categoryId", "分类", QueryField.Type.GROUP_SELECT, "material_category_select_sql"),
                         new QueryField("partnerId", "客户", QueryField.Type.MULTIPLE_SELECT, "core_partner_customer")
 //                        new QueryField("categoryId", "分类", QueryField.Type.MULTIPLE_SELECT, "core_material_category")
 //                        new QueryField("categoryId", "分类", QueryField.Type.SELECT, "core_material_category")

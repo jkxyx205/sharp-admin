@@ -1,5 +1,6 @@
 package com.rick.admin.module.material.service;
 
+import com.google.common.collect.Lists;
 import com.rick.admin.module.core.entity.Characteristic;
 import com.rick.admin.module.core.entity.Classification;
 import com.rick.admin.module.material.dao.BatchDAO;
@@ -18,6 +19,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -50,6 +52,32 @@ public class BatchService {
     MaterialProfileService materialProfileService;
 
     SharpService sharpService;
+
+    /**
+     * 分类引用的问题
+     * @param itemList
+     */
+    public void handleClassificationAndFillCharacteristicValue(Collection<? extends BatchHandler> itemList) {
+        Map<Long, List<com.rick.admin.module.material.entity.Classification>> materialIdClassificationMap = materialClassificationDAO.findMaterialClassificationByMaterialIds(itemList.stream().map(BatchHandler::getMaterialId).collect(Collectors.toSet()));
+
+        itemList.forEach(item -> {
+            List<com.rick.admin.module.material.entity.Classification> classificationList = materialIdClassificationMap.get(item.getMaterialId());
+            if (CollectionUtils.isNotEmpty(classificationList)) {
+                // 拷贝
+                List<com.rick.admin.module.material.entity.Classification> newclassificationList = Lists.newArrayListWithExpectedSize(classificationList.size());
+                for (com.rick.admin.module.material.entity.Classification classification : classificationList) {
+                    newclassificationList.add(SerializationUtils.clone(classification));
+                }
+                classificationList = newclassificationList;
+            } else {
+                classificationList =  Collections.emptyList();
+            }
+
+            item.setClassificationList(classificationList);
+        });
+
+        fillCharacteristicValue(itemList);
+    }
 
     public void fillCharacteristicValue(Collection<? extends BatchHandler> batchHandlerList) {
         if (CollectionUtils.isNotEmpty(batchHandlerList)) {

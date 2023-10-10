@@ -10,7 +10,6 @@ import com.rick.admin.module.inventory.service.HandlerManager;
 import com.rick.admin.module.inventory.service.InventoryDocumentService;
 import com.rick.admin.module.material.dao.ClassificationDAO;
 import com.rick.admin.module.material.dao.MaterialDAO;
-import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.produce.dao.ProduceOrderDAO;
@@ -245,8 +244,8 @@ public class InventoryController {
         Map<Long, BigDecimal> itemOpenQuantityMap = produceScheduleService.openQuantity(movementType, referenceCode);
 
 //        Map<Long, ProduceOrder.Item.Detail> idDetailMap = produceOrderItemDetailDAO.selectByIdsAsMap(itemList.stream().map(InventoryDocument.Item::getReferenceItemId).collect(Collectors.toSet()));
-        Map<Long, List<Classification>> materialIdClassificationMap = classificationDAO.findMaterialClassificationByMaterialIds(itemList.stream().map(InventoryDocument.Item::getMaterialId).collect(Collectors.toSet()));
-        for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
+//        Map<Long, List<Classification>> materialIdClassificationMap = classificationDAO.findMaterialClassificationByMaterialIds(itemList.stream().map(InventoryDocument.Item::getMaterialId).collect(Collectors.toSet()));
+        for (InventoryDocument.Item item : itemList) {
             item.setType(type);
             item.setReferenceType(referenceType);
             item.setReferenceCode(referenceCode);
@@ -254,9 +253,10 @@ public class InventoryController {
             item.setMovementType(movementType);
             item.setQuantity(ObjectUtils.defaultIfNull(itemOpenQuantityMap.get(item.getRootReferenceItemId()), BigDecimal.ZERO));
 //            item.setClassificationList(idDetailMap.get(item.getReferenceItemId()).getClassificationList());
-            item.setClassificationList(ObjectUtils.defaultIfNull(materialIdClassificationMap.get(item.getMaterialId()), Collections.emptyList()));
+//            item.setClassificationList(ObjectUtils.defaultIfNull(materialIdClassificationMap.get(item.getMaterialId()), Collections.emptyList()));
         }
 
+        batchService.handleClassificationAndFillCharacteristicValue(itemList);
         inventoryDocument.setReferenceCode(referenceCode);
         return inventoryDocument;
     }
@@ -282,6 +282,10 @@ public class InventoryController {
         inventoryDocument.setItemList(Lists.newArrayListWithExpectedSize(produceOrder.getItemList().size()));
 
         for (ProduceOrder.Item item : produceOrder.getItemList()) {
+            if (item.getItemCategory() == ProduceOrder.ItemCategoryEnum.PURCHASE_SEND) {
+                continue;
+            }
+
             inventoryDocument.getItemList()
                     .add(InventoryDocument.Item.builder()
                             .type(type)

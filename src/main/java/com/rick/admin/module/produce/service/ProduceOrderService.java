@@ -7,6 +7,7 @@ import com.rick.admin.module.core.model.ReferenceTypeEnum;
 import com.rick.admin.module.core.service.CodeHelper;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.material.service.BatchService;
+import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.produce.dao.ProduceOrderItemDAO;
 import com.rick.admin.module.produce.dao.ProduceOrderItemDetailDAO;
 import com.rick.admin.module.produce.entity.ProduceOrder;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +59,8 @@ public class ProduceOrderService {
 
     PurchaseRequisitionItemService purchaseRequisitionItemService;
 
+    MaterialService materialService;
+
     /**
      * 新增或修改
      *
@@ -66,6 +70,7 @@ public class ProduceOrderService {
     public void saveOrUpdate(ProduceOrder order) {
         if (order.getId() == null) {
             order.setCode(CodeHelper.generateCode("SO"));
+            order.setPurchaseRequisition(false);
         }
 
         AtomicInteger atomicInteger = new AtomicInteger(0);
@@ -100,7 +105,7 @@ public class ProduceOrderService {
         produceOrderDAO.insertOrUpdate(order);
 
         if (order.getStatus() == ProduceOrder.StatusEnum.PRODUCING) {
-            handlePurchaseSendType(order.getItemList().stream().filter(item -> item.getItemCategory() == ProduceOrder.ItemCategoryEnum.PURCHASE_SEND).collect(Collectors.toList()));
+            handlePurchaseRequisition(order.getItemList(), order.getId());
         }
     }
 
@@ -247,24 +252,102 @@ public class ProduceOrderService {
         produceOrderDAO.update("status", new Object[]{status.getCode(), rootReferenceCode}, "code = ?");
     }
 
-    private void handlePurchaseSendType(List<ProduceOrder.Item> purchaseSendItem) {
-        if (CollectionUtils.isEmpty(purchaseSendItem)) {
+    /**
+     * 触发采购申请
+     * @param soItem
+     */
+    private void handlePurchaseRequisition(List<ProduceOrder.Item> soItem, long produceOrderId) {
+        boolean purchaseRequisition = produceOrderDAO.selectSingleValueById(produceOrderId, "is_purchase_requisition", Boolean.class).get();
+        if(purchaseRequisition) {
             return;
         }
 
-        List<PurchaseRequisition.Item> itemList = Lists.newArrayListWithExpectedSize(purchaseSendItem.size());
-        for (ProduceOrder.Item item : purchaseSendItem) {
-            PurchaseRequisition.Item prItem = new PurchaseRequisition.Item();
-            BeanUtils.copyProperties(item, prItem);
-            prItem.setReferenceType(ReferenceTypeEnum.SO);
-            prItem.setReferenceId(item.getId());
-            prItem.setPurchaseRequisitionId(1L);
-            prItem.setPurchaseRequisitionCode("STANDARD");
-            BaseEntityUtils.resetAdditionalFields(prItem);
-            itemList.add(prItem);
+        List<PurchaseRequisition.Item> itemList = Lists.newArrayListWithExpectedSize(soItem.size());
+        for (ProduceOrder.Item item : soItem) {
+            if (item.getItemCategory() == ProduceOrder.ItemCategoryEnum.PURCHASE_SEND) {
+                PurchaseRequisition.Item prItem = new PurchaseRequisition.Item();
+                BeanUtils.copyProperties(item, prItem);
+                prItem.setReferenceType(ReferenceTypeEnum.SO);
+                prItem.setReferenceId(item.getId());
+                prItem.setPurchaseRequisitionId(1L);
+                prItem.setPurchaseRequisitionCode("STANDARD");
+                prItem.setPurchaseSend(true);
+                BaseEntityUtils.resetAdditionalFields(prItem);
+                itemList.add(prItem);
+            }
+        }
+
+        List<PurchaseRequisition.Item> produceitemList = purchaseRequisitionForProduce(produceOrderId);
+        if (CollectionUtils.isNotEmpty(produceitemList)) {
+            materialService.fillMaterialDescription(produceitemList);
+
+            for (PurchaseRequisition.Item prItem : produceitemList) {
+                prItem.setReferenceType(ReferenceTypeEnum.SO);
+                prItem.setReferenceId(produceOrderId);
+                prItem.setPurchaseRequisitionId(1L);
+                prItem.setPurchaseRequisitionCode("STANDARD");
+                prItem.setMaterialCode(prItem.getMaterialDescription().getCode());
+                prItem.setUnit(prItem.getMaterialDescription().getUnit());
+                prItem.setComplete(false);
+                prItem.setDeliveryDate(LocalDate.now().plusDays(3));
+                itemList.add(prItem);
+            } 
+        }
+
+        produceOrderDAO.update("is_purchase_requisition", new Object[]{1, produceOrderId}, "id = ?");
+
+        if (CollectionUtils.isEmpty(itemList)) {
+            return;
         }
 
         purchaseRequisitionItemService.insertOrUpdateByReferenceIds(itemList);
+    }
+
+    private List<PurchaseRequisition.Item> purchaseRequisitionForProduce(long produceOrderId) {
+        String sql = "select material_id materialId, batch_id batchId, -1 * sum(quantity) quantity, 0 purchaseSend FROM (\n" +
+                "                                                              select\n" +
+                "                                                                  receiving.material_id,\n" +
+                "                                                                  receiving.batch_id,\n" +
+                "                                                                  (receiving.quantity - ifnull(received.received_quantity, 0)) quantity\n" +
+                "                                                              from (select pur_purchase_order_item.*\n" +
+                "                                                                    from `pur_purchase_order`,\n" +
+                "                                                                         pur_purchase_order_item\n" +
+                "                                                                    WHERE pur_purchase_order.status = 'PLANNING'\n" +
+                "                                                                      and pur_purchase_order.is_deleted = 0\n" +
+                "                                                                      AND pur_purchase_order.id = pur_purchase_order_item.`purchase_order_id`\n" +
+                "                                                                      AND pur_purchase_order_item.`is_complete` = 0) receiving\n" +
+                "                                                                       left join\n" +
+                "                                                                   (select root_reference_item_id,\n" +
+                "                                                                           ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) received_quantity\n" +
+                "                                                                    from inv_document_item\n" +
+                "                                                                    where Exists(select 1\n" +
+                "                                                                                 from `pur_purchase_order`,\n" +
+                "                                                                                      pur_purchase_order_item\n" +
+                "                                                                                 where pur_purchase_order.status = 'PLANNING'\n" +
+                "                                                                                   and pur_purchase_order.is_deleted = 0\n" +
+                "                                                                                   AND pur_purchase_order.id = pur_purchase_order_item.`purchase_order_id`\n" +
+                "                                                                                   AND pur_purchase_order_item.`is_complete` = 0\n" +
+                "                                                                                   AND pur_purchase_order_item.id = root_reference_item_id)\n" +
+                "                                                                    group by root_reference_item_id) received\n" +
+                "                                                                   on receiving.id = received.root_reference_item_id\n" +
+                "                                                              union all\n" +
+                "                                                              select material_id, batch_id, quantity from inv_stock where plant_id = 719893335619162112\n" +
+                "                                                              union all\n" +
+                "                                                              select material_id, batch_id, quantity from pur_purchase_requisition_item where is_complete = 0\n" +
+                "                                                              union all\n" +
+                "                                                              select produce_order_item_detail.material_id, produce_order_item_detail.batch_id, (-1 * produce_order_item_schedule.quantity * produce_order_item_detail.quantity) quantity  from produce_order_item_schedule, produce_order_item, produce_order, produce_order_item_detail\n" +
+                "                                                              where produce_order_item_schedule.produce_order_item_id = produce_order_item.id AND produce_order.id = produce_order_item.produce_order_id AND produce_order_item_detail.produce_order_item_id = produce_order_item.id\n" +
+                "                                                                AND produce_order_item_schedule.`status` = 'PRODUCING' AND produce_order.`status` = 'PRODUCING'\n" +
+                "                                                          ) stock\n" +
+                "                                                     where exists(\n" +
+                "                                                                   select 1 from produce_order_item_schedule, produce_order_item, produce_order, produce_order_item_detail\n" +
+                "                                                                   where produce_order_item_schedule.produce_order_item_id = produce_order_item.id AND produce_order.id = produce_order_item.produce_order_id AND produce_order_item_detail.produce_order_item_id = produce_order_item.id\n" +
+                "                                                                     AND produce_order_item_schedule.`status` = 'PRODUCING' AND produce_order.`status` = 'PRODUCING' AND produce_order.id = :produceOrderId\n" +
+                "                                                         AND produce_order_item_detail.material_id = stock.material_id AND (produce_order_item_detail.batch_id = stock.batch_id or (produce_order_item_detail.batch_id is null AND stock.batch_id is null ))\n" +
+                "                                                               )\n" +
+                "group by material_id, batch_id having sum(quantity) < 0";
+
+         return sharpService.query(sql, Params.builder(1).pv("produceOrderId", produceOrderId).build(), PurchaseRequisition.Item.class);
     }
 
 }

@@ -149,13 +149,26 @@
                         <div class="form-group row">
                             <label class="col-sm-1 col-form-label">销售单号</label>
                             <div class="col-sm-11">
-                                <input class="form-control" type="text" name="soCode" disabled>
+                                <input class="form-control" type="hidden" name="soCode" disabled>
+                                <label class="col-form-label"><a href="javascript:;" id="so_code_link" onclick="openOnNewTab(this.innerHTML, '/produce_orders/code/' + this.innerHTML, this.innerHTML)"></a></label>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-sm-1 col-form-label">客户名称</label>
                             <div class="col-sm-11">
                                 <input class="form-control" type="text" name="customerName" disabled>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label">客户订单号</label>
+                            <div class="col-sm-11">
+                                <input class="form-control" type="text" name="sourceOrderNum" disabled>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label">客户物料号</label>
+                            <div class="col-sm-11">
+                                <input class="form-control" type="text" name="customerMaterialCode" disabled>
                             </div>
                         </div>
                     </form>
@@ -273,8 +286,12 @@
 
                 $soInfo.autofill({...{
                         'soCode': '',
-                        'customerName': ''
+                        'customerName': '',
+                        'sourceOrderNum': '',
+                        'customerMaterialCode': ''
                     }, ...($tr[0].soInfo ? $tr[0].soInfo : {})})
+
+                $('#so_code_link').text($('input[name=soCode]').val())
 
                 // if (row.referenceType2 === 'SO') {
                 //     $('#so_tab').show()
@@ -382,13 +399,13 @@
                     name: "purchaseSend",
                     width: 80,
                     title: "采购直发",
-                    afterValueSet(value, $tr, $input) {
-                        if (value.referenceType1 === 'PR') {
-                            setTimeout(() => {
-                                $input.attr('disabled', true).attr('readonly', true)
-                            }, 100)
-                        }
-                    }
+                    // afterValueSet(value, $tr, $input) {
+                    //     if (value.referenceType1 === 'PR') {
+                    //         setTimeout(() => {
+                    //             $input.attr('disabled', true).attr('readonly', true)
+                    //         }, 100)
+                    //     }
+                    // }
                 },
                 {
                     type: "text",
@@ -610,14 +627,19 @@
                             "receiveContactMail": itemList[i].contactInfo['contactMail'],
                             "address": itemList[i].contactInfo['address']
                         }
-
-                        $trs[i].soInfo = {
-                            "soCode": itemList[i].soInfo ? itemList[i].soInfo.code : '',
-                            "customerName": itemList[i].soInfo ? itemList[i].soInfo.name : ''
-                        }
                     }
                     else {
                         $trs[i].receiveContactInfo = {}
+                    }
+
+                    if (itemList[i].soInfo) {
+                        $trs[i].soInfo = {
+                            "soCode": itemList[i].soInfo ? itemList[i].soInfo.code : '',
+                            "customerName": itemList[i].soInfo ? itemList[i].soInfo.name : '',
+                            "sourceOrderNum": itemList[i].soInfo ? itemList[i].soInfo.sourceOrderNum : '',
+                            "customerMaterialCode": itemList[i].soInfo ? itemList[i].soInfo.customerMaterialCode : ''
+                        }
+                    } else {
                         $trs[i].soInfo = {}
                     }
 
@@ -635,6 +657,7 @@
 
                 $receiveContactInfo.autofill(firstContactInfo)
                 $soInfo.autofill(soInfo)
+                $('#so_code_link').text($('input[name=soCode]').val())
             }
         }
 

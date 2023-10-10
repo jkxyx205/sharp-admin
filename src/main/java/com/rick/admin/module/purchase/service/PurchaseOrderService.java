@@ -266,7 +266,7 @@ public class PurchaseOrderService {
                     materialDescription.getSpecification() + " " + materialDescription.getCharacteristic(),
                     item.getQuantity(), materialDescription.getUnitText(), item.getUnitPrice(), item.getAmount(),
                     Time2StringUtils.format(item.getDeliveryDate()),
-                    item.getRemark() + (MapUtils.isNotEmpty(item.getSoInfo()) ? "\n客户：" + item.getSoInfo().get("name") : "")
+                    item.getRemark() + (item.getPurchaseSend() ? "\n直发客户：" + item.getSoInfo().get("name") : "发普源")
             });
         }
 

@@ -67,6 +67,9 @@ public class PurchaseRequisition extends BaseCodeEntity {
         @Column(comment = "备注")
         String remark;
 
+        @Column(value = "is_purchase_send", comment = "采购直发")
+        Boolean purchaseSend;
+
         @Column(value = "is_complete", comment = "完成")
         Boolean complete;
 

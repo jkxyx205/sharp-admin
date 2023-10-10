@@ -150,8 +150,25 @@ public class PurchaseOrder extends BaseCodeEntity {
         MaterialDescription materialDescription;
 
         @Transient
-        @Sql(value = "select produce_order.id, produce_order.code, produce_order.partner_id, core_partner.name from produce_order_item, produce_order, core_partner where produce_order_item.produce_order_id = produce_order.`id` AND core_partner.id = produce_order.partner_id AND\n" +
-                "produce_order_item.id = :referenceId2", params = "referenceId2@referenceId2", nullWhenParamsIsNull = {"referenceId2"})
+        @Sql(value = "select t.*, core_partner.name from (\n" +
+                "select source_order_num       sourceOrderNum,\n" +
+                "       customer_material_code customerMaterialCode,\n" +
+                "       produce_order.id,\n" +
+                "       produce_order.code,\n" +
+                "       produce_order.partner_id\n" +
+                "from produce_order_item,\n" +
+                "     produce_order\n" +
+                "where produce_order_item.produce_order_id = produce_order.`id`\n" +
+                "  AND (produce_order_item.id = :referenceId2)\n" +
+                "union all\n" +
+                "select source_order_num sourceOrderNum,\n" +
+                "       null             customer_material_code,\n" +
+                "       produce_order.id,\n" +
+                "       produce_order.code,\n" +
+                "       produce_order.partner_id\n" +
+                "from produce_order\n" +
+                "where produce_order.id = :referenceId2) t, core_partner\n" +
+                "where core_partner.id = t.partner_id", params = "referenceId2@referenceId2", nullWhenParamsIsNull = {"referenceId2"})
         private Map<String, Object> soInfo;
 
         public BigDecimal getAmount() {

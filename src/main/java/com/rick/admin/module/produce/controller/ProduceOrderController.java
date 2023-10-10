@@ -7,7 +7,6 @@ import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
 import com.rick.admin.module.core.model.ReferenceTypeEnum;
 import com.rick.admin.module.material.dao.ClassificationDAO;
-import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.material.service.MaterialDescription;
 import com.rick.admin.module.material.service.MaterialDescriptionHandler;
@@ -34,7 +33,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -262,7 +260,7 @@ public class ProduceOrderController {
             itemList.add(item);
         }
 
-        handleCharacteristic(itemList);
+        handItemExtraValue(itemList);
         model.addAttribute("itemList", itemList);
         return "modules/purchase/purchase_order_batch";
     }
@@ -280,40 +278,26 @@ public class ProduceOrderController {
             poItem.setReferenceId1(soItem.getId());
             poItem.setReferenceType2(ReferenceTypeEnum.SO);
             poItem.setReferenceId2(soItem.getReferenceId());
-            poItem.setPurchaseSend(true);
+            poItem.setPurchaseSend(soItem.getPurchaseSend());
             itemList.add(poItem);
         }
 
-        handleCharacteristic(itemList);
+        handItemExtraValue(itemList);
         model.addAttribute("itemList", itemList);
         return "modules/purchase/purchase_order_batch";
     }
 
-    private void handleCharacteristic(List<PurchaseOrder.Item> itemList) {
-        Map<Long, List<Classification>> materialIdClassificationMap = materialClassificationDAO.findMaterialClassificationByMaterialIds(itemList.stream().map(PurchaseOrder.Item::getMaterialId).collect(Collectors.toSet()));
-
+    private void handItemExtraValue(List<PurchaseOrder.Item> itemList) {
         materialService.fillMaterialDescription(itemList);
 
         itemList.forEach(item -> {
             item.setMaterialCode(item.getMaterialDescription().getCode());
             item.setUnit(item.getMaterialDescription().getUnit());
-            List<Classification> classificationList = materialIdClassificationMap.get(item.getMaterialId());
-            if (CollectionUtils.isNotEmpty(classificationList)) {
-                // 拷贝
-                List<Classification> newclassificationList = Lists.newArrayListWithExpectedSize(classificationList.size());
-                for (Classification classification : classificationList) {
-                    newclassificationList.add(SerializationUtils.clone(classification));
-                }
-                classificationList = newclassificationList;
-            } else {
-                classificationList =  Collections.emptyList();
-            }
-
-            item.setClassificationList(classificationList);
         });
 
-        batchService.fillCharacteristicValue(itemList);
+        batchService.handleClassificationAndFillCharacteristicValue(itemList);
     }
+
 
     /**
      * 逻辑删除

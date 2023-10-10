@@ -178,7 +178,9 @@ public class CharacteristicTest {
 //       insertOrUpdateCharacteristic("LHQ", "离合器", 719895812674441216L);
 
 //        insertOrUpdateCharacteristicWithName("NLCL", "尼龙齿轮", 725412446512111616L);
-//        insertOrUpdateCharacteristic("ZHC", "轴承", 719895465524482048L);
+        insertOrUpdateCharacteristic("ZHC", "轴承", 719895465524482048L);
+        insertOrUpdateCharacteristic("ZHC2", "轴承", 719895465524482048L);
+        insertOrUpdateCharacteristic("CIGANG", "磁钢", 719895589763960832L);
 
 //        insertOrUpdateCharacteristic("ZHZ", "转子", 719895650870775808L);
 
@@ -211,7 +213,7 @@ public class CharacteristicTest {
     private  List<CpnConfigurer.CpnOption> getSpecificationByCategoryCpnOption(Long categoryId) {
         List<String> specificationList = materialDAO.getSpecificationByCategory(categoryId);
         return specificationList.stream()
-                .map(specification -> new CpnConfigurer.CpnOption(specification.substring(8, specification.lastIndexOf("]") - 2))).collect(Collectors.toList());
+                .map(specification -> new CpnConfigurer.CpnOption(specification.substring(specification.indexOf(",\"") + 2, specification.lastIndexOf("]") - 2))).collect(Collectors.toList());
     }
 
     private void insertOrUpdateCharacteristicWithName(String code, String description, Long categoryId) {
@@ -231,7 +233,7 @@ public class CharacteristicTest {
         List<Map> specificationList = materialDAO.getNameAndSpecificationByCategory(categoryId);
 
         return specificationList.stream()
-                .map(map -> new CpnConfigurer.CpnOption(map.get("name") + ( Objects.toString(map.get("specification"), "").length() <= 2 ? "" : ((String) map.get("specification")).substring(8, ((String) map.get("specification")).lastIndexOf("]") - 2) ))).collect(Collectors.toList());
+                .map(map -> new CpnConfigurer.CpnOption(map.get("name") + ( Objects.toString(map.get("specification"), "").length() <= 2 ? "" : ((String) map.get("specification")).substring(((String) map.get("specification")).indexOf(",\"") + 2, ((String) map.get("specification")).lastIndexOf("]") - 2) ))).collect(Collectors.toList());
     }
 
 }

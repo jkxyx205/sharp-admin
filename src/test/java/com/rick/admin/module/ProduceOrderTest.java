@@ -61,7 +61,7 @@ public class ProduceOrderTest {
                 .tplName("modules/produce_schedule")
                 .name("生产计划")
                 .reportAdviceName("produceScheduleReportAdvice")
-                .querySql("select produce_order_item_schedule.id, produce_order_item_schedule.code, start_date startDate, produce_order_item.material_id materialId, produce_order_item.material_code materialCode, mm_material.name, produce_order_item.specification, produce_order_item.batch_id, produce_order_item.batch_code, produce_order_item_schedule.quantity, produce_order_item_schedule.unit, produce_order_item_schedule.status, concat(produce_order.remark, produce_order_item.remark, produce_order_item_schedule.remark) remark, produce_order.code produceOrderCode from produce_order_item_schedule\n" +
+                .querySql("select produce_order_item_schedule.id, produce_order_item_schedule.code, start_date startDate, produce_order_item.material_id materialId, produce_order_item.material_code materialCode, mm_material.name, produce_order_item.specification, produce_order_item.batch_id, produce_order_item.batch_code, produce_order_item_schedule.quantity, produce_order_item_schedule.unit, produce_order_item_schedule.status, concat(produce_order.remark, produce_order_item.remark, produce_order_item_schedule.remark) remark, produce_order.code produceOrderCode, produce_order.partner_id partnerId from produce_order_item_schedule\n" +
                         "join produce_order_item on produce_order_item.id = produce_order_item_schedule.`produce_order_item_id`\n" +
                         "left join mm_material on mm_material.id = produce_order_item.material_id\n" +
                         "left join produce_order on produce_order.id = produce_order_item.`produce_order_id`" +
@@ -88,7 +88,8 @@ public class ProduceOrderTest {
                         new ReportColumn("status", "状态", false, "produce_order_status", Arrays.asList("dictConverter")).setColumnWidth(80),
                         new ReportColumn("remark", "备注"),
                         new ReportColumn("code", "生产单号").setColumnWidth(160),
-                        new ReportColumn("produceOrderCode", "销售单号").setColumnWidth(160)
+                        new ReportColumn("produceOrderCode", "销售单号").setColumnWidth(160),
+                        new ReportColumn("partnerId", "客户", false, "core_partner_customer", Arrays.asList("dictConverter"))
                 ))
                 .pageable(true)
                 .build());

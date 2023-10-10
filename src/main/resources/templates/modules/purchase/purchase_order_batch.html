@@ -182,13 +182,13 @@
                     keyup: function ($tr, event, value) {
                         calcAmount($tr);
                     },
-                    afterValueSet(value, $tr, $input) {
-                        if (value.referenceType1 === 'PR') {
-                            setTimeout(() => {
-                                $input.attr('disabled', true).attr('readonly', true)
-                            }, 100)
-                        }
-                    }
+                    // afterValueSet(value, $tr, $input) {
+                    //     if (value.referenceType1 === 'PR') {
+                    //         setTimeout(() => {
+                    //             $input.attr('disabled', true).attr('readonly', true)
+                    //         }, 100)
+                    //     }
+                    // }
                 },
                 {
                     type: "text_label",
@@ -228,13 +228,13 @@
                     name: "purchaseSend",
                     width: 80,
                     title: "采购直发",
-                    afterValueSet(value, $tr, $input) {
-                        if (value.referenceType1 === 'PR') {
-                            setTimeout(() => {
-                                $input.attr('disabled', true).attr('readonly', true)
-                            }, 100)
-                        }
-                    }
+                    // afterValueSet(value, $tr, $input) {
+                    //     if (value.referenceType1 === 'PR') {
+                    //         setTimeout(() => {
+                    //             $input.attr('disabled', true).attr('readonly', true)
+                    //         }, 100)
+                    //     }
+                    // }
                 },
                 {
                     type: "select",

@@ -142,9 +142,11 @@ public class PurchaseOrderController {
         for (PurchaseOrder.Item item : itemList) {
             BaseEntityUtils.resetAdditionalFields(item);
             ContactInfo contactInfo = instanceIdEntityMap.get(item.getReferenceId2());
-            BaseEntityUtils.resetAdditionalFields(contactInfo);
-            // TODO 销售订单如果修改了地址，采购订单的地址该如何更新？
-            item.setContactInfo(contactInfo);
+            if (Objects.nonNull(contactInfo)) {
+                BaseEntityUtils.resetAdditionalFields(contactInfo);
+                // TODO 销售订单如果修改了地址，采购订单的地址该如何更新？
+                item.setContactInfo(contactInfo);
+            }
         }
 
         purchaseRequisitionItemService.markCompleted(prItemIds);

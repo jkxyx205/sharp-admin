@@ -173,6 +173,7 @@
                     <div id="form-detail">
                         <div v-show="form.id" v-cloak>
                             <div class="card-body-scroll-panel">
+                                <label sec:authorize="hasAuthority('produce_order_edit')"><a href="javascript:;" @click="copyBOM">复制 BOM</a></label>
                                 <div v-for="c in form.componentList">
                                     <!--                                        <div class="component-name" v-text="c.description + '（' + c.quantity + c.unitText + '）'"></div>-->
                                     <form class="form-item">
@@ -303,6 +304,7 @@
                         </div>
 
                         <div id="materialDetailInput" style="display: none"></div>
+                        <div id="materialBOMTemplete" style="display: none"></div>
                     </div>
                 </div>
                 <div class="tab-pane" id="tab-4" role="tabpanel">
@@ -570,22 +572,21 @@
                     title: "物料",
                     width: 80,
                     required: true,
-                    mode: 'single', // 多选,
-                    reportId: '719185652091981824',
+                    mode: 'single', // 单选,
+                    // reportId: '719185652091981824',
                     // params: {categoryId: "717389543182962688"},
                     beforeShow: function ($tr, context) {
                         return true;
                     },
                     selected: function ($tr, row) {
-                        row.id = row.materialId
-                        // if (row.materialType !== 'HALB') {
+                            // if (row.materialType !== 'HALB') {
                             // 非半成品获取特征值
                             characteristic.selectedCharacteristic($tr, row);
                         // }
 
-                        if (row.materialType === 'FERT' || row.materialType === 'HALB') {
+                        if (row.material_type === 'FERT' || row.material_type === 'HALB') {
                             // 成品 或 半成品
-                            showBOMDetail($tr, row.materialId, row.item_id, true, function (form) {})
+                            showBOMDetail($tr, row.id, row.item_id, true, function (form) {})
                             $scheduleDom.show()
                         } else {
                             $editableTable.editableTablePlus('mergeValue', {
@@ -982,7 +983,7 @@
                                             }
 
                                             if (characteristic.val) {
-                                                if (characteristic.type === 'NUMBER' && !(characteristic.val.match(/^\d+$/g))) {
+                                                if (characteristic.type === 'NUMBER' && !(characteristic.val.match(/^\d+(.\d+)?$/g))) {
                                                     toastr.error('第 '+(index + 1)+' 行物料清单有【特征值】填写不正确！')
                                                     detailValid = false
                                                     return
@@ -1104,6 +1105,28 @@
             $('#totalAmount').text(totalAmount)
         }
 
+        // bom 模版
+        let materialBOMTemplete = $('#materialBOMTemplete').dialogInput({
+            title: '选择 BOM 模版',
+            reportId: '719185652091981824',
+            labelDisplay: function (row) {
+                return row.name + ' ' + (!row.specification ? '' : row.specification)
+            },
+            selected: function (row) {
+                let materialId = row.materialId
+                let itemId = row.item_id
+                let isCopy = true
+                $.get('/produce_orders/bom?materialId=' + materialId + (itemId ? ('&itemId=' + itemId) : '') + (isCopy != undefined ? ('&isCopy=' + isCopy) : ''), function (res) {
+                    let componentList = res.bomTemplate.componentList
+                    $editableTable.editableTablePlus('getActiveRowValue').$tr[0].form.componentList = vue.$data.form.componentList = componentList
+                    // callback && callback($tr[0].form)
+
+                    // if (itemId) {
+                    //     characteristic.setCharacteristic($tr, res.item)
+                    // }
+                })
+            }
+        })
         // 物料清单选择 detail
         let materialDetailInput = $('#materialDetailInput').dialogInput({
             title: '选择物料',
@@ -1213,6 +1236,10 @@
                 }
             },
             methods: {
+                copyBOM: function () {
+                    materialBOMTemplete.dialogInput('setParams', {'materialId' : this.form.materialId})
+                    materialBOMTemplete.click()
+                },
                 showMaterialDialog: function (e) {
                     materialDetailInput.dialogInput('setParams', {'categoryId' : e.target.getAttribute('type_instance_id')})
                     materialDetailInput.click();

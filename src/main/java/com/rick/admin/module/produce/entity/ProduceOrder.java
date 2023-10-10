@@ -60,6 +60,9 @@ public class ProduceOrder extends BaseCodeEntity {
 
     StatusEnum status;
 
+    @Column(value = "is_purchase_requisition", comment = "是否处理过采购申请", updatable = false)
+    Boolean purchaseRequisition;
+
     String remark;
 
     @OneToMany(subTable = "produce_order_item", reversePropertyName = "produceOrderId", cascadeInsertOrUpdate = true, joinValue = "produce_order_id")
