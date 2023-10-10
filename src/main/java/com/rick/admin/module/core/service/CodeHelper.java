@@ -15,4 +15,8 @@ public class CodeHelper {
     public String generateCode(String prefix) {
         return prefix + Time2StringUtils.format(Instant.now()).replaceAll("\\s+|-|:", "");
     }
+
+    public String generateCodeWithDay(String prefix) {
+        return prefix + Time2StringUtils.format(Instant.now()).replaceAll("\\s+|-|:", "").substring(0, 8);
+    }
 }
