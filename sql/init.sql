@@ -37,3 +37,4 @@ truncate table produce_order_item_detail;
 
 truncate table pur_purchase_order;
 truncate table pur_purchase_order_item;
+truncate table pur_purchase_requisition_item;
