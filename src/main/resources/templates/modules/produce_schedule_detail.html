@@ -40,6 +40,14 @@
                     <td th:text="${row[3]}"></td>
                     <td th:text="${row[4]}"></td>
                 </tr>
+                <th:block th:if="${item.attachmentList.size() > 0}">
+                    <tr>
+                        <td class="bold" colspan="5">附件</td>
+                    </tr>
+                    <tr>
+                        <td class="bold" colspan="5"><a style="margin-right: 10px;" target="_blank" th:href="${f.url}" th:text="${f.fullName}" th:each="f : ${item.attachmentList}"></a></td>
+                    </tr>
+                </th:block>
             </tbody>
         </table>
     </div>

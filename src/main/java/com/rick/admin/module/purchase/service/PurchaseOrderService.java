@@ -8,8 +8,9 @@ import com.rick.admin.common.exception.ExceptionCodeEnum;
 import com.rick.admin.common.exception.ResourceNotFoundException;
 import com.rick.admin.common.model.IdQuantity;
 import com.rick.admin.module.core.dao.PartnerDAO;
+import com.rick.admin.module.core.entity.CodeSequence;
 import com.rick.admin.module.core.entity.Partner;
-import com.rick.admin.module.core.service.CodeHelper;
+import com.rick.admin.module.core.service.CodeSequenceService;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.material.service.MaterialDescription;
@@ -32,7 +33,7 @@ import lombok.experimental.FieldDefaults;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.core.io.ClassPathResource;
@@ -51,6 +52,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -77,13 +79,16 @@ public class PurchaseOrderService {
 
     BatchService batchService;
 
+    CodeSequenceService codeSequenceService;
+
     /**
      * 新增或修改
      * @param order
      */
     public void saveOrUpdate(PurchaseOrder order) {
         if (order.getId() == null) {
-            order.setCode(CodeHelper.generateCode("PO"));
+            CodeSequence cs = getNextSequence("PO", 1);
+            order.setCode(cs.getPrefix() + cs.getName() + StringUtils.leftPad("" + cs.getSequence(), 2, "0"));
         }
 
         order.getItemList().forEach(item -> {
@@ -97,10 +102,11 @@ public class PurchaseOrderService {
 
     @Transactional(rollbackFor = Exception.class)
     public void save(List<PurchaseOrder> list) {
+        CodeSequence cs = getNextSequence("PO", list.size());
+
         for (int i = 0; i < list.size(); i++) {
             PurchaseOrder purchaseOrder = list.get(i);
-
-            purchaseOrder.setCode(CodeHelper.generateCode("PO")  + (i + 1) + RandomStringUtils.randomNumeric(1));
+            purchaseOrder.setCode(cs.getPrefix() + cs.getName() + StringUtils.leftPad("" + (cs.getSequence() + i), 2, "0"));
             purchaseOrder.getItemList().forEach(item -> {
                 item.setComplete(false);
                 item.setPurchaseOrderCode(purchaseOrder.getCode());
@@ -110,6 +116,16 @@ public class PurchaseOrderService {
         batchService.saveBatch(list.stream().flatMap(purchaseOrder -> purchaseOrder.getItemList().stream()).collect(Collectors.toSet()));
 
         purchaseOrderDAO.insert(list);
+    }
+
+    private CodeSequence getNextSequence(String prefix, int num) {
+        String name = Time2StringUtils.format(Instant.now()).replaceAll("\\s+|-|:", "").substring(0, 8);
+        int nextSequence = codeSequenceService.getNextSequence(prefix, name, num);
+        return CodeSequence.builder()
+                .prefix(prefix)
+                .name(name)
+                .sequence(nextSequence)
+                .build();
     }
 
     /**
@@ -262,11 +278,27 @@ public class PurchaseOrderService {
             PurchaseOrder.Item item = purchaseOrder.getItemList().get(i);
             MaterialDescription materialDescription = item.getMaterialDescription();
             //        data.add(new Object[]{1, "资材编号1", "品 名", "型号规格", 3, "单位", 1, 11, "2022-11-16", "备注"});
-            data.add(new Object[] {i + 1, materialDescription.getCode(), materialDescription.getName(),
+
+            String firstColumnValue;
+            Map<String, Object> soInfo = item.getSoInfo();
+            if (MapUtils.isEmpty(soInfo)) {
+                firstColumnValue = materialDescription.getCode();
+            } else {
+                String shortName = Objects.toString(soInfo.get("short_name"), "");
+                String sourceOrderNum = Objects.toString(soInfo.get("sourceOrderNum"), "");
+                String materialCode = item.getPurchaseSend() ?
+                        Objects.toString(soInfo.get("customerMaterialCode"), "") : materialDescription.getCode();
+
+                firstColumnValue =  (StringUtils.isBlank(shortName) ? "" : (shortName + "\n")) +
+                        (StringUtils.isBlank(sourceOrderNum) ? "" : (sourceOrderNum + "\n")) +
+                                (StringUtils.isBlank(materialCode) ? "" : (materialCode));
+            }
+
+            data.add(new Object[] {i + 1, firstColumnValue, materialDescription.getName(),
                     materialDescription.getSpecification() + " " + materialDescription.getCharacteristic(),
                     item.getQuantity(), materialDescription.getUnitText(), item.getUnitPrice(), item.getAmount(),
                     Time2StringUtils.format(item.getDeliveryDate()),
-                    item.getRemark() + (item.getPurchaseSend() ? "\n直发客户：" + item.getSoInfo().get("name") : "发普源")
+                    item.getRemark() + (item.getPurchaseSend() ? "\n直发客户：" + soInfo.get("name") : "发普源")
             });
         }
 

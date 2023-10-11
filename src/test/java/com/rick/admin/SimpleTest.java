@@ -1,5 +1,6 @@
 package com.rick.admin;
 
+import com.rick.admin.module.core.service.CodeHelper;
 import com.rick.admin.module.material.entity.CharacteristicValue;
 import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.entity.Material;
@@ -111,6 +112,13 @@ public class SimpleTest {
                 .build()));
         System.out.println(s1);
         System.out.println(s2);
+    }
+
+    @Test
+    public void testCode() {
+        System.out.println(StringUtils.leftPad("1", 2, "0"));
+        System.out.println(StringUtils.leftPad("11", 2, "0"));
+        System.out.println(CodeHelper.generateCodeWithDay("PO"));
     }
 
     private void dd(List<List<String>> data, int index, String value) {

@@ -154,6 +154,9 @@ public class ProduceOrder extends BaseCodeEntity {
         @OneToMany(oneToOne = true, subTable = "core_contact", joinValue = "instance_id", cascadeInsertOrUpdate = true, reversePropertyName = "instanceId")
         private ContactInfo contactInfo;
 
+        @Column(comment = "附件", columnDefinition = "text", value = "attachment", nullable = false)
+        private List<Map<String, Object>> attachmentList;
+
         public BigDecimal getAmount() {
             if (Objects.nonNull(unitPrice)) {
                 return unitPrice.multiply(quantity);

@@ -40,7 +40,7 @@ public class PurchaseOrderTest {
                 ))
                 .reportColumnList(Arrays.asList(
                         new HiddenReportColumn("id"),
-                        new ReportColumn("code", "订单号").setColumnWidth(180),
+                        new ReportColumn("code", "订单号").setColumnWidth(130),
                         new ReportColumn("partner_id", "供应商", false, "core_partner", Arrays.asList("dictConverter")),
                         new ReportColumn("plant_id", "入库库房", false, "core_plant", Arrays.asList("dictConverter")),
 //                        new ReportColumn("delivery_date", "交货日期", true,null, Arrays.asList("sqlDateConverter")).setColumnWidth(120),

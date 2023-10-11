@@ -89,7 +89,6 @@ public class ProduceBOMDownloadController {
 
     @GetMapping("schedule/{scheduleId}/download")
     public void scheduleDownload(@PathVariable Long scheduleId, HttpServletRequest request, HttpServletResponse response) throws IOException {
-
         ProduceOrder.Item.Schedule schedule = produceOrderItemScheduleDAO.selectById(scheduleId).get();
         ProduceOrder.Item item = produceOrderItemDAO.selectById(schedule.getProduceOrderItemId()).get();
         BomTemplate bomTemplate = resolveItemAndReturnBomTemplate(item);

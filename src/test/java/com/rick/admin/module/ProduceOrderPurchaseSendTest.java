@@ -46,9 +46,10 @@ public class ProduceOrderPurchaseSendTest {
                         "AND produce_order.id = produce_order_item.produce_order_id\n" +
                         "AND (pur_purchase_requisition_item.reference_id = produce_order.id or pur_purchase_requisition_item.reference_id = produce_order_item.id)) t\n" +
                         "        where mm_material.id = pur_purchase_requisition_item.material_id\n" +
-                        "        and t.reference_id = pur_purchase_requisition_item.reference_id AND pur_purchase_requisition_item.is_complete = 0 and mm_material.code = :materialCode")
+                        "        and t.reference_id = pur_purchase_requisition_item.reference_id AND pur_purchase_requisition_item.is_complete = 0 and mm_material.code = :materialCode AND produce_order_code = :produceOrderCode")
                 .queryFieldList(Arrays.asList(
-                        new QueryField("materialCode", "物料", QueryField.Type.TEXT)
+                        new QueryField("materialCode", "物料", QueryField.Type.TEXT),
+                        new QueryField("produceOrderCode", "销售订单", QueryField.Type.TEXT)
                 ))
                 .reportColumnList(Arrays.asList(
                         new HiddenReportColumn("id"),

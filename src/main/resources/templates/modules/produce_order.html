@@ -85,10 +85,10 @@
                 <form class="form-inline query-form-container" id="form-header">
                     <input type="hidden" id="id" th:value="${po.id}"/>
                     <input id="code" type="hidden" name="code" th:value="${po.code == null ? '1' : po.code}">
-<!--                    <div class="form-group">-->
-<!--                        <label class="col-form-label mr-2">生产单号</label>-->
-<!--                        <input class="form-control" type="text" id="code" name="code" readonly th:value="${po.code}">-->
-<!--                    </div>-->
+                    <!--                    <div class="form-group">-->
+                    <!--                        <label class="col-form-label mr-2">生产单号</label>-->
+                    <!--                        <input class="form-control" type="text" id="code" name="code" readonly th:value="${po.code}">-->
+                    <!--                    </div>-->
                     <div class="form-group" sec:authorize="hasAuthority('produce_order_add')">
                         <label class="col-form-label mr-2 required" for="partnerId">客户</label>
                         <sp:select id="partnerId" name="partnerId" key="core_partner_customer" th:value="${po.partnerId}" class="form-control" required th:attr="disabled=${po.id != null}" emptyItemText="&nbsp;"/>
@@ -108,10 +108,10 @@
                     <div class="form-group">
                         <label class="col-form-label mr-2">状态</label>
                         <sp:select id="status" name="status" key="produce_order_status" class="form-control" th:value="${po.status}" hideAllItem/>
-<!--                        <select class="form-control" name="status">-->
-<!--                            <option value="PROCESSING" th:selected="${'PROCESSING' eq po.status.toString()}">进行中</option>-->
-<!--                            <option value="DONE" th:selected="${'DONE' eq po.status.toString()}">已完成</option>-->
-<!--                        </select>-->
+                        <!--                        <select class="form-control" name="status">-->
+                        <!--                            <option value="PROCESSING" th:selected="${'PROCESSING' eq po.status.toString()}">进行中</option>-->
+                        <!--                            <option value="DONE" th:selected="${'DONE' eq po.status.toString()}">已完成</option>-->
+                        <!--                        </select>-->
                     </div>
                     <div class="form-group" sec:authorize="hasAuthority('produce_order_add')">
                         <label class="col-form-label mr-2" for="remark">客户订单号</label>
@@ -303,6 +303,14 @@
                             </div>
                         </div>
 
+                        <div class="attachment mt-2">
+                            <input type="file" multiple="multiple" name="attachment_file2" id="attachment_file2" data-group-name="bom" onchange="ajaxFileUpload()" style="width: 99px;">
+
+                            <div class="item" v-for="f in form.attachmentList" :key="f.id">
+                                <a v-text="f.fullName" :href="f.url" target="_blank"></a><button type="button" class="btn btn-link attachment_delete_btn" @click="deleteFile(f.id)">删除</button>
+                            </div>
+                        </div>
+
                         <div id="materialDetailInput" style="display: none"></div>
                         <div id="materialBOMTemplete" style="display: none"></div>
                     </div>
@@ -451,21 +459,22 @@
     <script th:inline="javascript">
         let readonly = true
         /*[# sec:authorize="hasAuthority('produce_order_add')"]*/
-            readonly = false
+        readonly = false
         /*[/]*/
 
         let isAdd = /*[[${po.id == null}]]*/
-        let formHeader = document.getElementById('form-header');
+            let formHeader = document.getElementById('form-header');
         let formItem = document.getElementById('form-item')
         let $scheduleDom = $('#schedule')
         let $receiveContactInfo = $('#receiveContactInfo')
 
         function showBOMDetail($tr, materialId, itemId, isCopy, callback) {
             if (materialId && $tr[0].form && materialId === $tr[0].form.materialId) {
-                 vue.$data.form = $tr[0].form
+                vue.$data.form = $tr[0].form
             } else if (materialId) {
                 $.get('/produce_orders/bom?materialId=' + materialId + (itemId ? ('&itemId=' + itemId) : '') + (isCopy != undefined ? ('&isCopy=' + isCopy) : ''), function (res) {
                     let bomTemplate = res.bomTemplate
+                    bomTemplate.attachmentList = []
 
                     bomTemplate.materialId = materialId
                     $tr[0].form = vue.$data.form = bomTemplate
@@ -489,13 +498,13 @@
 
         if (isAdd) {
             let customerContactInfoMap = /*[[${customerContactInfoMap}]]*/
-            $('#partnerId option').each(function () {
-                if (this.value) {
-                    $(this).data('contactPerson', customerContactInfoMap[this.value]['contactPerson'])
-                    $(this).data('contactNumber', customerContactInfoMap[this.value]['contactNumber'])
-                    $(this).data('contactMail', customerContactInfoMap[this.value]['contactMail'])
-                }
-            })
+                $('#partnerId option').each(function () {
+                    if (this.value) {
+                        $(this).data('contactPerson', customerContactInfoMap[this.value]['contactPerson'])
+                        $(this).data('contactNumber', customerContactInfoMap[this.value]['contactNumber'])
+                        $(this).data('contactMail', customerContactInfoMap[this.value]['contactMail'])
+                    }
+                })
         }
 
         $('#partnerId').multipleSelect({
@@ -518,17 +527,23 @@
             highlight: true,
             // readonly,
             rowClick: function (context, $tr, row, fromActiveRow) {
+                if (!$tr[0].form) {
+                    $tr[0].form = {'attachmentList': []}
+                }
+
                 if (row.materialId) {
                     if (row.materialType === 'FERT' || row.materialType === 'HALB') {
                         // 成品 或 半成品
                         showBOMDetail($tr, row.materialId, row.id)
                         $scheduleDom.show()
                     } else {
-                        $tr[0].form = vue.$data.form  = {}
+                        // $tr[0].form = vue.$data.form  = {}
+                        vue.$data.form = $tr[0].form
                         $scheduleDom.hide()
                     }
                 } else {
-                    $tr[0].form = vue.$data.form  = {}
+                    // $tr[0].form = vue.$data.form  = {}
+                    vue.$data.form = $tr[0].form
                     $scheduleDom.hide()
                 }
 
@@ -565,6 +580,9 @@
 
                 return true
             },
+            afterDeleteRow: function () {
+                calcTotalAmount()
+            },
             columnConfigs: [
                 {
                     type: "material",
@@ -579,9 +597,9 @@
                         return true;
                     },
                     selected: function ($tr, row) {
-                            // if (row.materialType !== 'HALB') {
-                            // 非半成品获取特征值
-                            characteristic.selectedCharacteristic($tr, row);
+                        // if (row.materialType !== 'HALB') {
+                        // 非半成品获取特征值
+                        characteristic.selectedCharacteristic($tr, row);
                         // }
 
                         if (row.material_type === 'FERT' || row.material_type === 'HALB') {
@@ -592,7 +610,8 @@
                             $editableTable.editableTablePlus('mergeValue', {
                                 "specification": row.specification,
                             }, $tr)
-                            $tr[0].form = vue.$data.form  = {}
+                            // $tr[0].form = vue.$data.form  = {}
+                             vue.$data.form = $tr[0].form
                             $scheduleDom.hide()
                         }
 
@@ -883,6 +902,9 @@
                 let item = params['itemList'][index]
                 let trDom = $('#table-container table.table-tbody tbody tr').eq(index)[0]
 
+                // 附件
+                item['attachmentList'] = trDom.form.attachmentList || []
+
                 // 收货地址
                 item['contactInfo'] = (trDom.receiveContactInfo && Object.values(trDom.receiveContactInfo).filter(v => v).length === 0)? {} : {
                     "contactPerson": trDom.receiveContactInfo.receiveContactPerson,
@@ -1017,7 +1039,7 @@
                 success: function(res){
                     toastr.success('生产单保存成功');
                     // if (isAdd) {
-                        window.location = '/produce_orders/'+res.id+'?readonly=true'
+                    window.location = '/produce_orders/'+res.id+'?readonly=true'
                     // }
                     reloadTab('produce_order_list')
                 }
@@ -1029,9 +1051,9 @@
         })
 
         let itemList = /*[[${po.itemList}]]*/
-        let valueMap =  /*[[${bomTemplate}]]*/
+            let valueMap =  /*[[${bomTemplate}]]*/
 
-        loadItem(itemList)
+            loadItem(itemList)
         function loadItem(itemList) {
             if (itemList && itemList.length > 0) {
                 // 特征值
@@ -1226,6 +1248,8 @@
                     $editableTable
                         .editableTablePlus('each', (index, context, $tr, row) => {
                             let value = valueMap[row.id] || {}
+                            value.attachmentList = itemList[index].attachmentList || []
+
                             if(index === 0) {
                                 this.form = value
                             }
@@ -1236,6 +1260,9 @@
                 }
             },
             methods: {
+                deleteFile: function (id) {
+                    this.form.attachmentList = this.form.attachmentList.filter(f => f.id != id)
+                },
                 copyBOM: function () {
                     materialBOMTemplete.dialogInput('setParams', {'materialId' : this.form.materialId})
                     materialBOMTemplete.click()
@@ -1267,6 +1294,26 @@
         // if (readonly) {
         //     $editableTable.editableTablePlus('readonly', true)
         // }
+        function ajaxFileUpload() {
+            $.ajaxFileUpload
+            (
+                {
+                    url: '/documents/upload?name=attachment_file2&groupName=' + $('#attachment_file2').data('group-name'), //用于文件上传的服务器端请求地址
+                    secureuri: false, //是否需要安全协议，一般设置为false
+                    fileElementId: 'attachment_file2', //文件上传域的ID
+                    dataType: 'json', //返回值类型 一般设置为json
+                    success: function (data, status) { //服务器成功响应处理函数
+                        let activeTr = $editableTable.editableTablePlus('getActiveRowValue').$tr[0];
+                        let attachmentList = [...activeTr.form.attachmentList, ...data.data]
+                        activeTr.form.attachmentList = attachmentList
+                        // upload.appendAttachment(data.data, name)
+                    },
+                    error: function (data, status, e) { //服务器响应失败处理函数
+                        alert(e);
+                    }
+                }
+            )
+        }
     </script>
 </th:block>
 <style>

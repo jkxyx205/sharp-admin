@@ -150,7 +150,7 @@ public class PurchaseOrder extends BaseCodeEntity {
         MaterialDescription materialDescription;
 
         @Transient
-        @Sql(value = "select t.*, core_partner.name from (\n" +
+        @Sql(value = "select t.*, core_partner.name, core_partner.short_name from (\n" +
                 "select source_order_num       sourceOrderNum,\n" +
                 "       customer_material_code customerMaterialCode,\n" +
                 "       produce_order.id,\n" +

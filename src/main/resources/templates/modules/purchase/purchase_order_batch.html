@@ -94,6 +94,9 @@
             showRowNumber: true, // 是否显示行号
             readonly: readonly, // 只读
             allowEmpty: false, // 表格允许为空
+            afterDeleteRow: function () {
+                calcTotalAmount()
+            },
             columnConfigs: [
                 {
                     type: "material",

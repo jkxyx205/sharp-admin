@@ -58,6 +58,7 @@ public class MaterialProfileService {
         String sql = "select concat(material_id, ifnull(batch_id, '')) materialIdBatchIdString, group_concat(case when mm_characteristic_value.value = '' then '' when characteristic_code = 'LENGTH' then concat('线长', mm_characteristic_value.value, 'mm') " +
                 "when characteristic_code = 'BP_LENGTH' then concat('剥皮', mm_characteristic_value.value, 'mm')" +
                 "when characteristic_code = 'ZX_LENGTH' then concat('沾锡', mm_characteristic_value.value, 'mm')" +
+                "when characteristic_code = 'TONGX' then concat('重量', mm_characteristic_value.value, 'KG')" +
                 "else mm_characteristic_value.value end order by mm_characteristic_value.id asc SEPARATOR ' ') characteristicText from mm_profile left join mm_characteristic_value on mm_profile.id = mm_characteristic_value.reference_id where concat(material_id, ifnull(batch_id, '')) IN (:materialIdBatchIdString)\n" +
                 " group by concat(material_id, ifnull(batch_id, ''))";
         return sharpService.queryForKeyValue(sql, Params.builder(1).pv("materialIdBatchIdString", materialIdBatchIdStringCollection).build());

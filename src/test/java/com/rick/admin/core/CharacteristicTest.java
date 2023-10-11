@@ -178,9 +178,9 @@ public class CharacteristicTest {
 //       insertOrUpdateCharacteristic("LHQ", "离合器", 719895812674441216L);
 
 //        insertOrUpdateCharacteristicWithName("NLCL", "尼龙齿轮", 725412446512111616L);
-        insertOrUpdateCharacteristic("ZHC", "轴承", 719895465524482048L);
-        insertOrUpdateCharacteristic("ZHC2", "轴承", 719895465524482048L);
-        insertOrUpdateCharacteristic("CIGANG", "磁钢", 719895589763960832L);
+//        insertOrUpdateCharacteristic("ZHC", "轴承", 719895465524482048L);
+//        insertOrUpdateCharacteristic("ZHC2", "轴承", 719895465524482048L);
+//        insertOrUpdateCharacteristic("CIGANG", "磁钢", 719895589763960832L);
 
 //        insertOrUpdateCharacteristic("ZHZ", "转子", 719895650870775808L);
 
@@ -191,10 +191,17 @@ public class CharacteristicTest {
 //        insertOrUpdateCharacteristicWithName("YTL", "一体轮毂", 719895241229881344L);
 
 //        insertOrUpdateCharacteristic("TIEX", "铁芯", 720624056151330816L);
-//        insertOrUpdateCharacteristicWithName("TONGX", "铜线", 725412632437219328L);
+
+        //        insertOrUpdateCharacteristicWithName("TONGX", "铜线", 725412632437219328L);
 
 
-
+        characteristicService.saveOrUpdate(CharacteristicDTO.builder()
+                .type(Characteristic.CharacteristicTypeEnum.NUMBER)
+                .code("TONGX")
+                .description("铜线KG")
+                .cpnType(CpnTypeEnum.RADIO) // 单选
+                .required(false)
+                .build());
     }
 
     private void insertOrUpdateCharacteristic(String code, String description, Long categoryId) {
@@ -217,14 +224,16 @@ public class CharacteristicTest {
     }
 
     private void insertOrUpdateCharacteristicWithName(String code, String description, Long categoryId) {
+        insertOrUpdateCharacteristicWithName(code, description, getNameSpecificationByCategoryCpnOption(categoryId));
+    }
+
+    private void insertOrUpdateCharacteristicWithName(String code, String description, List<CpnConfigurer.CpnOption> options) {
         characteristicService.saveOrUpdate(CharacteristicDTO.builder()
                 .type(Characteristic.CharacteristicTypeEnum.TEXT)
                 .code(code)
                 .description(description)
                 .cpnType(CpnTypeEnum.RADIO) // 单选
-                .options(
-                        getNameSpecificationByCategoryCpnOption(categoryId)
-                )
+                .options(options)
                 .required(true)
                 .build());
     }

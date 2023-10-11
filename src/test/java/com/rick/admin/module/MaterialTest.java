@@ -643,7 +643,7 @@ public class MaterialTest {
                         new HiddenReportColumn("base_unit_name", "unit", Arrays.asList("dictConverter")),
                         new ReportColumn("partner_id", "客户", false, "core_partner_customer", Arrays.asList("dictConverter")),
 //                        new ReportColumn("remark", "备注"),
-                        new ReportColumn("create_time", "生产时间", false,null, Arrays.asList("localDateTimeConverter")).setColumnWidth(160)
+                        new ReportColumn("create_time", "创建时间", false,null, Arrays.asList("localDateTimeConverter")).setColumnWidth(160)
 //                        new ReportColumn("material_type", "类型", false, "material_type", Arrays.asList("dictConverter")),
 //                        new ReportColumn("categoryText", "分类", false, "core_material_category", Arrays.asList("dictConverter"))
                 ))

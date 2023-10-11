@@ -299,6 +299,9 @@
                 //     $('#so_tab').hide()
                 // }
             },
+            afterDeleteRow: function () {
+                calcTotalAmount()
+            },
             columnConfigs: [
                 {
                     type: "material",
