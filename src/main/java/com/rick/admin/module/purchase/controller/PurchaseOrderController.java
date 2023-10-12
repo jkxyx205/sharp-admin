@@ -130,6 +130,13 @@ public class PurchaseOrderController {
         return ResultUtils.success();
     }
 
+    @DeleteMapping("requisition")
+    @ResponseBody
+    public Result deletePurchaseRequisitionByIds(String ids) {
+        purchaseRequisitionItemService.deleteByIds(ids);
+        return ResultUtils.success();
+    }
+
     private void handleReferenceValue(List<PurchaseOrder.Item> itemList) {
         if (CollectionUtils.isEmpty(itemList)) {
             return;

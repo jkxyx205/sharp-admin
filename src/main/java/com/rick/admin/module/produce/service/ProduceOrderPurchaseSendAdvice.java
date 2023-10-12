@@ -37,30 +37,56 @@ public class ProduceOrderPurchaseSendAdvice implements ReportAdvice {
         }
 
         boolean purchaseOrderAuthority = UserContextHolder.get().getAuthorityList().contains("pur_purchase_order_add");
-        // language=JS
-        String js = "";
+        String js;
 
         if (purchaseOrderAuthority) {
-            js += "$('#batch-cpn-bar .btn-group').html('').append('<button class=\"btn btn-primary\" style=\"padding: .075rem .45rem\" type=\"button\" onclick=\"addPurchase()\" disabled>立即采购...</button>')\n" +
+            // language=JavaScript
+            js = "$('#batch-cpn-bar .btn-group').html('').append('<button class=\"btn btn-primary\" style=\"padding: .075rem .45rem\" type=\"button\" onclick=\"addPurchase()\" disabled>立即采购...</button><button class=\"btn btn-primary\" style=\"padding: .075rem .45rem\" type=\"button\" onclick=\"deletePurchase()\" disabled>删除</button>')\n" +
                     "function addPurchase() {\n" +
+                    "    let itemIds = getItemIds()\n" +
+                    "    if (!itemIds) {\n" +
+                    "        return\n" +
+                    "    }" +
+                    "\n" +
+                    "    replaceAndOpenOnNewTab('pur_purchase_order_batch_add_from_purchase_send', '/produce_orders/purchase_order_purchase_send?itemIds=' + itemIds.join(',')" +
+                    ",  '采购订单');\n" +
+                    "}\n" +
+                    "\n" +
+                    "function deletePurchase() {\n" +
+                    "    let itemIds = getItemIds()\n" +
+                    "    if (!itemIds) {\n" +
+                    "        return\n" +
+                    "    }\n" +
+                    "    \n" +
+                    "    if (confirm('确定要删除采购申请吗？')) {\n" +
+                    "        $.ajax({\n" +
+                    "            url: '/purchase_order/requisition?ids=' + itemIds.join(','),\n" +
+                    "            type: \"delete\",\n" +
+                    "            success: function(){\n" +
+                    "                window.location.reload(" +
+                    ")\n" +
+                    "            }\n" +
+                    "        });\n" +
+                    "    }\n" +
+                    "}\n" +
+                    "\n" +
+                    "function getItemIds() {\n" +
                     "    let itemIds = []\n" +
-                    "    let quantity = []\n" +
                     "    $('table > tbody tr td:nth-child(2) > input[type=checkbox]:checked').each(function () {\n" +
                     "        console.log($(this).val(), '...')\n" +
                     "        itemIds.push($(this).val())\n" +
                     "    })\n" +
-                    "    \n" +
+                    "\n" +
                     "    if (!itemIds.length) {\n" +
                     "        alert('请选择要采购的物料！')\n" +
                     "        return\n" +
                     "    }\n" +
                     "\n" +
                     "    console.log(itemIds)\n" +
-                    "    replaceAndOpenOnNewTab('pur_purchase_order_batch_add_from_purchase_send', '/produce_orders/purchase_order_purchase_send?itemIds=' + itemIds.join(',')" +
-                    ",  '采购订单');\n" +
+                    "    return itemIds \n" +
                     "}";
         } else {
-            js += "$('table thead tr th:nth-child(2), table tbody tr td:nth-child(2)').hide();$('#batch-cpn-bar .btn-group').hide()";
+            js = "$('table thead tr th:nth-child(2), table tbody tr td:nth-child(2)').hide();$('#batch-cpn-bar .btn-group').hide()";
         }
         report.setAdditionalInfo(new HashMap<>());
         report.getAdditionalInfo().put("js", js);

@@ -333,7 +333,7 @@ public class ProduceOrderService {
                 "                                                              union all\n" +
                 "                                                              select material_id, batch_id, quantity from inv_stock where plant_id = 719893335619162112\n" +
                 "                                                              union all\n" +
-                "                                                              select material_id, batch_id, quantity from pur_purchase_requisition_item where is_complete = 0\n" +
+                "                                                              select material_id, batch_id, quantity from pur_purchase_requisition_item where is_complete = 0 and is_deleted = 0\n" +
                 "                                                              union all\n" +
                 "                                                              select produce_order_item_detail.material_id, produce_order_item_detail.batch_id, (-1 * produce_order_item_schedule.quantity * produce_order_item_detail.quantity) quantity  from produce_order_item_schedule, produce_order_item, produce_order, produce_order_item_detail\n" +
                 "                                                              where produce_order_item_schedule.produce_order_item_id = produce_order_item.id AND produce_order.id = produce_order_item.produce_order_id AND produce_order_item_detail.produce_order_item_id = produce_order_item.id\n" +

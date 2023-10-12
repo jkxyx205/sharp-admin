@@ -1,6 +1,5 @@
 package com.rick.admin.module.purchase.service;
 
-import com.google.common.collect.Sets;
 import com.rick.admin.module.purchase.entity.PurchaseRequisition;
 import com.rick.db.plugin.dao.core.EntityDAO;
 import com.rick.db.service.support.Params;
@@ -11,7 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -27,9 +29,12 @@ public class PurchaseRequisitionItemService {
 
     EntityDAO<PurchaseRequisition.Item, Long> purchaseRequisitionItemDAO;
 
+    public int deleteByIds(String ids) {
+        return purchaseRequisitionItemDAO.deleteByIds(ids);
+    }
+
     public void insertOrUpdateByReferenceIds(List<PurchaseRequisition.Item> itemList) {
         Map<Long, PurchaseRequisition.Item> referenceIdEntityMap = getReferenceIdEntityMap(itemList.stream().map(PurchaseRequisition.Item::getReferenceId).collect(Collectors.toSet()));
-        Set<Long> deleteIds = Sets.newHashSet();
         itemList.forEach(item -> {
             PurchaseRequisition.Item prItem = referenceIdEntityMap.get(item.getReferenceId());
             if (Objects.nonNull(prItem)) {
