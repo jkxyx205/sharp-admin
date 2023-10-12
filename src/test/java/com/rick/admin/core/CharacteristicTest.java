@@ -123,6 +123,8 @@ public class CharacteristicTest {
                 .cpnType(CpnTypeEnum.RADIO) // 单选
                 .options(Arrays.asList(
                         new CpnConfigurer.CpnOption("2.8插片"),
+                        new CpnConfigurer.CpnOption("SM-5A插针"),
+                        new CpnConfigurer.CpnOption("SM-5Y插簧"),
                         new CpnConfigurer.CpnOption("SM-6A插针"),
                         new CpnConfigurer.CpnOption("SM-6Y插簧")
                 ))
