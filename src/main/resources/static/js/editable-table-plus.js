@@ -404,8 +404,8 @@
                     }
                 } else if (columnConfig.type === 'decimal') {
                     $input
-                        .attr('pattern', '^\\d+(\\.\\d{1,3})?$')
-                        .attr('title', '必须数字')
+                        .attr('pattern', '^\\d+(\\.\\d{1,4})?$')
+                        .attr('title', '必须数字, 最多4位小数')
 
                     // 注册事件
                     $input.on('keydown', function(event){

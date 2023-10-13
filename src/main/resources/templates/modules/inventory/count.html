@@ -218,8 +218,10 @@
     </script>
 
     <script sec:authorize="hasAuthority('USER_cpk')">
-        $('#plantId').val('726159086739001344')
-        $('#plantId option[value!=726159086739001344]').remove()
+        // $('#plantId').val('726159086739001344')
+        // $('#plantId option[value!=726159086739001344]').remove()
+        $('#plantId').val('726158903766683648')
+        $('#plantId option[value=719893335619162112], #plantId option[value=731555795392909313]').remove()
     </script>
 
 </th:block>
