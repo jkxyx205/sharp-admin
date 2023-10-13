@@ -30,10 +30,10 @@ public class ProduceOrderTest {
 //                .reportAdviceName("inventoryDocumentReportAdvice")
                 // 必须通过指定 endpoint 完成 表单的CUD操作
                 .additionalInfo(Params.builder(1).pv("endpoint", "produce_orders").build())
-                .querySql("select id, code, partner_id, status, remark, create_by, create_time from produce_order where code = :code and create_by = :create_by and create_time >= :create_time0 and create_time <= :create_time1 AND status = :status")
+                .querySql("select id, code, partner_id, status, remark, create_by, create_time from produce_order where code = :code and create_by = :create_by and create_time >= :create_time0 and create_time <= :create_time1 AND status = :status AND partner_id = :partner_id")
                 .queryFieldList(Arrays.asList(
                         new QueryField("code", "销售单号", QueryField.Type.TEXT),
-                        new QueryField("partner_id", "客户", QueryField.Type.SELECT, "core_partner"),
+                        new QueryField("partner_id", "客户", QueryField.Type.SELECT, "core_partner_customer"),
                         new QueryField("status", "状态", QueryField.Type.SELECT, "produce_order_status"),
                         new QueryField("create_by", "创建人", QueryField.Type.SELECT, "sys_user"),
                         new QueryField("create_time", "创建时间", QueryField.Type.DATE_RANGE)
