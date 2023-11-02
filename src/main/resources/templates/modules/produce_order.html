@@ -597,6 +597,8 @@
                         return true;
                     },
                     selected: function ($tr, row) {
+                        // 采购价格不需要带出来
+                        $tr.find(':input[name=unitPrice]').val('')
                         // if (row.materialType !== 'HALB') {
                         // 非半成品获取特征值
                         characteristic.selectedCharacteristic($tr, row);
