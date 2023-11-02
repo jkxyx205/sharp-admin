@@ -999,14 +999,14 @@
                                     for (let classification of item.classificationList) {
                                         for (let characteristic of classification.characteristicValueList) {
                                             if ((strictValid || componentDetail.value.materialId) && characteristic.required && !characteristic.val) {
-                                                toastr.error('第 '+(index + 1)+' 行物料清单有【特征值】没有填写！')
+                                                toastr.error('第 '+(index + 1)+' 行物料清单的'+componentDetail.value.materialName+'('+componentDetail.value.materialCode+')有【特征值】没有填写！')
                                                 detailValid = false
                                                 return
                                             }
 
                                             if (characteristic.val) {
                                                 if (characteristic.type === 'NUMBER' && !(characteristic.val.match(/^\d+(.\d+)?$/g))) {
-                                                    toastr.error('第 '+(index + 1)+' 行物料清单有【特征值】填写不正确！')
+                                                    toastr.error('第 '+(index + 1)+' 行物料清单的'+componentDetail.value.materialName+'('+componentDetail.value.materialCode+')有【特征值】填写不正确！')
                                                     detailValid = false
                                                     return
                                                 }
@@ -1029,6 +1029,7 @@
             params['attachmentList'] = JSON.parse(params['attachmentList'])
 
             console.log(params)
+            return;
 
             $.ajax({
                 url: '/produce_orders',
