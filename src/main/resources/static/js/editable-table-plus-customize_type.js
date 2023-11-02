@@ -66,6 +66,7 @@
                         "materialType": row.material_type,
                         "materialSpecification": context.specification(row),
                         "unit": row.base_unit,
+                        "unitPrice": row.unitPrice,
                         "unitText": row.base_unit_name,
                         "materialCategoryId": row.category_id,
                         "remark": row.remark,
