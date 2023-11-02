@@ -2,4 +2,5 @@
 delete from `inv_document_item` where material_id = :materialId;
 delete from inv_stock where material_id = :materialId;
 delete from mm_batch where material_id = :materialId;
+delete from mm_characteristic_value where reference_id IN (select id from mm_profile where material_id = :materialId);
 delete from mm_profile where material_id = :materialId;
