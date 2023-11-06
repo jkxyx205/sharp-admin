@@ -904,6 +904,16 @@
                 let item = params['itemList'][index]
                 let trDom = $('#table-container table.table-tbody tbody tr').eq(index)[0]
 
+                // 获取BOM
+                // 获取value
+                let valueList = []
+                checkAndGetValueList(trDom.form, valueList, parseInt(index))
+                if (!detailValid) {
+                    return;
+                }
+
+                item['itemList'] = valueList
+
                 // 附件
                 item['attachmentList'] = trDom.form.attachmentList || []
 
@@ -933,13 +943,15 @@
                         return;
                     }
                 } else {
-                    if (item.materialType !== 'ROH') {
-                        item['scheduleList'] = [{
-                            startDate: ((d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"))(new Date()),
-                            quantity: item.quantity,
-                            unit: item.unit,
-                            status: 'PRODUCING'
-                        }]
+                    if (item.materialType !== 'ROH' && strictValid) {
+                        toastr.error('第 '+(parseInt(index) + 1)+' 个物料没有填写生产计划！')
+                        return;
+                        // item['scheduleList'] = [{
+                        //     startDate: ((d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"))(new Date()),
+                        //     quantity: item.quantity,
+                        //     unit: item.unit,
+                        //     status: 'PRODUCING'
+                        // }]
                     }
                 }
                 // 生产计划 end
@@ -959,15 +971,7 @@
                         return;
                     }
                 }
-                // 获取BOM
-                // 获取value
-                let valueList = []
-                checkAndGetValueList(trDom.form, valueList, parseInt(index))
-                if (!detailValid) {
-                    return;
-                }
 
-                item['itemList'] = valueList
             }
 
 
@@ -1053,9 +1057,9 @@
         })
 
         let itemList = /*[[${po.itemList}]]*/
-            let valueMap =  /*[[${bomTemplate}]]*/
+        let valueMap =  /*[[${bomTemplate}]]*/
+        loadItem(itemList)
 
-            loadItem(itemList)
         function loadItem(itemList) {
             if (itemList && itemList.length > 0) {
                 // 特征值
@@ -1067,6 +1071,15 @@
                 }
                 characteristic.loadCharacteristic($editableTable, itemList)
                 $editableTable.editableTablePlus('setActiveIndex', 1)
+                // 设置单位
+                let activeValue = $editableTable.editableTablePlus('getActiveRowValue')
+                if (activeValue) {
+                    $scheduleTable.editableTablePlus('mergeValue', {
+                        "unit": activeValue.value.unit,
+                        "unitText": activeValue.value.unitText,
+                    }, null, false)
+                }
+
 
                 calcTotalAmount()
 
