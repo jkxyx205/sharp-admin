@@ -608,7 +608,8 @@ public class MaterialTest {
                                 "                                group by concat(material_id, ifnull(batch_id, ''))\n" +
                                 "                                order by mm_characteristic_value.id asc) characteristic\n" +
                                 "                               on characteristic.materialIdBatchIdString = concat(material_id, ifnull(batch_id, ''))\n" +
-                                "            order by create_time desc) t4) combine\n" +
+                                "where produce_order.status <> 'PLANNING'            " +
+                                "order by create_time desc) t4) combine\n" +
                                 "         join mm_material on combine.material_id = mm_material.id\n" +
                                 "where material_type <> 'ROH' AND partner_id = :partnerId AND mm_material.id = :materialId")
                 .queryFieldList(Arrays.asList(
