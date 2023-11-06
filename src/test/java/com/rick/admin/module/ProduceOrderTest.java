@@ -65,7 +65,7 @@ public class ProduceOrderTest {
                         "join produce_order_item on produce_order_item.id = produce_order_item_schedule.`produce_order_item_id`\n" +
                         "left join mm_material on mm_material.id = produce_order_item.material_id\n" +
                         "left join produce_order on produce_order.id = produce_order_item.`produce_order_id`" +
-                        "WHERE produce_order.`status` <> 'PLANNING' AND produce_order.`is_deleted` = 0 AND produce_order.code = :produceOrderCode AND produce_order_item_schedule.code = :code AND produce_order_item_schedule.status = :status AND start_date >= :startDate0 and start_date <= :startDate1 order by start_date asc")
+                        "WHERE produce_order.`status` <> 'PLANNING' AND produce_order.`is_deleted` = 0 AND produce_order.code = :produceOrderCode AND produce_order_item_schedule.code = :code AND produce_order_item_schedule.status = :status AND start_date >= :startDate0 and start_date <= :startDate1 order by start_date desc")
                 .queryFieldList(Arrays.asList(
 //                        new QueryField("code", "生产单", QueryField.Type.TEXT),
 //                        new QueryField("partner_id", "客户", QueryField.Type.SELECT, "core_partner"),
