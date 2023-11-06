@@ -2,7 +2,9 @@ package com.rick.admin.module.produce.service;
 
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
+import com.rick.admin.module.inventory.service.handler.ProduceOrderScheduleInboundHandler;
 import com.rick.admin.module.produce.dao.ProduceOrderDAO;
+import com.rick.admin.module.produce.dao.ProduceOrderItemDAO;
 import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.common.http.exception.BizException;
 import com.rick.db.plugin.dao.core.EntityDAO;
@@ -14,9 +16,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -36,10 +41,20 @@ public class ProduceScheduleService {
 
     SharpService sharpService;
 
+    ProduceOrderScheduleInboundHandler produceOrderScheduleInboundHandler;
+
+    ProduceOrderItemDAO produceOrderItemDAO;
+
+    @Transactional(rollbackFor = Exception.class)
     public void markStatus(Long scheduleId) {
 //        String status = produceOrderItemScheduleDAO.selectSingleValueById(scheduleId, "status", String.class).get();
-        ProduceOrder.Item.Schedule simpleSchedule = OptionalUtils.expectedAsOptional(produceOrderItemScheduleDAO.selectByParamsWithoutCascade(Params.builder(1).pv("id", scheduleId).build(), "id, status, produce_order_id", "id = :id")).get();
+        ProduceOrder.Item.Schedule simpleSchedule = OptionalUtils.expectedAsOptional(produceOrderItemScheduleDAO.selectByParamsWithoutCascade(Params.builder(1).pv("id", scheduleId).build(), "id, code, status, produce_order_id, quantity, unit, produce_order_item_id", "id = :id")).get();
         produceOrderItemScheduleDAO.update("status", new Object[]{simpleSchedule.getStatus() == ProduceOrder.StatusEnum.PRODUCING ? ProduceOrder.StatusEnum.PRODUCED.name() : ProduceOrder.StatusEnum.PRODUCING.name(), scheduleId}, "id = ?");
+
+        // 生产完成自动入成品库
+        if (simpleSchedule.getStatus() == ProduceOrder.StatusEnum.PRODUCING) {
+            produceOrderScheduleInboundHandler.handle(inbound(simpleSchedule));
+        }
 
 //        Long orderId = sharpService.queryForObject("select produce_order.id from produce_order_item, produce_order_item_schedule, produce_order \n" +
 //                "where produce_order_item.id = produce_order_item_schedule.`produce_order_item_id` \n" +
@@ -64,7 +79,7 @@ public class ProduceScheduleService {
                 "AND produce_order.id = :orderId", Params.builder(1).pv("orderId", simpleSchedule.getProduceOrderId()).build(), String.class);
 
         if (statusList.stream().allMatch(s -> s.equals(ProduceOrder.StatusEnum.PRODUCED.name()))) {
-            produceOrderDAO.update("status", new Object[]{ProduceOrder.StatusEnum.PRODUCED.name(), simpleSchedule.getProduceOrderId()}, "id = ?");
+            produceOrderDAO.update("status", new Object[]{ProduceOrder.StatusEnum.PRODUCED.name(), simpleSchedule.getProduceOrderId()}, "id = ? and status <> 'DONE'");
         } else {
             produceOrderDAO.update("status", new Object[]{ProduceOrder.StatusEnum.PRODUCING.name(), simpleSchedule.getProduceOrderId()}, "id = ?");
         }
@@ -112,5 +127,39 @@ public class ProduceScheduleService {
         }
 
         return histroyGoodsReceiptQuantityMap;
+    }
+
+    private InventoryDocument inbound(ProduceOrder.Item.Schedule simpleSchedule) {
+        Long produceOrderItemId = simpleSchedule.getProduceOrderItemId();
+        Map<String, Object> values = produceOrderItemDAO.selectSingleValueById(produceOrderItemId, "material_id, material_code, batch_id, batch_code", Map.class).get();
+
+        InventoryDocument inventoryDocument = InventoryDocument.builder()
+                .type(InventoryDocument.TypeEnum.INBOUND)
+                .referenceType(InventoryDocument.ReferenceTypeEnum.PP)
+                .referenceCode(simpleSchedule.getCode())
+                .rootReferenceCode(simpleSchedule.getProduceOrderCode())
+                .remark("生产入库")
+                .plantId(726159086739001344L)
+                .documentDate(LocalDate.now())
+                .itemList(Arrays.asList(
+                        InventoryDocument.Item.builder()
+                                .materialId((Long) values.get("material_id"))
+                                .materialCode((String) values.get("material_code"))
+                                .batchId((Long) values.get("batch_id"))
+                                .batchCode((String) values.get("batch_code"))
+                                .referenceType(InventoryDocument.ReferenceTypeEnum.PP)
+                                .referenceCode(simpleSchedule.getCode())
+                                .referenceItemId(produceOrderItemId)
+                                .rootReferenceItemId(produceOrderItemId)
+                                .rootReferenceCode(simpleSchedule.getCode())
+                                .type(InventoryDocument.TypeEnum.INBOUND)
+                                .movementType(InventoryDocument.MovementTypeEnum.INBOUND)
+                                .quantity(simpleSchedule.getQuantity())
+                                .unit(simpleSchedule.getUnit())
+                                .build()
+                ))
+                .build();
+
+        return inventoryDocument;
     }
 }

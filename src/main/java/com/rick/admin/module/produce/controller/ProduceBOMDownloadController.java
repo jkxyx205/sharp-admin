@@ -1,6 +1,7 @@
 package com.rick.admin.module.produce.controller;
 
 import com.google.common.collect.Lists;
+import com.rick.admin.module.inventory.dao.StockDAO;
 import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.produce.dao.ProduceOrderDAO;
@@ -28,10 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -60,6 +58,8 @@ public class ProduceBOMDownloadController {
 
     ProduceOrderDAO produceOrderDAO;
 
+    StockDAO stockDAO;
+
     @PutMapping("schedule/{scheduleId}")
     @ResponseBody
     public Result markStatus(@PathVariable Long scheduleId) {
@@ -76,7 +76,20 @@ public class ProduceBOMDownloadController {
         model.addAttribute("bomTemplate", bomTemplate);
 
         List<Object[]> data = Lists.newArrayList();
-        fetchBomList(schedule.getQuantity(), bomTemplate, data);
+        Collection<String> materialIdBatchCodes = Lists.newArrayList();
+
+        fetchBomList(schedule.getQuantity(), bomTemplate, data, materialIdBatchCodes);
+
+        Map<String, BigDecimal> stockMap = stockDAO.getStockQuantityByMaterialIdAndBatchCode2(719893335619162112L, materialIdBatchCodes);
+
+        data.forEach(objects -> {
+            BigDecimal stockQuantity = stockMap.get(objects[5] + "" + objects[6]);
+            if (Objects.isNull(stockQuantity)) {
+                stockQuantity = BigDecimal.ZERO;
+            }
+            objects[7] = stockQuantity.stripTrailingZeros().toPlainString();
+        });
+
         model.addAttribute("data", data);
 
         model.addAttribute("startDate", Time2StringUtils.format(schedule.getStartDate()));
@@ -149,34 +162,38 @@ public class ProduceBOMDownloadController {
         excelWriter.toFile(HttpServletResponseUtils.getOutputStreamAsAttachment(request, response, item.getProduceOrderCode() + "_" + item.getMaterialName() + ".xlsx"));
     }
 
-    private void writeBomList(BigDecimal qantity, BomTemplate bomTemplate, ExcelWriter excelWriter, AtomicInteger integer) {
+    private void writeBomList(BigDecimal quantity, BomTemplate bomTemplate, ExcelWriter excelWriter, AtomicInteger integer) {
         for (BomTemplate.Component component : bomTemplate.getComponentList()) {
             for (BomTemplate.ComponentDetail componentDetail : component.getComponentDetailList()) {
                 BomTemplate subBomTemplate = componentDetail.getBomTemplate();
                 if (Objects.nonNull(subBomTemplate)) {
-                    writeBomList(qantity, subBomTemplate, excelWriter, integer);
+                    writeBomList(quantity, subBomTemplate, excelWriter, integer);
                 } else {
                     ProduceOrder.Item.Detail value = componentDetail.getValue();
                     if (Objects.nonNull(value.getMaterialId())) {
                         excelWriter.writeRow(new ExcelRow(1, integer.getAndIncrement(), 25f, value.getMaterialName(), (StringUtils.isBlank(value.getMaterialSpecification()) ? "" : value.getMaterialSpecification() + " ") + value.getCharacteristic(),
-                                value.getQuantity().multiply(qantity), value.getUnitText(), value.getRemark()));
+                                value.getQuantity().multiply(quantity), value.getUnitText(), value.getRemark()));
                     }
                 }
             }
         }
     }
 
-    private void fetchBomList(BigDecimal quantity, BomTemplate bomTemplate, List<Object[]> dataList) {
+    private void fetchBomList(BigDecimal quantity, BomTemplate bomTemplate, List<Object[]> dataList, Collection<String> materialIdBatchCodes) {
         for (BomTemplate.Component component : bomTemplate.getComponentList()) {
             for (BomTemplate.ComponentDetail componentDetail : component.getComponentDetailList()) {
                 BomTemplate subBomTemplate = componentDetail.getBomTemplate();
                 if (Objects.nonNull(subBomTemplate)) {
-                    fetchBomList(quantity, subBomTemplate, dataList);
+                    fetchBomList(quantity, subBomTemplate, dataList, materialIdBatchCodes);
                 } else {
                     ProduceOrder.Item.Detail value = componentDetail.getValue();
                     if (Objects.nonNull(value.getMaterialId())) {
                         dataList.add(new Object[]{value.getMaterialName(), (StringUtils.isBlank(value.getMaterialSpecification()) ? "" : value.getMaterialSpecification() + " ") + value.getCharacteristic(),
-                                value.getQuantity().multiply(quantity).stripTrailingZeros().toPlainString(), value.getUnitText(), value.getRemark()});
+                                value.getQuantity().multiply(quantity).stripTrailingZeros().toPlainString(), value.getUnitText(), value.getRemark(), value.getMaterialId(), Objects.toString(value.getBatchCode(), ""), ""});
+
+                        if (materialIdBatchCodes != null) {
+                            materialIdBatchCodes.add(value.getMaterialId() + Objects.toString(value.getBatchCode(), ""));
+                        }
                     }
                 }
             }

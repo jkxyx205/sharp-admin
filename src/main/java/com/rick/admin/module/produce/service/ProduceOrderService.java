@@ -83,6 +83,8 @@ public class ProduceOrderService {
 
             if (order.getStatus() == ProduceOrder.StatusEnum.DONE) {
                 item.setComplete(true);
+
+                // 删除采购申请标识
             }
 
             for (ProduceOrder.Item.Schedule schedule : item.getScheduleList()) {
@@ -153,7 +155,7 @@ public class ProduceOrderService {
     }
 
     public Map<Long, BigDecimal> salesOpenQuantity(InventoryDocument.MovementTypeEnum movementType, String rootReferenceCode) {
-        String sql = "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where exists(select 1 from produce_order_item where `produce_order_code` = :rootReferenceCode AND produce_order_item.id = inv_document_item.root_reference_item_id) group by root_reference_item_id";
+        String sql = "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where exists(select 1 from produce_order_item where `produce_order_code` = :rootReferenceCode AND reference_type = 'SO' AND produce_order_item.id = inv_document_item.root_reference_item_id) group by root_reference_item_id";
         Map<Long, BigDecimal> histroyGoodsReceiptQuantityMap = sharpService.queryForKeyValue(sql, Params.builder(1).pv("rootReferenceCode", rootReferenceCode).build());
 
         if (movementType == InventoryDocument.MovementTypeEnum.OUTBOUND) {

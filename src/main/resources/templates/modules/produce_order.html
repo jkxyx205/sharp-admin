@@ -525,7 +525,7 @@
             showRowNumber: true, // 是否显示行号
             allowEmpty: false, // 表格允许为空,
             highlight: true,
-            // readonly,
+            readonly,
             rowClick: function (context, $tr, row, fromActiveRow) {
                 if (!$tr[0].form) {
                     $tr[0].form = {'attachmentList': []}
@@ -786,6 +786,7 @@
                     width: 100,
                     align: 'center',
                     required: true,
+                    disabled: true,
                     datasource: [
                         {
                             name: "PRODUCING",
