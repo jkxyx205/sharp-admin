@@ -167,7 +167,7 @@ public class ProduceBOMDownloadController {
             for (BomTemplate.ComponentDetail componentDetail : component.getComponentDetailList()) {
                 BomTemplate subBomTemplate = componentDetail.getBomTemplate();
                 if (Objects.nonNull(subBomTemplate)) {
-                    writeBomList(quantity, subBomTemplate, excelWriter, integer);
+                    writeBomList(quantity.multiply(componentDetail.getQuantity()), subBomTemplate, excelWriter, integer);
                 } else {
                     ProduceOrder.Item.Detail value = componentDetail.getValue();
                     if (Objects.nonNull(value.getMaterialId())) {
@@ -184,7 +184,7 @@ public class ProduceBOMDownloadController {
             for (BomTemplate.ComponentDetail componentDetail : component.getComponentDetailList()) {
                 BomTemplate subBomTemplate = componentDetail.getBomTemplate();
                 if (Objects.nonNull(subBomTemplate)) {
-                    fetchBomList(quantity, subBomTemplate, dataList, materialIdBatchCodes);
+                    fetchBomList(quantity.multiply(componentDetail.getQuantity()), subBomTemplate, dataList, materialIdBatchCodes);
                 } else {
                     ProduceOrder.Item.Detail value = componentDetail.getValue();
                     if (Objects.nonNull(value.getMaterialId())) {

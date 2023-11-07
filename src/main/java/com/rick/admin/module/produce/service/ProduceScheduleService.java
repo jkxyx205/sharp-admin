@@ -5,15 +5,17 @@ import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.inventory.service.handler.ProduceOrderScheduleInboundHandler;
 import com.rick.admin.module.produce.dao.ProduceOrderDAO;
 import com.rick.admin.module.produce.dao.ProduceOrderItemDAO;
+import com.rick.admin.module.produce.entity.BomTemplate;
 import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.common.http.exception.BizException;
-import com.rick.db.plugin.dao.core.EntityDAO;
+import com.rick.db.plugin.dao.core.EntityCodeDAO;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
 import com.rick.db.util.OptionalUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,8 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author Rick.Xu
@@ -35,7 +39,7 @@ import java.util.Map;
 @Validated
 public class ProduceScheduleService {
 
-    EntityDAO<ProduceOrder.Item.Schedule, Long> produceOrderItemScheduleDAO;
+    EntityCodeDAO<ProduceOrder.Item.Schedule, Long> produceOrderItemScheduleDAO;
 
     ProduceOrderDAO produceOrderDAO;
 
@@ -44,6 +48,8 @@ public class ProduceScheduleService {
     ProduceOrderScheduleInboundHandler produceOrderScheduleInboundHandler;
 
     ProduceOrderItemDAO produceOrderItemDAO;
+
+    BomService bomService;
 
     @Transactional(rollbackFor = Exception.class)
     public void markStatus(Long scheduleId) {
@@ -105,12 +111,14 @@ public class ProduceScheduleService {
         Map<Long, BigDecimal> histroyGoodsReceiptQuantityMap = sharpService.queryForKeyValue(sql, Params.builder(1).pv("rootReferenceCode", rootReferenceCode).build());
 
         // language=SQL
-        String sql2 = "select produce_order_item_detail.`id`, produce_order_item_detail.quantity * produce_order_item_schedule.quantity from produce_order_item_schedule\n" +
-                "                inner join produce_order_item on produce_order_item.id = produce_order_item_schedule.produce_order_item_id\n" +
-                "                inner join produce_order_item_detail on produce_order_item.id = produce_order_item_detail.`produce_order_item_id`\n" +
-                "                where produce_order_item_schedule.code = :rootReferenceCode";
-
-        Map<Long, BigDecimal> requestQuantityMap = sharpService.queryForKeyValue(sql2, Params.builder(1).pv("rootReferenceCode", rootReferenceCode).build());
+//        String sql2 = "select produce_order_item_detail.`id`, produce_order_item_detail.quantity * produce_order_item_schedule.quantity from produce_order_item_schedule\n" +
+//                "                inner join produce_order_item on produce_order_item.id = produce_order_item_schedule.produce_order_item_id\n" +
+//                "                inner join produce_order_item_detail on produce_order_item.id = produce_order_item_detail.`produce_order_item_id`\n" +
+//                "                where produce_order_item_schedule.code = :rootReferenceCode";
+//
+//        Map<Long, BigDecimal> requestQuantityMap = sharpService.queryForKeyValue(sql2, Params.builder(1).pv("rootReferenceCode", rootReferenceCode).build());
+        List<ProduceOrder.Item.Detail> detailList = flatDetailList(rootReferenceCode);
+        Map<Long, BigDecimal> requestQuantityMap = detailList.stream().collect(Collectors.toMap(ProduceOrder.Item.Detail::getId, ProduceOrder.Item.Detail::getQuantity));
 
         if (movementType == InventoryDocument.MovementTypeEnum.OUTBOUND) {
             // 同向
@@ -127,6 +135,16 @@ public class ProduceScheduleService {
         }
 
         return histroyGoodsReceiptQuantityMap;
+    }
+
+    public List<ProduceOrder.Item.Detail> flatDetailList(String scheduleCode) {
+        ProduceOrder.Item.Schedule schedule = produceOrderItemScheduleDAO.selectByCode(scheduleCode).get();
+        ProduceOrder.Item item = produceOrderItemDAO.selectById(schedule.getProduceOrderItemId()).get();
+        BomTemplate bomTemplate = resolveItemAndReturnBomTemplate(item);
+
+        List<ProduceOrder.Item.Detail> detailList = Lists.newArrayList();
+        fetchBomList(schedule.getQuantity(), bomTemplate, detailList);
+        return detailList;
     }
 
     private InventoryDocument inbound(ProduceOrder.Item.Schedule simpleSchedule) {
@@ -161,5 +179,29 @@ public class ProduceScheduleService {
                 .build();
 
         return inventoryDocument;
+    }
+
+    private BomTemplate resolveItemAndReturnBomTemplate(ProduceOrder.Item item) {
+        Map<Long, ProduceOrder.Item.Detail> valueMapping = item.getItemList().stream().collect(Collectors.toMap(ProduceOrder.Item.Detail::getComponentDetailId, v -> v));
+
+        BomTemplate bomTemplate = bomService.getBomTemplateMaterialId(item.getMaterialId(), valueMapping, false);
+        return bomTemplate;
+    }
+
+    private void fetchBomList(BigDecimal quantity, BomTemplate bomTemplate, List<ProduceOrder.Item.Detail> detailList) {
+        for (BomTemplate.Component component : bomTemplate.getComponentList()) {
+            for (BomTemplate.ComponentDetail componentDetail : component.getComponentDetailList()) {
+                BomTemplate subBomTemplate = componentDetail.getBomTemplate();
+                if (Objects.nonNull(subBomTemplate)) {
+                    fetchBomList(quantity.multiply(componentDetail.getQuantity()), subBomTemplate, detailList);
+                } else {
+                    ProduceOrder.Item.Detail value = componentDetail.getValue();
+                    if (Objects.nonNull(value.getMaterialId())) {
+                       value.setQuantity(value.getQuantity().multiply(quantity));
+                       detailList.add(value);
+                    }
+                }
+            }
+        }
     }
 }
