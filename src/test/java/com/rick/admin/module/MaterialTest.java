@@ -521,7 +521,7 @@ public class MaterialTest {
 //                        new ReportColumn("categoryText", "分类", false, "core_material_category", Arrays.asList("dictConverter"))
                 ))
                 .pageable(false)
-                .sidx("id")
+                .sidx("code")
                 .sord(SordEnum.ASC)
                 .build());
     }
