@@ -9,7 +9,6 @@ import com.rick.admin.module.core.entity.ContactInfo;
 import com.rick.admin.module.core.entity.Partner;
 import com.rick.admin.module.core.model.ReferenceTypeEnum;
 import com.rick.admin.module.core.service.ContactInfoService;
-import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
@@ -54,8 +53,6 @@ public class PurchaseOrderController {
 
     final PurchaseOrderDAO purchaseOrderDAO;
 
-    final MaterialDAO materialDAO;
-
     final DictService dictService;
 
     final MaterialService materialService;
@@ -79,12 +76,6 @@ public class PurchaseOrderController {
         }
 
         purchaseOrderService.saveOrUpdate(purchaseOrder);
-
-        // 更新物料的价格
-        List<Object[]> paramList = purchaseOrder.getItemList().stream().filter(item -> Objects.nonNull(item.getUnitPrice()))
-        .map(item -> new Object[]{item.getUnitPrice(), item.getMaterialId()}).collect(Collectors.toList());
-        materialDAO.updatePrice(paramList);
-        materialService.fillMaterialDescription(purchaseOrder.getItemList());
 
         return purchaseOrder;
     }
@@ -121,10 +112,6 @@ public class PurchaseOrderController {
 
         handleReferenceValue(purchaseOrderList.stream().flatMap(purchaseOrder -> purchaseOrder.getItemList().stream())
                 .filter(purchaseOrderItem -> purchaseOrderItem.getReferenceType1() == ReferenceTypeEnum.PR).collect(Collectors.toList()));
-        // 更新物料的价格
-//        List<Object[]> paramList = purchaseOrderList.stream().flatMap(purchaseOrder -> purchaseOrder.getItemList().stream()).filter(item -> Objects.nonNull(item.getUnitPrice()))
-//                .map(item -> new Object[]{item.getUnitPrice(), item.getMaterialId()}).collect(Collectors.toList());
-//        materialDAO.updatePrice(paramList);
 
         purchaseOrderService.save(purchaseOrderList);
         return ResultUtils.success();

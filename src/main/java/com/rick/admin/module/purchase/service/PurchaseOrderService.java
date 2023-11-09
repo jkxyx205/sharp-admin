@@ -12,6 +12,7 @@ import com.rick.admin.module.core.entity.CodeSequence;
 import com.rick.admin.module.core.entity.Partner;
 import com.rick.admin.module.core.service.CodeSequenceService;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
+import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.material.service.MaterialDescription;
 import com.rick.admin.module.material.service.MaterialService;
@@ -81,6 +82,8 @@ public class PurchaseOrderService {
 
     CodeSequenceService codeSequenceService;
 
+    final MaterialDAO materialDAO;
+
     /**
      * 新增或修改
      * @param order
@@ -97,6 +100,12 @@ public class PurchaseOrderService {
 
         batchService.saveBatch(order.getItemList());
         purchaseOrderDAO.insertOrUpdate(order);
+
+        // 更新物料的价格
+        List<Object[]> paramList = order.getItemList().stream().filter(item -> Objects.nonNull(item.getUnitPrice()))
+                .map(item -> new Object[]{item.getUnitPrice(), item.getMaterialId()}).collect(Collectors.toList());
+        materialDAO.updatePrice(paramList);
+        materialService.fillMaterialDescription(order.getItemList());
 
     }
 
@@ -116,6 +125,11 @@ public class PurchaseOrderService {
         batchService.saveBatch(list.stream().flatMap(purchaseOrder -> purchaseOrder.getItemList().stream()).collect(Collectors.toSet()));
 
         purchaseOrderDAO.insert(list);
+
+         // 更新物料的价格
+        List<Object[]> paramList = list.stream().flatMap(purchaseOrder -> purchaseOrder.getItemList().stream()).filter(item -> Objects.nonNull(item.getUnitPrice()))
+                .map(item -> new Object[]{item.getUnitPrice(), item.getMaterialId()}).collect(Collectors.toList());
+        materialDAO.updatePrice(paramList);
     }
 
     private CodeSequence getNextSequence(String prefix, int num) {
