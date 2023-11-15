@@ -117,7 +117,7 @@ public class MaterialService {
             return;
         }
 
-        Map<Long, Material> idMaterialMap = materialDAO.selectByParamsWithoutCascade(Params.builder(1).pv("id", materialIds).build(), "id IN (:id)")
+        Map<Long, Material> idMaterialMap = materialDAO.selectByParamsWithoutCascade(Params.builder(1).pv("id", materialIds).build(), "id IN (:id) AND is_deleted = :tmp")
                 .stream().collect(Collectors.toMap(Material::getId, material -> material));
         if (MapUtils.isNotEmpty(idMaterialMap)) {
             consumer.accept(idMaterialMap, dictService);

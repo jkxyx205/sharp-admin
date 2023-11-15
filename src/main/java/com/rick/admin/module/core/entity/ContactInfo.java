@@ -20,6 +20,9 @@ import lombok.experimental.SuperBuilder;
 @Table(value = "core_contact", comment = "联系表")
 public class ContactInfo extends BaseEntity {
 
+    @Column(comment = "联系主体")
+    String contactSubject;
+
     @Column(comment = "联系人")
     String contactPerson;
 

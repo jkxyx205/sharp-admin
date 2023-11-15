@@ -12,10 +12,6 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author Rick.Xu
@@ -34,16 +30,16 @@ public class PurchaseRequisitionItemService {
     }
 
     public void insertOrUpdateByReferenceIds(List<PurchaseRequisition.Item> itemList) {
-        Map<Long, PurchaseRequisition.Item> referenceIdEntityMap = getReferenceIdEntityMap(itemList.stream().map(PurchaseRequisition.Item::getReferenceId).collect(Collectors.toSet()));
-        itemList.forEach(item -> {
-            PurchaseRequisition.Item prItem = referenceIdEntityMap.get(item.getReferenceId());
-            if (Objects.nonNull(prItem)) {
-                Boolean complete = prItem.getComplete();
-                Long id = prItem.getId();
-                item.setComplete(complete);
-                item.setId(id);
-            }
-        });
+//        Map<Long, PurchaseRequisition.Item> referenceIdEntityMap = getReferenceIdEntityMap(itemList.stream().map(PurchaseRequisition.Item::getReferenceId).collect(Collectors.toSet()));
+//        itemList.forEach(item -> {
+//            PurchaseRequisition.Item prItem = referenceIdEntityMap.get(item.getReferenceId());
+//            if (Objects.nonNull(prItem)) {
+//                Boolean complete = prItem.getComplete();
+//                Long id = prItem.getId();
+//                item.setComplete(complete);
+//                item.setId(id);
+//            }
+//        });
 
 //
 //        Map<Long, Long> referenceIdEItemIdMap = itemList.stream()
@@ -61,11 +57,11 @@ public class PurchaseRequisitionItemService {
     }
 
 
-    public Map<Long, PurchaseRequisition.Item> getReferenceIdEntityMap(Collection<Long> referenceIds) {
-        return purchaseRequisitionItemDAO.selectByParams(Params.builder(1).pv("referenceIds",
-                        referenceIds).build(), "reference_id IN (:referenceIds)")
-                .stream().collect(Collectors.toMap(PurchaseRequisition.Item::getReferenceId, Function.identity()));
-    }
+//    public Map<Long, PurchaseRequisition.Item> getReferenceIdEntityMap(Collection<Long> referenceIds) {
+//        return purchaseRequisitionItemDAO.selectByParams(Params.builder(1).pv("referenceIds",
+//                        referenceIds).build(), "reference_id IN (:referenceIds)")
+//                .stream().collect(Collectors.toMap(PurchaseRequisition.Item::getReferenceId, Function.identity()));
+//    }
 
 
     public void markCompleted(Collection<Long> ids) {

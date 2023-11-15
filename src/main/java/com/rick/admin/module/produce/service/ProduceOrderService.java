@@ -9,11 +9,11 @@ import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.produce.dao.ProduceOrderItemDAO;
-import com.rick.admin.module.produce.dao.ProduceOrderItemDetailDAO;
 import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.admin.module.purchase.entity.PurchaseRequisition;
 import com.rick.admin.module.purchase.service.PurchaseRequisitionItemService;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
+import com.rick.db.plugin.dao.core.EntityDAO;
 import com.rick.db.plugin.dao.support.BaseEntityUtils;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
@@ -49,7 +49,7 @@ public class ProduceOrderService {
 
     EntityCodeDAO<ProduceOrder, Long> produceOrderDAO;
 
-    ProduceOrderItemDetailDAO produceOrderItemDetailDAO;
+    EntityDAO<PurchaseRequisition.Item, Long> purchaseRequisitionItemDAO;
 
     ProduceOrderItemDAO produceOrderItemDAO;
 
@@ -107,7 +107,7 @@ public class ProduceOrderService {
         produceOrderDAO.insertOrUpdate(order);
 
         if (order.getStatus() == ProduceOrder.StatusEnum.PRODUCING) {
-            handlePurchaseRequisition(order.getItemList(), order.getId());
+            handlePurchaseRequisition(order.getItemList(), order.getId(), order.getCode());
         }
     }
 
@@ -258,11 +258,14 @@ public class ProduceOrderService {
      * 触发采购申请
      * @param soItem
      */
-    private void handlePurchaseRequisition(List<ProduceOrder.Item> soItem, long produceOrderId) {
-        boolean purchaseRequisition = produceOrderDAO.selectSingleValueById(produceOrderId, "is_purchase_requisition", Boolean.class).get();
-        if(purchaseRequisition) {
-            return;
-        }
+    private void handlePurchaseRequisition(List<ProduceOrder.Item> soItem, long produceOrderId, String produceOrderCode) {
+//        boolean purchaseRequisition = produceOrderDAO.selectSingleValueById(produceOrderId, "is_purchase_requisition", Boolean.class).get();
+//        if(purchaseRequisition) {
+//            return;
+//        }
+
+        // 删除历史采购
+        purchaseRequisitionItemDAO.delete(Params.builder(1).pv("referenceDocumentId", produceOrderId).build(), "reference_document_id = :referenceDocumentId AND is_complete = 0");
 
         List<PurchaseRequisition.Item> itemList = Lists.newArrayListWithExpectedSize(soItem.size());
         for (ProduceOrder.Item item : soItem) {
@@ -270,6 +273,8 @@ public class ProduceOrderService {
                 PurchaseRequisition.Item prItem = new PurchaseRequisition.Item();
                 BeanUtils.copyProperties(item, prItem);
                 prItem.setReferenceType(ReferenceTypeEnum.SO);
+                prItem.setReferenceDocumentId(produceOrderId);
+                prItem.setReferenceDocumentCode(produceOrderCode);
                 prItem.setReferenceId(item.getId());
                 prItem.setPurchaseRequisitionId(1L);
                 prItem.setPurchaseRequisitionCode("STANDARD");
@@ -285,6 +290,8 @@ public class ProduceOrderService {
 
             for (PurchaseRequisition.Item prItem : produceitemList) {
                 prItem.setReferenceType(ReferenceTypeEnum.SO);
+                prItem.setReferenceDocumentId(produceOrderId);
+                prItem.setReferenceDocumentCode(produceOrderCode);
                 prItem.setReferenceId(produceOrderId);
                 prItem.setPurchaseRequisitionId(1L);
                 prItem.setPurchaseRequisitionCode("STANDARD");
@@ -335,17 +342,26 @@ public class ProduceOrderService {
                 "                                                              union all\n" +
                 "                                                              select material_id, batch_id, quantity from inv_stock where plant_id = 719893335619162112\n" +
                 "                                                              union all\n" +
+                "                                                              select produce_order_item.material_id, produce_order_item.batch_id, -1 *produce_order_item.quantity from produce_order_item, mm_material where produce_order_id = :produceOrderId and item_category='PRODUCT' and mm_material.id = produce_order_item.material_id AND mm_material.material_type = 'ROH'\n" +
+                "                                                              union all\n" +
                 "                                                              select material_id, batch_id, quantity from pur_purchase_requisition_item where is_complete = 0 and is_deleted = 0\n" +
                 "                                                              union all\n" +
-                "                                                              select produce_order_item_detail.material_id, produce_order_item_detail.batch_id, (-1 * produce_order_item_schedule.quantity * produce_order_item_detail.quantity) quantity  from produce_order_item_schedule, produce_order_item, produce_order, produce_order_item_detail\n" +
-                "                                                              where produce_order_item_schedule.produce_order_item_id = produce_order_item.id AND produce_order.id = produce_order_item.produce_order_id AND produce_order_item_detail.produce_order_item_id = produce_order_item.id\n" +
-                "                                                                AND produce_order_item_schedule.`status` = 'PRODUCING' AND produce_order.`status` = 'PRODUCING'\n" +
+                "                                                              select produce_order_item_detail.material_id, produce_order_item_detail.batch_id, (-1 * produce_order_item.quantity * (CASE\n" +
+                "WHEN produce_order_item_detail.component_detail_id = 725451860537794560 THEN 3 * produce_order_item_detail.quantity\n" +
+                "WHEN produce_order_item_detail.component_detail_id = 725451860537794561 THEN 3 * produce_order_item_detail.quantity\n" +
+                "ELSE produce_order_item_detail.quantity\n" +
+                "END)) quantity  from produce_order_item, produce_order, produce_order_item_detail\n" +
+                "                                                              where produce_order.id = produce_order_item.produce_order_id AND produce_order_item_detail.produce_order_item_id = produce_order_item.id\n" +
+                "                                                                AND produce_order.`status` = 'PRODUCING' AND produce_order_item.item_category = 'PRODUCT'\n" +
                 "                                                          ) stock\n" +
                 "                                                     where exists(\n" +
-                "                                                                   select 1 from produce_order_item_schedule, produce_order_item, produce_order, produce_order_item_detail\n" +
-                "                                                                   where produce_order_item_schedule.produce_order_item_id = produce_order_item.id AND produce_order.id = produce_order_item.produce_order_id AND produce_order_item_detail.produce_order_item_id = produce_order_item.id\n" +
-                "                                                                     AND produce_order_item_schedule.`status` = 'PRODUCING' AND produce_order.`status` = 'PRODUCING' AND produce_order.id = :produceOrderId\n" +
-                "                                                         AND produce_order_item_detail.material_id = stock.material_id AND (produce_order_item_detail.batch_id = stock.batch_id or (produce_order_item_detail.batch_id is null AND stock.batch_id is null ))\n" +
+                "                                                                   select 1 from produce_order_item, produce_order, (select material_id, batch_id, produce_order_item_id from produce_order_item_detail\n" +
+                "union all\n" +
+                " select produce_order_item.material_id, produce_order_item.batch_id, produce_order_item.id produce_order_item_id from produce_order_item, mm_material where produce_order_id = :produceOrderId and item_category='PRODUCT' and mm_material.id = produce_order_item.material_id AND mm_material.material_type = 'ROH'\n" +
+                ") produce_order_item_detail\n" +
+                "                                                                   where produce_order.id = produce_order_item.produce_order_id AND produce_order_item_detail.produce_order_item_id = produce_order_item.id\n" +
+                "                                                                      AND produce_order.`status` = 'PRODUCING' AND produce_order.id = :produceOrderId\n" +
+                "                                                         AND produce_order_item.item_category = 'PRODUCT'                                                         AND produce_order_item_detail.material_id = stock.material_id AND (produce_order_item_detail.batch_id = stock.batch_id or (produce_order_item_detail.batch_id is null AND stock.batch_id is null ))\n" +
                 "                                                               )\n" +
                 "group by material_id, batch_id having sum(quantity) < 0";
 

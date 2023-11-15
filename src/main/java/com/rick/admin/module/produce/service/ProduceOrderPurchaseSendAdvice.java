@@ -10,7 +10,10 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -41,7 +44,8 @@ public class ProduceOrderPurchaseSendAdvice implements ReportAdvice {
 
         if (purchaseOrderAuthority) {
             // language=JavaScript
-            js = "$('#batch-cpn-bar .btn-group').html('').append('<button class=\"btn btn-primary\" style=\"padding: .075rem .45rem\" type=\"button\" onclick=\"addPurchase()\" disabled>立即采购...</button><button class=\"btn btn-primary\" style=\"padding: .075rem .45rem\" type=\"button\" onclick=\"deletePurchase()\" disabled>删除</button>')\n" +
+            js = "$('table tbody tr').each(function() { let $materialTd = $(this).find('td:nth-child(3)'); let materialId = $(this).find('input[name=material_id]').val(); let materialCode = $materialTd.text().trim();$materialTd.html(\"<a href=\\\"javascript:;\\\" name=\\\"material_code\\\" onclick=\\\"showDialog('查看', '\"+materialId+\"')\\\">\"+materialCode+\"</a>\"); let $codeTd = $(this).find('td:nth-child(10)'); let code = $codeTd.text().trim();$codeTd.html(\"<a href=\\\"javascript:;\\\" onclick=\\\"openOnNewTab('\"+code+\"', '/produce_orders/code/\"+code+\"', '\"+code+\"')\\\">\"+code+\"</a>\")});" +
+                    "$('#batch-cpn-bar .btn-group').html('').append('<button class=\"btn btn-primary\" style=\"padding: .075rem .45rem\" type=\"button\" onclick=\"addPurchase()\" disabled>立即采购...</button><button class=\"btn btn-primary\" style=\"padding: .075rem .45rem\" type=\"button\" onclick=\"deletePurchase()\" disabled>删除</button>')\n" +
                     "function addPurchase() {\n" +
                     "    let itemIds = getItemIds()\n" +
                     "    if (!itemIds) {\n" +
@@ -88,7 +92,7 @@ public class ProduceOrderPurchaseSendAdvice implements ReportAdvice {
         } else {
             js = "$('table thead tr th:nth-child(2), table tbody tr td:nth-child(2)').hide();$('#batch-cpn-bar .btn-group').hide()";
         }
-        report.setAdditionalInfo(new HashMap<>());
+//        report.setAdditionalInfo(new HashMap<>());
         report.getAdditionalInfo().put("js", js);
     }
 }

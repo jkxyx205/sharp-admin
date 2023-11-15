@@ -613,7 +613,7 @@
                                 "specification": row.specification,
                             }, $tr)
                             // $tr[0].form = vue.$data.form  = {}
-                             vue.$data.form = $tr[0].form
+                             vue.$data.form = $tr[0].form = {}
                             $scheduleDom.hide()
                         }
 
@@ -944,7 +944,7 @@
                         return;
                     }
                 } else {
-                    if (item.materialType !== 'ROH' && strictValid) {
+                    if (item.materialType !== 'ROH' && strictValid && item.itemCategory === 'PRODUCT') {
                         toastr.error('第 '+(parseInt(index) + 1)+' 个物料没有填写生产计划！')
                         return;
                         // item['scheduleList'] = [{
@@ -964,6 +964,8 @@
                 if (!item.contactInfo.contactNumber) {
                     item.contactInfo.contactNumber = $('#contactNumber').val()
                 }
+
+                item.contactInfo.contactSubject = $('#partnerId option:selected').text()
 
                 if (item.itemCategory === 'PURCHASE_SEND') {
                     if (!item.contactInfo.address) {

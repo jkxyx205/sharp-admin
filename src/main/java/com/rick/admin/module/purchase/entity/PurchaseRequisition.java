@@ -84,6 +84,10 @@ public class PurchaseRequisition extends BaseCodeEntity {
 
         ReferenceTypeEnum referenceType;
 
+        Long referenceDocumentId;
+
+        String referenceDocumentCode;
+
         Long referenceId;
 
         /**

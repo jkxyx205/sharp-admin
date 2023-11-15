@@ -1,5 +1,6 @@
 package com.rick.admin.module;
 
+import com.rick.db.service.support.Params;
 import com.rick.report.core.entity.Report;
 import com.rick.report.core.model.*;
 import com.rick.report.core.service.ReportService;
@@ -27,6 +28,7 @@ public class ProduceOrderPurchaseSendTest {
                 .tplName("tpl/list")
                 .name("采购申请")
                 .reportAdviceName("produceOrderPurchaseSendAdvice")
+                .additionalInfo(Params.builder(1).pv("formId", "695978675677433856").build())
                 .querySql("SELECT pur_purchase_requisition_item.id,\n" +
                         "        pur_purchase_requisition_item.material_id,\n" +
                         "        pur_purchase_requisition_item.material_code,\n" +

@@ -312,7 +312,7 @@ public class PurchaseOrderService {
                     materialDescription.getSpecification() + " " + materialDescription.getCharacteristic(),
                     item.getQuantity(), materialDescription.getUnitText(), item.getUnitPrice(), item.getAmount(),
                     Time2StringUtils.format(item.getDeliveryDate()),
-                    (item.getPurchaseSend() ? "\n直发客户：" + (Objects.isNull(soInfo) ? "" : soInfo.get("name")) : "发普源") + item.getRemark()
+                    (item.getPurchaseSend() ? "\n直发：" + (Objects.isNull(item.getContactInfo().getContactSubject()) ? "" : item.getContactInfo().getContactSubject()) : "发普源") + item.getRemark()
             });
         }
 
@@ -355,8 +355,10 @@ public class PurchaseOrderService {
         for (int i = 0; i < purchaseOrder.getItemList().size(); i++) {
             PurchaseOrder.Item item = purchaseOrder.getItemList().get(i);
             if (item.getPurchaseSend()) {
+
+
                 excelWriter.insertAndWriteCell(new ExcelCell(1, 16 + rowSize + addressSize, 30f, cellStyles[1],
-                        (MapUtils.isNotEmpty(item.getSoInfo()) ? item.getSoInfo().get("name") + ":" : "") + item.getContactInfo(), 1, 10));
+                        (StringUtils.isNotBlank(item.getContactInfo().getContactSubject()) ? item.getContactInfo().getContactSubject() + ":" : "") + item.getContactInfo(), 1, 10));
                 addressSize++;
             }
         }
