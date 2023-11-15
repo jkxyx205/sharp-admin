@@ -355,6 +355,17 @@
 
             var params = $('#form-header').form2json({allowEmptyMultiVal:true})
             params['itemList'] = $editableTable.editableTablePlus('getValue')
+            // 线根据供应商设置品牌
+            let size = params['itemList'].length
+            for(let index = 0; index < size; index++) {
+                $editableTable.find("tbody tr:eq("+(index)+")").each(function () {
+                    let materialCode = $(this).find(':input[name=materialCode]').val()
+                    if (materialCode === 'R00548' || materialCode === 'R00848' || materialCode === 'R00904') {
+                        $(this).find('td.characteristic-td .items > div :input[name=LINE_BRAND]').val($(this).find(':input[name=partnerId] option:selected').text())
+                    }
+                })
+            }
+
             characteristic.getCharacteristicParams($editableTable, params['itemList'])
 
             $.ajax({
