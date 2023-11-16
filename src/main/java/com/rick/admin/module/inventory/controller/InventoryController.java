@@ -23,6 +23,7 @@ import com.rick.admin.module.purchase.service.PurchaseOrderService;
 import com.rick.common.http.exception.BizException;
 import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
+import com.rick.common.util.StringUtils;
 import com.rick.db.dto.SimpleEntity;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
@@ -197,6 +198,7 @@ public class InventoryController {
                             .materialCode(item.getMaterialCode())
                             .quantity(item.getQuantity())
                             .unit(item.getUnit())
+                            .remark(dictService.getDictByTypeAndName("core_partner_vendor", String.valueOf(purchaseOrder.getPartnerId())).get().getLabel() + StringUtils.appendValue(item.getRemark()))
                             .build());
         }
 

@@ -12,11 +12,13 @@ import com.rick.admin.module.produce.dao.ProduceOrderItemDAO;
 import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.admin.module.purchase.entity.PurchaseRequisition;
 import com.rick.admin.module.purchase.service.PurchaseRequisitionItemService;
+import com.rick.common.util.StringUtils;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
 import com.rick.db.plugin.dao.core.EntityDAO;
 import com.rick.db.plugin.dao.support.BaseEntityUtils;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
+import com.rick.meta.dict.service.DictService;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
@@ -58,6 +61,8 @@ public class ProduceOrderService {
     PurchaseRequisitionItemService purchaseRequisitionItemService;
 
     MaterialService materialService;
+
+    DictService dictService;
 
     /**
      * 新增或修改
@@ -105,7 +110,7 @@ public class ProduceOrderService {
         produceOrderDAO.insertOrUpdate(order);
 
         if (order.getStatus() == ProduceOrder.StatusEnum.PRODUCING) {
-            handlePurchaseRequisition(order.getItemList(), order.getId(), order.getCode());
+            handlePurchaseRequisition(order.getItemList(), order.getId(), order.getCode(), order.getPartnerId());
         }
     }
 
@@ -275,13 +280,21 @@ public class ProduceOrderService {
 
     /**
      * 触发采购申请
+     *
      * @param soItem
+     * @param partnerId
      */
-    private void handlePurchaseRequisition(List<ProduceOrder.Item> soItem, long produceOrderId, String produceOrderCode) {
+    private void handlePurchaseRequisition(List<ProduceOrder.Item> soItem, long produceOrderId, String produceOrderCode, @NotNull Long partnerId) {
 //        boolean purchaseRequisition = produceOrderDAO.selectSingleValueById(produceOrderId, "is_purchase_requisition", Boolean.class).get();
 //        if(purchaseRequisition) {
 //            return;
 //        }
+
+        Map<String, String> materialIdRemark = soItem.stream().collect(Collectors.toMap(item -> item.getMaterialId() + Objects.toString(item.getBatchCode(), ""), item -> item.getRemark(), (item1, item2) -> item1));
+        materialIdRemark.putAll(soItem.stream().flatMap(item -> item.getItemList().stream()).collect(Collectors.toMap(item -> item.getMaterialId() + Objects.toString(item.getBatchCode(), ""), item -> item.getRemark(), (item1, item2) -> item1)));
+
+
+        Set<String> purchaseSendSet = soItem.stream().flatMap(item -> item.getItemList().stream()).filter(item -> Objects.toString(item.getRemark(), "").contains("采购")).map(item -> item.getMaterialId() + Objects.toString(item.getBatchId(), "")).collect(Collectors.toSet());
 
         // 删除历史采购
         purchaseRequisitionItemDAO.delete(Params.builder(1).pv("referenceDocumentId", produceOrderId).build(), "reference_document_id = :referenceDocumentId AND is_complete = 0");
@@ -303,7 +316,7 @@ public class ProduceOrderService {
             }
         }
 
-        List<PurchaseRequisition.Item> produceitemList = purchaseRequisitionForProduce(produceOrderId);
+        List<PurchaseRequisition.Item> produceitemList = purchaseRequisitionForProduce(produceOrderId, purchaseSendSet);
         if (CollectionUtils.isNotEmpty(produceitemList)) {
             materialService.fillMaterialDescription(produceitemList);
 
@@ -318,6 +331,13 @@ public class ProduceOrderService {
                 prItem.setUnit(prItem.getMaterialDescription().getUnit());
                 prItem.setComplete(false);
                 prItem.setDeliveryDate(LocalDate.now().plusDays(3));
+                prItem.setRemark(materialIdRemark.get(prItem.getMaterialId() + Objects.toString(prItem.getBatchCode(), "")));
+                prItem.setPurchaseSend(prItem.getRemark().contains("发"));
+
+                if (prItem.getMaterialCode().equals("R00548") || prItem.getMaterialCode().equals("R00848") || prItem.getMaterialCode().equals("R00904")) {
+                    prItem.setRemark(dictService.getDictByTypeAndName("core_partner_customer", String.valueOf(partnerId)).get().getLabel() +  StringUtils.appendValue(prItem.getRemark()));
+                }
+
                 itemList.add(prItem);
             } 
         }
@@ -331,11 +351,12 @@ public class ProduceOrderService {
         purchaseRequisitionItemService.insertOrUpdateByReferenceIds(itemList);
     }
 
-    private List<PurchaseRequisition.Item> purchaseRequisitionForProduce(long produceOrderId) {
-        String sql = "select material_id materialId, batch_id batchId, -1 * sum(quantity) quantity, 0 purchaseSend FROM (\n" +
+    private List<PurchaseRequisition.Item> purchaseRequisitionForProduce(long produceOrderId, Set<String> materialIdBatchIdString) {
+        String sql = "select material_id materialId, batch_id batchId, batch_code batchCode,  -1 * sum(quantity) quantity, 0 purchaseSend FROM (\n" +
                 "                                                              select\n" +
                 "                                                                  receiving.material_id,\n" +
                 "                                                                  receiving.batch_id,\n" +
+                "                                                                  receiving.batch_code,\n" +
                 "                                                                  (receiving.quantity - ifnull(received.received_quantity, 0)) quantity\n" +
                 "                                                              from (select pur_purchase_order_item.*\n" +
                 "                                                                    from `pur_purchase_order`,\n" +
@@ -359,13 +380,14 @@ public class ProduceOrderService {
                 "                                                                    group by root_reference_item_id) received\n" +
                 "                                                                   on receiving.id = received.root_reference_item_id\n" +
                 "                                                              union all\n" +
-                "                                                              select material_id, batch_id, quantity from inv_stock where plant_id = 719893335619162112 AND material_id NOT IN (729584784212238336, 741996205273632769, 731499486144483329)\n" +
+                "                                                              select material_id, batch_id, batch_code, quantity from inv_stock where plant_id = 719893335619162112 " +
+                " AND material_id NOT IN (729584784212238336, 741996205273632769, 731499486144483329) AND concat(material_id, ifnull(batch_id, '')) NOT IN (:materialIdBatchIdString)\n" +
                 "                                                              union all\n" +
-                "                                                              select produce_order_item.material_id, produce_order_item.batch_id, -1 *produce_order_item.quantity from produce_order_item, mm_material where produce_order_id = :produceOrderId and item_category='PRODUCT' and mm_material.id = produce_order_item.material_id AND mm_material.material_type = 'ROH'\n" +
+                "                                                              select produce_order_item.material_id, produce_order_item.batch_id, produce_order_item.batch_code, -1 *produce_order_item.quantity from produce_order_item, mm_material where produce_order_id = :produceOrderId and item_category='PRODUCT' and mm_material.id = produce_order_item.material_id AND mm_material.material_type = 'ROH'\n" +
                 "                                                              union all\n" +
-                "                                                              select material_id, batch_id, quantity from pur_purchase_requisition_item where is_complete = 0 and is_deleted = 0\n" +
+                "                                                              select material_id, batch_id, batch_code, quantity from pur_purchase_requisition_item where is_complete = 0 and is_deleted = 0\n" +
                 "                                                              union all\n" +
-                "                                                              select produce_order_item_detail.material_id, produce_order_item_detail.batch_id, (-1 * produce_order_item.quantity * (CASE\n" +
+                "                                                              select produce_order_item_detail.material_id, produce_order_item_detail.batch_id, produce_order_item_detail.batch_code,  (-1 * produce_order_item.quantity * (CASE\n" +
                 "WHEN produce_order_item_detail.component_detail_id = 725451860537794560 THEN 3 * produce_order_item_detail.quantity\n" +
                 "WHEN produce_order_item_detail.component_detail_id = 725451860537794561 THEN 3 * produce_order_item_detail.quantity\n" +
                 "ELSE produce_order_item_detail.quantity\n" +
@@ -384,7 +406,7 @@ public class ProduceOrderService {
                 "                                                               )\n" +
                 "group by material_id, batch_id having sum(quantity) < 0";
 
-         return sharpService.query(sql, Params.builder(1).pv("produceOrderId", produceOrderId).build(), PurchaseRequisition.Item.class);
+         return sharpService.query(sql, Params.builder(1).pv("produceOrderId", produceOrderId).pv("materialIdBatchIdString", materialIdBatchIdString).build(), PurchaseRequisition.Item.class);
     }
 
 }

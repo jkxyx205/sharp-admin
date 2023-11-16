@@ -293,6 +293,7 @@ public class ProduceOrderController {
         itemList.forEach(item -> {
             item.setMaterialCode(item.getMaterialDescription().getCode());
             item.setUnit(item.getMaterialDescription().getUnit());
+            item.setUnitPrice(item.getMaterialDescription().getUnitPrice());
         });
 
         batchService.handleClassificationAndFillCharacteristicValue(itemList);
