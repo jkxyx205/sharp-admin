@@ -1159,6 +1159,37 @@
                 let itemId = row.item_id
                 let isCopy = true
                 $.get('/produce_orders/bom?materialId=' + materialId + (itemId ? ('&itemId=' + itemId) : '') + (isCopy != undefined ? ('&isCopy=' + isCopy) : ''), function (res) {
+                    // 合并remark
+                    let remarks = {}
+                    readTemplate(vue.$data.form, function (d) {
+                        let remark = d.value.remark.trim()
+                        if (remark) {
+                            remarks[d.id + ''] = remark
+                        }
+                    })
+
+                    function readTemplate(tpl, handler) {
+                        if(tpl) {
+                            for (let c of tpl.componentList) {
+
+                                for (d of c.componentDetailList) {
+                                    handler(d)
+                                    if (d.bomTemplate) {
+                                        readTemplate(d.bomTemplate, handler)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    readTemplate(res.bomTemplate, function (d) {
+                        let remark = remarks[d.id + '']
+                        if (remark) {
+                            d.value.remark = remark
+                        }
+                    })
+                    // 合并remark end
+
                     let componentList = res.bomTemplate.componentList
                     $editableTable.editableTablePlus('getActiveRowValue').$tr[0].form.componentList = vue.$data.form.componentList = componentList
                     // callback && callback($tr[0].form)

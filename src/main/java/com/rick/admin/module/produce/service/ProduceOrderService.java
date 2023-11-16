@@ -294,7 +294,7 @@ public class ProduceOrderService {
         materialIdRemark.putAll(soItem.stream().flatMap(item -> item.getItemList().stream()).collect(Collectors.toMap(item -> item.getMaterialId() + Objects.toString(item.getBatchCode(), ""), item -> item.getRemark(), (item1, item2) -> item1)));
 
 
-        Set<String> purchaseSendSet = soItem.stream().flatMap(item -> item.getItemList().stream()).filter(item -> Objects.toString(item.getRemark(), "").contains("采购")).map(item -> item.getMaterialId() + Objects.toString(item.getBatchId(), "")).collect(Collectors.toSet());
+        Set<String> purchaseSendSet = soItem.stream().flatMap(item -> item.getItemList().stream()).filter(item -> Objects.toString(item.getRemark(), "").contains("贴花")).map(item -> item.getMaterialId() + Objects.toString(item.getBatchId(), "")).collect(Collectors.toSet());
 
         // 删除历史采购
         purchaseRequisitionItemDAO.delete(Params.builder(1).pv("referenceDocumentId", produceOrderId).build(), "reference_document_id = :referenceDocumentId AND is_complete = 0");
