@@ -1,6 +1,7 @@
 package com.rick.admin.config.dialect;
 
 import com.google.common.collect.Lists;
+import com.rick.admin.auth.common.UserContextHolder;
 import com.rick.db.service.SharpService;
 import com.rick.meta.dict.entity.Dict;
 import com.rick.meta.dict.service.DictService;
@@ -46,13 +47,13 @@ public class SelectOptionHelper {
         if (iProcessableElementTag.hasAttribute("group")) {
             initGroupOptions(modelFactory, model, key, excludeValues, selected);
         } else {
-            initOptions(modelFactory, model, key, excludeValues, selected);
+            initOptions(modelFactory, model, key, excludeValues, selected, iProcessableElementTag);
         }
 
         iElementTagStructureHandler.replaceWith(model, false);
     }
 
-    private void initOptions(IModelFactory modelFactory, IModel model, String key, String excludeValues, String selected) {
+    private void initOptions(IModelFactory modelFactory, IModel model, String key, String excludeValues, String selected, IProcessableElementTag iProcessableElementTag) {
         // 进行数据的查询 根据 type 查询
         List<Dict> dictList = dictService.getDictByType(key);
         if (StringUtils.isNotBlank(excludeValues)) {
@@ -62,6 +63,10 @@ public class SelectOptionHelper {
 
 
         for (Dict dict : dictList) {
+            if (iProcessableElementTag.hasAttribute("auth") && !UserContextHolder.get().getAuthorityList().contains(dict.getName())){
+                continue;
+            }
+
             model.add(modelFactory.createOpenElementTag(String.format("option value='%s'%s", dict.getName(),(Objects.equals(dict.getName(), selected) ? " selected" : ""))));
             model.add(modelFactory.createText(dict.getLabel()));
             model.add(modelFactory.createCloseElementTag("option"));

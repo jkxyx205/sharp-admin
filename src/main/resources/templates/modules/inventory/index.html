@@ -31,13 +31,13 @@
                     <div class="form-group">
                         <label class="col-form-label mr-2" for="type">场景</label>
                         <select id="type" name="type" class="form-control" onchange="changeType(this)">
-                            <option value="INBOUND">收货</option>
-                            <option value="OUTBOUND">出货</option>
-                            <option value="RETURN">退货</option>
-                            <option value="MOVING_TO_PRODUCE">领料</option>
-                            <option value="RETURN_FROM_PRODUCE">退料</option>
+                            <option value="INBOUND" sec:authorize="hasAuthority('INBOUND')">收货</option>
+                            <option value="OUTBOUND" sec:authorize="hasAuthority('OUTBOUND')">出货</option>
+                            <option value="RETURN" sec:authorize="hasAuthority('RETURN')">退货</option>
+                            <option value="MOVING_TO_PRODUCE" sec:authorize="hasAuthority('MOVING_TO_PRODUCE')">领料</option>
+                            <option value="RETURN_FROM_PRODUCE" sec:authorize="hasAuthority('RETURN_FROM_PRODUCE')">退料</option>
 <!--                            <option value="CANCEL">取消</option>-->
-                            <option value="DELETE">删除</option>
+                            <option value="DELETE" sec:authorize="hasAuthority('DELETE')">删除</option>
                             <option value="DISPLAY">显示</option>
                         </select>
                     </div>
@@ -70,7 +70,8 @@
                     </div>
                     <div class="form-group">
                         <label class="col-form-label mr-2 required" for="plantId">库房</label>
-                        <sp:select  id="plantId" name="plantId" key="core_plant" class="form-control" required hideAllItem/>
+                        <sp:select id="plantId" name="plantId" key="core_plant" class="form-control" required hideAllItem auth style="display:none;"/>
+                        <sp:select id="plantId2" name="plantId2" key="core_plant" class="form-control" disabled="disabled" style="display:none;"/>
                     </div>
                     <div class="form-group">
                         <label class="col-form-label mr-2" for="operatorId">操作人</label>
@@ -135,6 +136,7 @@
         let formItem = document.getElementById('form-item');
         let $documentDate = $('#documentDate')
         let $plantId = $('#plantId')
+        let $plantId2 = $('#plantId2')
         let $operatorId = $('#operatorId')
         let $remark = $('#remark')
 
@@ -207,6 +209,8 @@
             execute()
         }, false)
 
+        var authorityList = '[[${T(com.rick.admin.auth.common.UserContextHolder).get().authorityList}]]'.replace('[', '').replace(']', '').split(', ')
+
         let selectMapping = {
             "INBOUND": ["OTHER", "PO"],
             "OUTBOUND": ["OTHER", "SO"],
@@ -223,7 +227,7 @@
         let referenceTypeDom = document.getElementById('referenceType')
         let type = document.getElementById('type')
 
-        changeType(document.getElementById('type'))
+        changeType(type)
 
         function changeType(select) {
             reset()
@@ -259,11 +263,15 @@
                 $('#documentDate, #plantId, #operatorId').attr('disabled', true)
                 $("#send-btn").hide()
                 $("#update-btn").show()
+                $plantId.hide()
+                $plantId2.show()
             } else {
                 $('#documentDate, #plantId, #operatorId').attr('disabled', false)
                 // $operatorBar.show()
                 $("#send-btn").show()
                 $("#update-btn").hide()
+                $plantId.show()
+                $plantId2.hide()
             }
 
             type = select
@@ -291,15 +299,6 @@
 
             if (type.value === 'CANCEL' || type.value === 'DELETE' || type.value === 'DISPLAY' || (type.value === 'RETURN' && referenceTypeDom.value !== 'OTHER')) {
                 $editableTable.editableTablePlus('readonly', true)
-            }
-
-            // 库房自动选择
-            if (type.value === 'OUTBOUND' && select.value === 'SO') {
-                // 成品库
-                $('#plantId').val('726159086739001344')
-                // 仓库从材料库房出货
-            } else {
-                $('#plantId').val('719893335619162112')
             }
 
         }
@@ -337,7 +336,9 @@
 
                         $documentDate.val(res.documentDate)
                         if (res.plantId) {
-                            $plantId.val(res.plantId)
+                            $plantId2.show()
+                            $plantId.hide()
+                            $plantId2.val(res.plantId)
                         }
 
                         $operatorId.val(res.operatorId)
