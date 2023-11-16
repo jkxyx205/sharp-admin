@@ -13,6 +13,7 @@ import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.admin.module.purchase.entity.PurchaseRequisition;
 import com.rick.admin.module.purchase.service.PurchaseRequisitionItemService;
 import com.rick.common.util.StringUtils;
+import com.rick.db.dto.SimpleEntity;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
 import com.rick.db.plugin.dao.core.EntityDAO;
 import com.rick.db.plugin.dao.support.BaseEntityUtils;
@@ -291,10 +292,14 @@ public class ProduceOrderService {
 //        }
 
         Map<String, String> materialIdRemark = soItem.stream().collect(Collectors.toMap(item -> item.getMaterialId() + Objects.toString(item.getBatchCode(), ""), item -> item.getRemark(), (item1, item2) -> item1));
+        Map<Long, BigDecimal> itemIdQuantityMap = soItem.stream().collect(Collectors.toMap(SimpleEntity::getId, ProduceOrder.Item::getQuantity));
+
         materialIdRemark.putAll(soItem.stream().flatMap(item -> item.getItemList().stream()).collect(Collectors.toMap(item -> item.getMaterialId() + Objects.toString(item.getBatchCode(), ""), item -> item.getRemark(), (item1, item2) -> item1)));
 
 
-        Set<String> purchaseSendSet = soItem.stream().flatMap(item -> item.getItemList().stream()).filter(item -> Objects.toString(item.getRemark(), "").contains("贴花")).map(item -> item.getMaterialId() + Objects.toString(item.getBatchId(), "")).collect(Collectors.toSet());
+        List<ProduceOrder.Item.Detail> purchaseDetailList = soItem.stream().flatMap(item -> item.getItemList().stream()).filter(item -> Objects.toString(item.getRemark(), "").contains("贴花") || Objects.toString(item.getRemark(), "").contains("发") || Arrays.asList(729584784212238336L, 741996205273632769L, 731499486144483329L).contains(item.getMaterialId()))
+                .collect(Collectors.toList());
+        Set<String> purchaseSendSet = purchaseDetailList.stream().map(item -> item.getMaterialId() + Objects.toString(item.getBatchId(), "")).collect(Collectors.toSet());
 
         // 删除历史采购
         purchaseRequisitionItemDAO.delete(Params.builder(1).pv("referenceDocumentId", produceOrderId).build(), "reference_document_id = :referenceDocumentId AND is_complete = 0");
@@ -311,10 +316,33 @@ public class ProduceOrderService {
                 prItem.setPurchaseRequisitionId(1L);
                 prItem.setPurchaseRequisitionCode("STANDARD");
                 prItem.setPurchaseSend(true);
+                prItem.setComplete(false);
                 BaseEntityUtils.resetAdditionalFields(prItem);
                 itemList.add(prItem);
             }
         }
+
+        // 直接采购(线，贴花，直发)
+        for (ProduceOrder.Item.Detail detail : purchaseDetailList) {
+            PurchaseRequisition.Item prItem = new PurchaseRequisition.Item();
+            BeanUtils.copyProperties(detail, prItem);
+            prItem.setDeliveryDate(LocalDate.now().plusDays(3));
+            prItem.setReferenceType(ReferenceTypeEnum.SO);
+            prItem.setReferenceDocumentId(produceOrderId);
+            prItem.setReferenceDocumentCode(produceOrderCode);
+            prItem.setReferenceId(produceOrderId);
+            prItem.setPurchaseRequisitionId(1L);
+            prItem.setPurchaseRequisitionCode("STANDARD");
+            prItem.setPurchaseSend(prItem.getRemark().contains("发"));
+            prItem.setComplete(false);
+            prItem.setQuantity(prItem.getQuantity().multiply(itemIdQuantityMap.get(detail.getProduceOrderItemId())));
+            BaseEntityUtils.resetAdditionalFields(prItem);
+            if (prItem.getMaterialCode().equals("R00548") || prItem.getMaterialCode().equals("R00848") || prItem.getMaterialCode().equals("R00904")) {
+                prItem.setRemark(dictService.getDictByTypeAndName("core_partner_customer", String.valueOf(partnerId)).get().getLabel() +  StringUtils.appendValue(prItem.getRemark()));
+            }
+            itemList.add(prItem);
+        }
+
 
         List<PurchaseRequisition.Item> produceitemList = purchaseRequisitionForProduce(produceOrderId, purchaseSendSet);
         if (CollectionUtils.isNotEmpty(produceitemList)) {
@@ -331,13 +359,7 @@ public class ProduceOrderService {
                 prItem.setUnit(prItem.getMaterialDescription().getUnit());
                 prItem.setComplete(false);
                 prItem.setDeliveryDate(LocalDate.now().plusDays(3));
-                prItem.setRemark(materialIdRemark.get(prItem.getMaterialId() + Objects.toString(prItem.getBatchCode(), "")));
-                prItem.setPurchaseSend(prItem.getRemark().contains("发"));
-
-                if (prItem.getMaterialCode().equals("R00548") || prItem.getMaterialCode().equals("R00848") || prItem.getMaterialCode().equals("R00904")) {
-                    prItem.setRemark(dictService.getDictByTypeAndName("core_partner_customer", String.valueOf(partnerId)).get().getLabel() +  StringUtils.appendValue(prItem.getRemark()));
-                }
-
+                prItem.setRemark(Objects.toString(materialIdRemark.get(prItem.getMaterialId() + Objects.toString(prItem.getBatchCode(), "")), ""));
                 itemList.add(prItem);
             } 
         }
@@ -381,7 +403,7 @@ public class ProduceOrderService {
                 "                                                                   on receiving.id = received.root_reference_item_id\n" +
                 "                                                              union all\n" +
                 "                                                              select material_id, batch_id, batch_code, quantity from inv_stock where plant_id = 719893335619162112 " +
-                " AND material_id NOT IN (729584784212238336, 741996205273632769, 731499486144483329) AND concat(material_id, ifnull(batch_id, '')) NOT IN (:materialIdBatchIdString)\n" +
+                " AND material_id NOT IN (729584784212238336, 741996205273632769, 731499486144483329)\n" +
                 "                                                              union all\n" +
                 "                                                              select produce_order_item.material_id, produce_order_item.batch_id, produce_order_item.batch_code, -1 *produce_order_item.quantity from produce_order_item, mm_material where produce_order_id = :produceOrderId and item_category='PRODUCT' and mm_material.id = produce_order_item.material_id AND mm_material.material_type = 'ROH'\n" +
                 "                                                              union all\n" +
@@ -402,7 +424,8 @@ public class ProduceOrderService {
                 ") produce_order_item_detail\n" +
                 "                                                                   where produce_order.id = produce_order_item.produce_order_id AND produce_order_item_detail.produce_order_item_id = produce_order_item.id\n" +
                 "                                                                      AND produce_order.`status` = 'PRODUCING' AND produce_order.id = :produceOrderId\n" +
-                "                                                         AND produce_order_item.item_category = 'PRODUCT'                                                         AND produce_order_item_detail.material_id = stock.material_id AND (produce_order_item_detail.batch_id = stock.batch_id or (produce_order_item_detail.batch_id is null AND stock.batch_id is null ))\n" +
+                "                                                         AND produce_order_item.item_category = 'PRODUCT'                                                         AND produce_order_item_detail.material_id = stock.material_id AND (produce_order_item_detail.batch_id = stock.batch_id or (produce_order_item_detail.batch_id is null AND stock.batch_id is null ))" +
+                "                     AND concat(produce_order_item_detail.material_id, ifnull(produce_order_item_detail.batch_id, '')) NOT IN (:materialIdBatchIdString)\n" +
                 "                                                               )\n" +
                 "group by material_id, batch_id having sum(quantity) < 0";
 
