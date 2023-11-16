@@ -10,12 +10,14 @@ import com.rick.admin.common.model.IdQuantity;
 import com.rick.admin.module.core.dao.PartnerDAO;
 import com.rick.admin.module.core.entity.CodeSequence;
 import com.rick.admin.module.core.entity.Partner;
+import com.rick.admin.module.core.model.ReferenceTypeEnum;
 import com.rick.admin.module.core.service.CodeSequenceService;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.material.service.MaterialDescription;
 import com.rick.admin.module.material.service.MaterialService;
+import com.rick.admin.module.produce.service.ProduceOrderService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
 import com.rick.admin.module.purchase.dao.PurchaseOrderItemDAO;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
@@ -82,13 +84,28 @@ public class PurchaseOrderService {
 
     CodeSequenceService codeSequenceService;
 
-    final MaterialDAO materialDAO;
+    MaterialDAO materialDAO;
+
+    ProduceOrderService produceOrderService;
 
     /**
      * 新增或修改
      * @param order
      */
     public void saveOrUpdate(PurchaseOrder order) {
+        if (PurchaseOrder.StatusEnum.DONE == order.getStatus()) {
+            order.getItemList().forEach(item -> item.setComplete(true));
+        } else if (order.getItemList().stream().allMatch(item -> item.getComplete())) {
+            order.setStatus(PurchaseOrder.StatusEnum.DONE);
+        }
+
+        for (PurchaseOrder.Item item : order.getItemList()) {
+            if (item.getPurchaseSend() && item.getComplete() && item.getReferenceType2() == ReferenceTypeEnum.SO) {
+                // 关闭关联的销售订单
+                produceOrderService.markItemCompleted(item.getReferenceId2());
+            }
+        }
+
         if (order.getId() == null) {
             CodeSequence cs = getNextSequence("PO", 1);
             order.setCode(cs.getPrefix() + cs.getName() + StringUtils.leftPad("" + cs.getSequence(), 2, "0"));

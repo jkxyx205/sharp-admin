@@ -69,14 +69,7 @@ public class PurchaseOrderController {
     @ResponseBody
     @Transactional(rollbackFor = Exception.class)
     public PurchaseOrder saveOrUpdate(@RequestBody PurchaseOrder purchaseOrder) {
-        if (PurchaseOrder.StatusEnum.DONE == purchaseOrder.getStatus()) {
-            purchaseOrder.getItemList().forEach(item -> item.setComplete(true));
-        } else if (purchaseOrder.getItemList().stream().allMatch(item -> item.getComplete())) {
-            purchaseOrder.setStatus(PurchaseOrder.StatusEnum.DONE);
-        }
-
         purchaseOrderService.saveOrUpdate(purchaseOrder);
-
         return purchaseOrder;
     }
 

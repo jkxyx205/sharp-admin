@@ -18,6 +18,7 @@ import com.rick.db.plugin.dao.support.BaseEntityUtils;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
 import lombok.AccessLevel;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.collections4.CollectionUtils;
@@ -29,10 +30,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -108,6 +106,27 @@ public class ProduceOrderService {
 
         if (order.getStatus() == ProduceOrder.StatusEnum.PRODUCING) {
             handlePurchaseRequisition(order.getItemList(), order.getId(), order.getCode());
+        }
+    }
+
+    public void markItemCompleted(@NonNull Long itemId) {
+        Optional<String> optional = produceOrderItemDAO.selectSingleValueById(itemId, "produce_order_code", String.class);
+        if (!optional.isPresent()) {
+            // 非item行， 直接返回
+            return;
+        }
+
+        produceOrderItemDAO.update("is_complete", new Object[]{1, itemId}, "id = ?");
+        String produceOrderCode = optional.get();
+        markOrderStatusByItemStatus(produceOrderCode);
+    }
+
+    public void markOrderStatusByItemStatus(String produceOrderCode) {
+        List<Boolean> completeValueList = produceOrderItemDAO.selectByParams(Params.builder(1).pv("produceOrderCode", produceOrderCode).build(),
+                "is_complete", "produce_order_code = :produceOrderCode", Boolean.class);
+
+        if (completeValueList.stream().allMatch(value -> value)) {
+            produceOrderDAO.update("status", new Object[]{ProduceOrder.StatusEnum.DONE, produceOrderCode}, "code = ?");
         }
     }
 
@@ -340,7 +359,7 @@ public class ProduceOrderService {
                 "                                                                    group by root_reference_item_id) received\n" +
                 "                                                                   on receiving.id = received.root_reference_item_id\n" +
                 "                                                              union all\n" +
-                "                                                              select material_id, batch_id, quantity from inv_stock where plant_id = 719893335619162112\n" +
+                "                                                              select material_id, batch_id, quantity from inv_stock where plant_id = 719893335619162112 AND material_id NOT IN (729584784212238336, 741996205273632769, 731499486144483329)\n" +
                 "                                                              union all\n" +
                 "                                                              select produce_order_item.material_id, produce_order_item.batch_id, -1 *produce_order_item.quantity from produce_order_item, mm_material where produce_order_id = :produceOrderId and item_category='PRODUCT' and mm_material.id = produce_order_item.material_id AND mm_material.material_type = 'ROH'\n" +
                 "                                                              union all\n" +

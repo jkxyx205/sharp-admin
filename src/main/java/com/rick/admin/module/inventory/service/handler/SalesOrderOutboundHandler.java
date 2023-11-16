@@ -47,17 +47,18 @@ public class SalesOrderOutboundHandler extends AbstractHandler {
                 completeIdList.add(item.getReferenceItemId());
             }
 
-            itemOpenQuantityMap.put(item.getReferenceItemId(), itemOpenQuantityMap.get(item.getReferenceItemId()).subtract(item.getQuantity()));
+//            itemOpenQuantityMap.put(item.getReferenceItemId(), itemOpenQuantityMap.get(item.getReferenceItemId()).subtract(item.getQuantity()));
         }
 
         inventoryDocument.setRootReferenceCode(inventoryDocument.getReferenceCode());
 
-        boolean complete = itemOpenQuantityMap.values().stream().allMatch(quantity -> BigDecimalUtils.le(quantity, BigDecimal.ZERO));
-        if (complete) {
-            produceOrderService.setDoneStatus(inventoryDocument.getRootReferenceCode());
-        }
+//        boolean complete = itemOpenQuantityMap.values().stream().allMatch(quantity -> BigDecimalUtils.le(quantity, BigDecimal.ZERO));
+//        if (complete) {
+//            produceOrderService.setDoneStatus(inventoryDocument.getRootReferenceCode());
+//        }
 
         produceOrderService.setIssueComplete(completeIdList);
+        produceOrderService.markOrderStatusByItemStatus(inventoryDocument.getRootReferenceCode());
     }
 
 }
