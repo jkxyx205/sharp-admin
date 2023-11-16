@@ -30,7 +30,7 @@ public class ProduceOrderTest {
 //                .reportAdviceName("inventoryDocumentReportAdvice")
                 // 必须通过指定 endpoint 完成 表单的CUD操作
                 .additionalInfo(Params.builder(1).pv("endpoint", "produce_orders").build())
-                .querySql("select id, code, partner_id, status, remark, create_by, create_time from produce_order where code = :code and create_by = :create_by and create_time >= :create_time0 and create_time <= :create_time1 AND status = :status AND partner_id = :partner_id")
+                .querySql("select id, code, partner_id, status, remark, create_by, create_time from produce_order where code LIKE :code and create_by = :create_by and create_time >= :create_time0 and create_time <= :create_time1 AND status = :status AND partner_id = :partner_id")
                 .queryFieldList(Arrays.asList(
                         new QueryField("code", "销售单号", QueryField.Type.TEXT),
                         new QueryField("partner_id", "客户", QueryField.Type.SELECT, "core_partner_customer"),
@@ -65,7 +65,7 @@ public class ProduceOrderTest {
                         "join produce_order_item on produce_order_item.id = produce_order_item_schedule.`produce_order_item_id`\n" +
                         "left join mm_material on mm_material.id = produce_order_item.material_id\n" +
                         "left join produce_order on produce_order.id = produce_order_item.`produce_order_id`" +
-                        "WHERE produce_order.`status` <> 'PLANNING' AND produce_order.`is_deleted` = 0 AND produce_order.code = :produceOrderCode AND produce_order_item_schedule.code = :code AND produce_order_item_schedule.status = :status AND start_date >= :startDate0 and start_date <= :startDate1 order by start_date desc")
+                        "WHERE produce_order.`status` <> 'PLANNING' AND produce_order.`is_deleted` = 0 AND produce_order.code LIKE :produceOrderCode AND produce_order_item_schedule.code LIKE :code AND produce_order_item_schedule.status = :status AND start_date >= :startDate0 and start_date <= :startDate1 order by start_date desc")
                 .queryFieldList(Arrays.asList(
 //                        new QueryField("code", "生产单", QueryField.Type.TEXT),
 //                        new QueryField("partner_id", "客户", QueryField.Type.SELECT, "core_partner"),

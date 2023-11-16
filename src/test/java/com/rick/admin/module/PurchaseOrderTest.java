@@ -30,7 +30,7 @@ public class PurchaseOrderTest {
                 .tplName("modules/purchase/list")
                 .name("订单列表")
 //                .reportAdviceName("inventoryDocumentReportAdvice")
-                .querySql("select id, code, partner_id, plant_id, status, remark, create_by, create_time from pur_purchase_order where code = :code and status = :status and partner_id = :partner_id and create_by = :create_by and create_time >= :create_time0 and create_time <= :create_time1")
+                .querySql("select id, code, partner_id, plant_id, status, remark, create_by, create_time from pur_purchase_order where code LIKE :code and status = :status and partner_id = :partner_id and create_by = :create_by and create_time >= :create_time0 and create_time <= :create_time1")
                 .queryFieldList(Arrays.asList(
                         new QueryField("code", "订单号", QueryField.Type.TEXT),
                         new QueryField("partner_id", "供应商", QueryField.Type.SELECT, "core_partner"),
