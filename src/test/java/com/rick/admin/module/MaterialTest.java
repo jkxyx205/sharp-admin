@@ -573,6 +573,7 @@ public class MaterialTest {
 //                        " group by concat(material_id, ifnull(batch_id, '')) order by mm_characteristic_value.id asc) characteristic on characteristic.materialIdBatchIdString = concat(material_id, ifnull(batch_id, ''))\n" +
 //                        " order by create_time desc) t4) combine join mm_material on combine.material_id = mm_material.id \n" +
 //                        " where category_id = :categoryId AND partner_id = :partnerId AND (partner_id is NULL OR (partner_id is NOT NULL AND material_type <> 'ROH'))")
+                        // language=SQL
                         .querySql("SELECT cast(mm_material.id as char(20)) materialId,\n" +
                                 "       mm_material.code                 code,\n" +
                                 "       mm_material.name,\n" +
@@ -584,7 +585,7 @@ public class MaterialTest {
                                 "       combine.item_id,\n" +
                                 "       combine.partner_id,\n" +
                                 "       combine.batch_code,\n" +
-                                "       combine.characteristic,\n" +
+//                                "       combine.characteristic,\n" +
                                 "       combine.remark,\n" +
                                 "       combine.create_time\n" +
                                 "FROM (\n" +
@@ -595,19 +596,19 @@ public class MaterialTest {
                                 "                   produce_order_item.specification,\n" +
                                 "                   batch_code,\n" +
                                 "                   batch_id,\n" +
-                                "                   characteristic.characteristic,\n" +
+//                                "                   characteristic.characteristic,\n" +
                                 "                   produce_order_item.remark,\n" +
                                 "                   produce_order_item.create_time\n" +
                                 "            from produce_order_item\n" +
                                 "                     inner join produce_order on produce_order_item.produce_order_id = produce_order.id\n" +
-                                "                     left join (select concat(material_id, ifnull(batch_id, ''))                 materialIdBatchIdString,\n" +
-                                "                                       group_concat(mm_characteristic_value.value SEPARATOR ' ') characteristic\n" +
-                                "                                from mm_profile\n" +
-                                "                                         left join mm_characteristic_value\n" +
-                                "                                                   on mm_profile.id = mm_characteristic_value.reference_id\n" +
-                                "                                group by concat(material_id, ifnull(batch_id, ''))\n" +
-                                "                                order by mm_characteristic_value.id asc) characteristic\n" +
-                                "                               on characteristic.materialIdBatchIdString = concat(material_id, ifnull(batch_id, ''))\n" +
+//                                "                     left join (select concat(material_id, ifnull(batch_id, ''))                 materialIdBatchIdString,\n" +
+//                                "                                       group_concat(mm_characteristic_value.value SEPARATOR ' ') characteristic\n" +
+//                                "                                from mm_profile\n" +
+//                                "                                         left join mm_characteristic_value\n" +
+//                                "                                                   on mm_profile.id = mm_characteristic_value.reference_id\n" +
+//                                "                                group by concat(material_id, ifnull(batch_id, ''))\n" +
+//                                "                                order by mm_characteristic_value.id asc) characteristic\n" +
+//                                "                               on characteristic.materialIdBatchIdString = concat(material_id, ifnull(batch_id, ''))\n" +
                                 "where produce_order.status <> 'PLANNING'            " +
                                 "order by create_time desc) t4) combine\n" +
                                 "         join mm_material on combine.material_id = mm_material.id\n" +
