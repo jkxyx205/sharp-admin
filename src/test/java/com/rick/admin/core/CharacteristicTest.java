@@ -29,6 +29,30 @@ public class CharacteristicTest {
     @Resource
     private MaterialDAO materialDAO;
 
+    @Test
+    public void insertOrUpdateCharacteristicLunzi() {
+        characteristicService.saveOrUpdate(CharacteristicDTO.builder()
+                .type(Characteristic.CharacteristicTypeEnum.TEXT)
+                .code("FANGGUANPIAN")
+                .description("反光片")
+                .cpnType(CpnTypeEnum.RADIO) // 单选
+                .options(Arrays.asList(
+                        new CpnConfigurer.CpnOption("带反光片")
+                ))
+                .required(false)
+                .build());
+
+        characteristicService.saveOrUpdate(CharacteristicDTO.builder()
+                .type(Characteristic.CharacteristicTypeEnum.TEXT)
+                .code("TIEHUA")
+                .description("贴花")
+                .cpnType(CpnTypeEnum.RADIO) // 单选
+                .options(Arrays.asList(
+                        new CpnConfigurer.CpnOption("贴花")
+                ))
+                .required(false)
+                .build());
+    }
 
     /**
      * 特征值颜色
