@@ -153,10 +153,10 @@ public class MaterialService {
                 }
             }
 
-            List<CharacteristicValue> characteristicValueList = classificationList.stream().flatMap(classification -> classification.getCharacteristicValueList().stream()).collect(Collectors.toList());
+//            List<CharacteristicValue> characteristicValueList = classificationList.stream().flatMap(classification -> classification.getCharacteristicValueList().stream()).collect(Collectors.toList());
             // valid value
-            List<com.rick.admin.module.core.entity.Classification> classificationListInternal
-                    = classificationList.stream().map(Classification::getClassification).collect(Collectors.toList());
+//            List<com.rick.admin.module.core.entity.Classification> classificationListInternal
+//                    = classificationList.stream().map(Classification::getClassification).collect(Collectors.toList());
 
             // 物料特征值可以不填
 //            characteristicHelper.validValueToClassification(classificationListInternal, characteristicValueList);

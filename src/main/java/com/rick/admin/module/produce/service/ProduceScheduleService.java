@@ -1,8 +1,14 @@
 package com.rick.admin.module.produce.service;
 
 import com.rick.admin.common.BigDecimalUtils;
+import com.rick.admin.common.exception.ExceptionCodeEnum;
+import com.rick.admin.module.core.service.ClassificationService;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
+import com.rick.admin.module.inventory.service.handler.ProduceOrderConsumeHandler;
 import com.rick.admin.module.inventory.service.handler.ProduceOrderScheduleInboundHandler;
+import com.rick.admin.module.material.entity.CharacteristicValue;
+import com.rick.admin.module.material.entity.Classification;
+import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.produce.dao.ProduceOrderDAO;
 import com.rick.admin.module.produce.dao.ProduceOrderItemDAO;
 import com.rick.admin.module.produce.entity.BomTemplate;
@@ -15,6 +21,7 @@ import com.rick.db.util.OptionalUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
@@ -47,9 +54,15 @@ public class ProduceScheduleService {
 
     ProduceOrderScheduleInboundHandler produceOrderScheduleInboundHandler;
 
+    ProduceOrderConsumeHandler produceOrderConsumeHandler;
+
     ProduceOrderItemDAO produceOrderItemDAO;
 
     BomService bomService;
+
+    BatchService batchService;
+
+    ClassificationService classificationService;
 
     @Transactional(rollbackFor = Exception.class)
     public void markStatus(Long scheduleId) {
@@ -57,9 +70,12 @@ public class ProduceScheduleService {
         ProduceOrder.Item.Schedule simpleSchedule = OptionalUtils.expectedAsOptional(produceOrderItemScheduleDAO.selectByParamsWithoutCascade(Params.builder(1).pv("id", scheduleId).build(), "id, code, status, produce_order_id, quantity, unit, produce_order_item_id", "id = :id")).get();
         produceOrderItemScheduleDAO.update("status", new Object[]{simpleSchedule.getStatus() == ProduceOrder.StatusEnum.PRODUCING ? ProduceOrder.StatusEnum.PRODUCED.name() : ProduceOrder.StatusEnum.PRODUCING.name(), scheduleId}, "id = ?");
 
-        // 生产完成自动入成品库
+
         if (simpleSchedule.getStatus() == ProduceOrder.StatusEnum.PRODUCING) {
+            // 生产完成自动入成品库
             produceOrderScheduleInboundHandler.handle(inbound(simpleSchedule));
+            // 扣减用料
+            produceOrderConsumeHandler.handle(outbound(simpleSchedule));
         }
 
 //        Long orderId = sharpService.queryForObject("select produce_order.id from produce_order_item, produce_order_item_schedule, produce_order \n" +
@@ -176,6 +192,56 @@ public class ProduceScheduleService {
                                 .unit(simpleSchedule.getUnit())
                                 .build()
                 ))
+                .build();
+
+        return inventoryDocument;
+    }
+
+    private InventoryDocument outbound(ProduceOrder.Item.Schedule simpleSchedule) {
+        String referenceCode= simpleSchedule.getCode();
+        String sql = "select produce_order_item_detail.`material_id`,\n" +
+                "       true allowNegativeStock," +
+                "       mm_material.code material_code,       produce_order_item_detail.batch_id,       produce_order_item_detail.batch_code,       produce_order_item_detail.`id`                               referenceItemId,\n" +
+                "       produce_order_item_detail.`id`                               rootReferenceItemId,\n" +
+                "       ((CASE\n" +
+                "WHEN produce_order_item_detail.component_detail_id = 725451860537794560 THEN 3 * produce_order_item_detail.quantity\n" +
+                "WHEN produce_order_item_detail.component_detail_id = 725451860537794561 THEN 3 * produce_order_item_detail.quantity\n" +
+                "ELSE produce_order_item_detail.quantity\n" +
+                "END) * produce_order_item_schedule.quantity)  quantity,\n" +
+                "       mm_material.base_unit                                          unit\n" +
+                "from produce_order_item_schedule\n" +
+                "         inner join produce_order_item on produce_order_item.id = produce_order_item_schedule.produce_order_item_id\n" +
+                "         inner join produce_order_item_detail on produce_order_item.id = produce_order_item_detail.`produce_order_item_id`\n" +
+                "         inner join mm_material on mm_material.id = produce_order_item_detail.`material_id`\n" +
+                "where produce_order_item_schedule.code = :referenceCode";
+
+        List<InventoryDocument.Item> itemList = sharpService.query(sql, Params.builder(1).pv("referenceCode", referenceCode).build(), InventoryDocument.Item.class);
+        if (CollectionUtils.isEmpty(itemList)) {
+            throw new BizException(ExceptionCodeEnum.PP_DOCUMENT_NOT_FOUND_ERROR, new Object[]{referenceCode});
+        }
+
+        batchService.handleClassificationAndFillCharacteristicValue(itemList);
+
+        itemList.stream().filter(item -> CollectionUtils.isNotEmpty(item.getClassificationList())).forEach(item -> {
+            for (Classification classification : item.getClassificationList()) {
+                classification.setCharacteristicValueList(classification.getClassification().getCharacteristicList().stream()
+                        .map(characteristic -> CharacteristicValue.builder().characteristicCode(characteristic.getCode())
+                                .characteristicId(characteristic.getId())
+                                .val(characteristic.getCpnConfigurer().getDefaultValue())
+                                .build())
+                        .collect(Collectors.toList()));
+            }
+        });
+
+        InventoryDocument inventoryDocument = InventoryDocument.builder()
+                .type(InventoryDocument.TypeEnum.CONSUME)
+                .referenceType(InventoryDocument.ReferenceTypeEnum.PP)
+                .referenceCode(referenceCode)
+                .rootReferenceCode(simpleSchedule.getProduceOrderCode())
+                .remark("用料出库")
+                .plantId(726158903766683648L)
+                .documentDate(LocalDate.now())
+                .itemList(itemList)
                 .build();
 
         return inventoryDocument;

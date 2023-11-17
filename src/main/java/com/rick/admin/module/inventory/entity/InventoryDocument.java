@@ -153,6 +153,9 @@ public class InventoryDocument extends BaseCodeEntity {
         @Transient
         MaterialDescription materialDescription;
 
+        @Transient
+        boolean allowNegativeStock = false;
+
         /**
          * 特征值
          */
@@ -190,7 +193,8 @@ public class InventoryDocument extends BaseCodeEntity {
         CANCEL("取消"),
         DELETE("删除"),
         DISPLAY("显示"),
-        COUNT("盘点");
+        COUNT("盘点"),
+        CONSUME("用料");
 
         @JsonValue
         public String getCode() {

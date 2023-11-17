@@ -35,6 +35,10 @@ public class StockService {
      * @param stock
      */
     public void changeStockQuantity(Stock stock) {
+        changeStockQuantity(stock, false);
+    }
+
+    public void changeStockQuantity(Stock stock, boolean allowNegativeStock) {
         Optional<Stock> optional = stockDAO.getStockQuantity(stock.getPlantId(), stock.getMaterialId(), stock.getBatchId());
 
         if (optional.isPresent()) {
@@ -46,12 +50,19 @@ public class StockService {
                 stockDAO.deleteById(stock.getId());
                 return;
             }
-
         }
 
         if (BigDecimalUtils.lt(stock.getQuantity(), BigDecimal.ZERO)) {
-            throw new BizException(LOW_STOCKS_ERROR,
-                    new Object[]{materialDAO.selectSingleValueById(stock.getMaterialId(), "code", String.class).get()});
+            if (allowNegativeStock) {
+                stock.setQuantity(BigDecimal.ZERO);
+                if (stock.getId() != null) {
+                    stockDAO.deleteById(stock.getId());
+                }
+                return;
+            } else {
+                throw new BizException(LOW_STOCKS_ERROR,
+                        new Object[]{materialDAO.selectSingleValueById(stock.getMaterialId(), "code", String.class).get()});
+            }
         }
 
         stockDAO.insertOrUpdate(stock);

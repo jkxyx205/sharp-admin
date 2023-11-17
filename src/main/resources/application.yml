@@ -86,7 +86,7 @@ dict:
     - type: movement_type
       map: { "INBOUND": "入库", "OUTBOUND": "出库" }
     - type: inv_type
-      map: { "INBOUND": "收货", "OUTBOUND": "出货", "RETURN": "退货", "MOVING_TO_PRODUCE": "领料", "RETURN_FROM_PRODUCE": "退料", "CANCEL":"取消", "COUNT": "盘点"}
+      map: { "INBOUND": "收货", "OUTBOUND": "出货", "RETURN": "退货", "MOVING_TO_PRODUCE": "领料", "RETURN_FROM_PRODUCE": "退料", "CANCEL":"取消", "COUNT": "盘点", "CONSUME": "用料"}
     - type: reference_type
       map: { "OTHER": "无","MATERIAL_DOCUMENT": "物料凭证", "PO": "采购订单", "PP": "生产订单", "SO": "销售订单"}
     - type: produce_order_status

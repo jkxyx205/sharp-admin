@@ -7,10 +7,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 生产单领料
@@ -35,7 +33,7 @@ public class ProduceOrderOutboundHandler extends AbstractHandler {
 
     @Override
     public void handle0(InventoryDocument inventoryDocument) {
-        Map<Long, BigDecimal> itemOpenQuantityMap = produceScheduleService.openQuantity(InventoryDocument.MovementTypeEnum.OUTBOUND, inventoryDocument.getReferenceCode());
+//        Map<Long, BigDecimal> itemOpenQuantityMap = produceScheduleService.openQuantity(InventoryDocument.MovementTypeEnum.OUTBOUND, inventoryDocument.getReferenceCode());
 //        List<Long> completeIdList = Lists.newArrayListWithExpectedSize(inventoryDocument.getItemList().size());
 
         List<InventoryDocument.Item> inboundItemList = new ArrayList<>();
@@ -49,7 +47,7 @@ public class ProduceOrderOutboundHandler extends AbstractHandler {
 //                completeIdList.add(item.getReferenceItemId());
 //            }
 
-            itemOpenQuantityMap.put(item.getReferenceItemId(), itemOpenQuantityMap.get(item.getReferenceItemId()).subtract(item.getQuantity()));
+//            itemOpenQuantityMap.put(item.getReferenceItemId(), itemOpenQuantityMap.get(item.getReferenceItemId()).subtract(item.getQuantity()));
 
             InventoryDocument.Item newItem = new InventoryDocument.Item();
             BeanUtils.copyProperties(item, newItem);

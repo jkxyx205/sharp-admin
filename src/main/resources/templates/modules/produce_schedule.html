@@ -81,7 +81,7 @@
                             </td>
                             <td class="text-center">
                                 <a href="javascript:;" th:onclick="openOnNewTab('[(${m[10]})]', '[(${\'/reports/699659248728047616?plantId=719893335619162112&root_reference_code=\' + m[10]})]', '物料凭证')">领料记录</a>
-                                <a href="javascript:;" th:onclick="completeProduce([[${m[0]}]])">修改状态</a>
+                                <a href="javascript:;" th:onclick="completeProduce([[${m[0]}]])" th:if="${m[8] == '待生产'}">标记完成</a>
                             </td>
                             <input type="hidden" th:each="v : ${grid.rows[mStat.index]}" th:if="${report.reportColumnList.get(vStat.index).hidden}" th:name="${report.reportColumnList.get(vStat.index).name}" th:value="${v}" />
                         </tr>
@@ -249,7 +249,7 @@
         })
 
         function completeProduce(id) {
-            if (confirm('确定要修改状态吗？')) {
+            if (confirm('确定要标记完成吗？')) {
                 $.ajax({
                     url: '/produce_bom/schedule/' + id,
                     type: "put",

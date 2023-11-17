@@ -69,7 +69,7 @@ public abstract class AbstractHandler implements MovementHandler {
                     .batchCode(item.getBatchCode())
                     .quantity(item.getMovementType() == InventoryDocument.MovementTypeEnum.OUTBOUND ? BigDecimal.ZERO.subtract(item.getQuantity()) : item.getQuantity())
                     .unit(item.getUnit())
-                    .build());
+                    .build(), item.isAllowNegativeStock());
         }
     }
 
