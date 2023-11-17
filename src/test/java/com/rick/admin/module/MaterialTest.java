@@ -610,9 +610,9 @@ public class MaterialTest {
 //                                "                                order by mm_characteristic_value.id asc) characteristic\n" +
 //                                "                               on characteristic.materialIdBatchIdString = concat(material_id, ifnull(batch_id, ''))\n" +
                                 "where produce_order.status <> 'PLANNING'            " +
-                                "order by create_time desc) t4) combine\n" +
+                                ") t4) combine\n" +
                                 "         join mm_material on combine.material_id = mm_material.id\n" +
-                                "where material_type <> 'ROH' AND partner_id = :partnerId AND mm_material.id = :materialId")
+                                "where material_type <> 'ROH' AND partner_id = :partnerId AND mm_material.id = :materialId order by create_time desc")
                 .queryFieldList(Arrays.asList(
 //                        new QueryField("code", "编号", QueryField.Type.TEXT),
 //                        new QueryField("keywords", "关键字", QueryField.Type.TEXT),
