@@ -94,5 +94,6 @@ public class ProduceOrderPurchaseSendAdvice implements ReportAdvice {
         }
 //        report.setAdditionalInfo(new HashMap<>());
         report.getAdditionalInfo().put("js", js);
+        report.getAdditionalInfo().put("css", "td:nth-child(9) > span {max-width: 100px; text-wrap: wrap;}");
     }
 }
