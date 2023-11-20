@@ -376,6 +376,16 @@
                             columnConfig.onchange({editTable: this, $tr, $td}, e.target.value, e)
                         })
                     }
+                } else if (columnConfig.type === 'select2') {
+                    $td.addClass('select2')
+                    $td.html('<input type="hidden" name="'+columnConfig.name+'" />\n' +
+                        '      <input class="form-control"/>\n' +
+                        '      <div class="items">\n' +
+                        '        <ul></ul>\n' +
+                        '      </div>\n')
+                    new select2($td[0], {
+                        datasource: columnConfig.datasource
+                    })
                 } else if (columnConfig.type === 'radio') {
                     let radios = []
                     if (columnConfig.datasource) {
