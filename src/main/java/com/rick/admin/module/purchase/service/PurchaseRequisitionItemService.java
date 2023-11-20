@@ -71,4 +71,8 @@ public class PurchaseRequisitionItemService {
                 Params.builder(2).pv("ids", ids).pv("is_complete", true).build(),
                 "id IN (:ids)");
     }
+
+    public void deleteUnCompletePurchaseRequisitionByReferenceDocumentCode(String referenceDocumentCode) {
+        purchaseRequisitionItemDAO.delete(new Object[]{referenceDocumentCode}, "reference_document_code = ? AND is_complete = 0");
+    }
 }

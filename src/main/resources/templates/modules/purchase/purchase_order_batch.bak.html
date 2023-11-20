@@ -7,8 +7,6 @@
     <link rel="stylesheet" th:href="@{/css/tab-common.css}">
     <link rel="stylesheet" th:href="@{/css/edit-table.css}">
     <link rel="stylesheet" th:href="@{/plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css}">
-    <link rel="stylesheet" th:href="@{/plugins/select2/select2.css}">
-
     <style>
         .operator-bar {
             position: fixed;
@@ -67,14 +65,12 @@
             <button class="btn btn-primary" type="button" name="send" onclick="send()">
                 <i class="fa fa-send"></i> 提交</button>
         </div>
-        <sp:select class="hidden" id="core_partner_vendor"  key="core_partner_vendor" emptyItemText/>
     </div>
 </th:block>
 <th:block th:replace="includes/base :: common_js(~{::script})">
     <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js}"></script>
     <script th:src="@{/plugins/bootstrap-datepicker/js/bootstrap-datepicker.zh-CN.min.js}"></script>
     <script type="text/javascript" th:src="@{/plugins/jquery.form2json.js}"></script>
-    <script type="text/javascript" th:src="@{/plugins/select2/select2.js}"></script>
 
     <script th:src="@{/js/jquery.dialog.js}"></script>
 
@@ -89,14 +85,6 @@
         var readonly = false
         let formHeader = document.getElementById('form-header');
         let formItem = document.getElementById('form-item');
-
-        let vendor_datasource = []
-        $('#core_partner_vendor option').each(function () {
-            vendor_datasource.push({
-                "name": this.value,
-                "value": this.innerText
-            })
-        })
 
         let value = /*[[${itemList}]]*/
 
@@ -252,11 +240,10 @@
                     // }
                 },
                 {
-                    type: "select2",
+                    type: "select",
                     title: "供应商",
                     name: "partnerId",
-                    required: true,
-                    datasource: vendor_datasource,
+                    required: true
                 },
                 {
                     type: "text",
@@ -301,23 +288,21 @@
                 characteristic.setInputCharacteristic($input, row.classificationList)
             })
 
-            let $tr = $editableTable.find("tbody tr:eq(0)")
-            for (let row of value) {
-                // 根据特征值的供应商自动选择供应商
-                let vendor = $tr.find('[name=LINE_BRAND]').val()
-                if (vendor) {
-                    let $partnerId = $tr.find(':input[name=partnerId]')
-
-                    for (let item of vendor_datasource) {
-                        if (item.value === vendor) {
-                            $partnerId.val(item.name)
-                            $partnerId.next().val(vendor)
-                            break;
-                        }
+            // 获取供应商
+            $.get("/purchase_order/materials/vendors?materialIds=" + value.map(row => row.materialId).join(','), (res) => {
+                let $tr = $editableTable.find("tbody tr:eq(0)")
+                for (let row of value) {
+                    if (res[row.materialId]) {
+                        // 根据特征值的供应商自动选择供应商
+                        let vendor = $tr.find('[name=LINE_BRAND]').val()
+                        $tr.find(':input[name=partnerId]').html('<option></option>' + res[row.materialId].map(d => {
+                            return '<option value="'+d.name+'" ' +(vendor ? (d.label === vendor ? 'selected' : '') : (res[row.materialId].length === 1 ? 'selected' : ''))+'>'+d.label+'</option>'
+                        }).join(''))
                     }
+
+                    $tr = $tr.next()
                 }
-                $tr = $tr.next()
-            }
+            })
         }
 
         // end
@@ -370,21 +355,13 @@
 
             var params = $('#form-header').form2json({allowEmptyMultiVal:true})
             params['itemList'] = $editableTable.editableTablePlus('getValue')
-
-            for(let item of params['itemList']) {
-                if (!item.partnerId) {
-                    toastr.error(item.materialCode + ' 没有供应商!');
-                    return;
-                }
-            }
-
             // 线根据供应商设置品牌
             let size = params['itemList'].length
             for(let index = 0; index < size; index++) {
                 $editableTable.find("tbody tr:eq("+(index)+")").each(function () {
                     let materialCode = $(this).find(':input[name=materialCode]').val()
                     if (materialCode === 'R00548' || materialCode === 'R00848' || materialCode === 'R00904') {
-                        $(this).find('td.characteristic-td .items > div :input[name=LINE_BRAND]').val($(this).find(':input[name=partnerId]').next().val())
+                        $(this).find('td.characteristic-td .items > div :input[name=LINE_BRAND]').val($(this).find(':input[name=partnerId] option:selected').text())
                     }
                 })
             }

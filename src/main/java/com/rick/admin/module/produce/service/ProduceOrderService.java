@@ -87,8 +87,6 @@ public class ProduceOrderService {
 
             if (order.getStatus() == ProduceOrder.StatusEnum.DONE) {
                 item.setComplete(true);
-
-                // 删除采购申请标识
             }
 
             for (ProduceOrder.Item.Schedule schedule : item.getScheduleList()) {
@@ -113,6 +111,12 @@ public class ProduceOrderService {
         if (order.getStatus() == ProduceOrder.StatusEnum.PRODUCING) {
             handlePurchaseRequisition(order.getItemList(), order.getId(), order.getCode(), order.getPartnerId());
         }
+
+        if (order.getStatus() == ProduceOrder.StatusEnum.PRODUCED || order.getStatus() == ProduceOrder.StatusEnum.DONE) {
+            // 删除未完成的采购申请
+            purchaseRequisitionItemService.deleteUnCompletePurchaseRequisitionByReferenceDocumentCode(order.getCode());
+        }
+
     }
 
     public void markItemCompleted(@NonNull Long itemId) {
@@ -133,6 +137,7 @@ public class ProduceOrderService {
 
         if (completeValueList.stream().allMatch(value -> value)) {
             produceOrderDAO.update("status", new Object[]{ProduceOrder.StatusEnum.DONE, produceOrderCode}, "code = ?");
+            purchaseRequisitionItemService.deleteUnCompletePurchaseRequisitionByReferenceDocumentCode(produceOrderCode);
         }
     }
 
@@ -266,17 +271,36 @@ public class ProduceOrderService {
         }
     }
 
-    /**
-     * 设置状态： 订单完成
-     *
-     * @param rootReferenceCode
-     */
-    public void setDoneStatus(String rootReferenceCode) {
-        setStatus(rootReferenceCode, ProduceOrder.StatusEnum.DONE);
-    }
+//    /**
+//     * 设置状态： 订单完成
+//     *
+//     * @param rootReferenceCode
+//     */
+//    public void setDoneStatus(String rootReferenceCode) {
+//        setStatus(rootReferenceCode, ProduceOrder.StatusEnum.DONE);
+//    }
 
     public void setStatus(String rootReferenceCode, ProduceOrder.StatusEnum status) {
         produceOrderDAO.update("status", new Object[]{status.getCode(), rootReferenceCode}, "code = ?");
+        if (status == ProduceOrder.StatusEnum.PRODUCED || status == ProduceOrder.StatusEnum.DONE) {
+            // 删除未完成的采购申请
+            purchaseRequisitionItemService.deleteUnCompletePurchaseRequisitionByReferenceDocumentCode(rootReferenceCode);
+        }
+    }
+
+    public void setStatusIfAllProduced(Long orderId, String orderCode) {
+        // 如果所有的都生产完成标记订单生产完成
+        List<String> statusList = sharpService.query("select produce_order_item_schedule.status from produce_order_item, produce_order_item_schedule, produce_order \n" +
+                "where produce_order_item.id = produce_order_item_schedule.`produce_order_item_id` \n" +
+                "AND produce_order.id = produce_order_item.`produce_order_id`\n" +
+                "AND produce_order.id = :orderId", Params.builder(1).pv("orderId", orderId).build(), String.class);
+
+        if (statusList.stream().allMatch(s -> s.equals(ProduceOrder.StatusEnum.PRODUCED.name()))) {
+            produceOrderDAO.update("status", new Object[]{ProduceOrder.StatusEnum.PRODUCED.name(), orderId}, "id = ? and status <> 'DONE'");
+            purchaseRequisitionItemService.deleteUnCompletePurchaseRequisitionByReferenceDocumentCode(orderCode);
+        } else {
+            produceOrderDAO.update("status", new Object[]{ProduceOrder.StatusEnum.PRODUCING.name(), orderId}, "id = ?");
+        }
     }
 
     /**
@@ -290,6 +314,10 @@ public class ProduceOrderService {
 //        if(purchaseRequisition) {
 //            return;
 //        }
+
+        if (purchaseRequisitionItemDAO.existsByParams(Params.builder(1).pv("produceOrderCode", produceOrderCode).build(), "is_complete = 1 AND reference_document_code = :produceOrderCode")) {
+            return;
+        }
 
         Map<String, String> materialIdRemark = soItem.stream().collect(Collectors.toMap(item -> item.getMaterialId() + Objects.toString(item.getBatchCode(), ""), item -> item.getRemark(), (item1, item2) -> item1));
         Map<Long, BigDecimal> itemIdQuantityMap = soItem.stream().collect(Collectors.toMap(SimpleEntity::getId, ProduceOrder.Item::getQuantity));

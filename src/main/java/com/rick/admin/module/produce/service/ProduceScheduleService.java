@@ -2,14 +2,12 @@ package com.rick.admin.module.produce.service;
 
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ExceptionCodeEnum;
-import com.rick.admin.module.core.service.ClassificationService;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.inventory.service.handler.ProduceOrderConsumeHandler;
 import com.rick.admin.module.inventory.service.handler.ProduceOrderScheduleInboundHandler;
 import com.rick.admin.module.material.entity.CharacteristicValue;
 import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.service.BatchService;
-import com.rick.admin.module.produce.dao.ProduceOrderDAO;
 import com.rick.admin.module.produce.dao.ProduceOrderItemDAO;
 import com.rick.admin.module.produce.entity.BomTemplate;
 import com.rick.admin.module.produce.entity.ProduceOrder;
@@ -48,8 +46,6 @@ public class ProduceScheduleService {
 
     EntityCodeDAO<ProduceOrder.Item.Schedule, Long> produceOrderItemScheduleDAO;
 
-    ProduceOrderDAO produceOrderDAO;
-
     SharpService sharpService;
 
     ProduceOrderScheduleInboundHandler produceOrderScheduleInboundHandler;
@@ -62,12 +58,12 @@ public class ProduceScheduleService {
 
     BatchService batchService;
 
-    ClassificationService classificationService;
+    ProduceOrderService produceOrderService;
 
     @Transactional(rollbackFor = Exception.class)
     public void markStatus(Long scheduleId) {
 //        String status = produceOrderItemScheduleDAO.selectSingleValueById(scheduleId, "status", String.class).get();
-        ProduceOrder.Item.Schedule simpleSchedule = OptionalUtils.expectedAsOptional(produceOrderItemScheduleDAO.selectByParamsWithoutCascade(Params.builder(1).pv("id", scheduleId).build(), "id, code, status, produce_order_id, quantity, unit, produce_order_item_id", "id = :id")).get();
+        ProduceOrder.Item.Schedule simpleSchedule = OptionalUtils.expectedAsOptional(produceOrderItemScheduleDAO.selectByParamsWithoutCascade(Params.builder(1).pv("id", scheduleId).build(), "id, code, status, produce_order_id, produce_order_code, quantity, unit, produce_order_item_id", "id = :id")).get();
         produceOrderItemScheduleDAO.update("status", new Object[]{simpleSchedule.getStatus() == ProduceOrder.StatusEnum.PRODUCING ? ProduceOrder.StatusEnum.PRODUCED.name() : ProduceOrder.StatusEnum.PRODUCING.name(), scheduleId}, "id = ?");
 
 
@@ -94,18 +90,7 @@ public class ProduceScheduleService {
 //                "AND produce_order_item_schedule.id = :scheduleId \n" +
 //                ")", Params.builder(1).pv("scheduleId", scheduleId).build(), String.class);
 
-        // 如果所有的都生产完成标记订单生产完成
-        List<String> statusList = sharpService.query("select produce_order_item_schedule.status from produce_order_item, produce_order_item_schedule, produce_order \n" +
-                "where produce_order_item.id = produce_order_item_schedule.`produce_order_item_id` \n" +
-                "AND produce_order.id = produce_order_item.`produce_order_id`\n" +
-                "AND produce_order.id = :orderId", Params.builder(1).pv("orderId", simpleSchedule.getProduceOrderId()).build(), String.class);
-
-        if (statusList.stream().allMatch(s -> s.equals(ProduceOrder.StatusEnum.PRODUCED.name()))) {
-            produceOrderDAO.update("status", new Object[]{ProduceOrder.StatusEnum.PRODUCED.name(), simpleSchedule.getProduceOrderId()}, "id = ? and status <> 'DONE'");
-        } else {
-            produceOrderDAO.update("status", new Object[]{ProduceOrder.StatusEnum.PRODUCING.name(), simpleSchedule.getProduceOrderId()}, "id = ?");
-        }
-
+        produceOrderService.setStatusIfAllProduced(simpleSchedule.getProduceOrderId(), simpleSchedule.getProduceOrderCode());
     }
 
     public String findActiveProduceScheduleByKeyCode(String keyCode) {
