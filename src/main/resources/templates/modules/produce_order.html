@@ -165,6 +165,7 @@
                 <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#tab-1" role="tab" aria-controls="home" aria-selected="false">BOM</a></li>
                 <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-4" role="tab" aria-controls="home" aria-selected="false">生产计划</a></li>
                 <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-2" role="tab" aria-controls="home" aria-selected="false" th:if="${po.id != null}">领料记录</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-6" role="tab" aria-controls="home" aria-selected="false" th:if="${po.id != null}">采购信息</a></li>
                 <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-5" role="tab" aria-controls="home" aria-selected="false">客户收货信息</a></li>
                 <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-3" role="tab" aria-controls="home" aria-selected="false" th:if="${po.id != null}">出货记录</a></li>
             </ul>
@@ -354,6 +355,42 @@
                                     <td th:text="${#numbers.formatDecimal(s.openQuantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.openQuantity}" th:class="text-right"></td>
                                     <td th:class="${'status-' + s.complete}" th:data-sort-value="${s.complete}" th:text="${s.complete == true ? '已完成' : '未完成'}"></td>
                                 </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="tab-6" role="tabpanel">
+                    <div id="related_purchase_order" role="tabpanel">
+                        <div class="table-fixed-container">
+                            <table class="table table-responsive-sm table-bordered table-striped table-sm table-thead">
+                                <thead>
+                                <tr>
+                                    <th style="width: 50px" data-index>序号</th>
+                                    <th style="width: 100px" class="sortable active asc">物料</th>
+                                    <th style="width: 100px;">名称</th>
+                                    <th>规格 & 特征值</th>
+                                    <th style="width: 100px" class="sortable text-right">采购数量</th>
+                                    <th style="width: 100px">基本单位</th>
+                                    <th style="width: 120px">采购订单</th>
+                                    <th style="width: 160px">采购时间</th>
+                                </tr>
+                                </thead>
+                            </table>
+                            <table class="table table-responsive-sm table-bordered table-striped table-sm table-tbody">
+                                <tbody>
+                                    <tr th:each="s: ${relatedPurchaseOrderList}">
+                                        <td th:text="${sStat.index + 1}" data-index></td>
+                                        <td th:text="${s.materialCode}" th:data-sort-value="${s.materialCode}"></td>
+                                        <td th:text="${s.materialName}" th:data-sort-value="${s.materialName}"></td>
+                                        <td th:text="${s.materialSpecification + '' + s.characteristic}" ></td>
+                                        <td th:text="${#numbers.formatDecimal(s.quantity,1,'COMMA',2,'POINT')}" th:data-sort-value="${s.quantity}" th:class="text-right"></td>
+                                        <td th:text="${s.unitText}" th:data-sort-value="${s.unitText}"></td>
+                                        <td>
+                                            <a href="javascript:;" th:text="${s.purchaseOrderCode}" th:onclick="openOnNewTab('[(${s.purchaseOrderCode})]', '[(${\'/purchase_order/code/\' + s.purchaseOrderCode})]', '[(${s.purchaseOrderCode})]')"></a>
+                                        </td>
+                                        <td th:text="${#temporals.format(s.createTime, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -1055,7 +1092,7 @@
             });
         }
 
-        $('#goods_receipt_container, #goods_issue_container').table({
+        $('#goods_receipt_container, #goods_issue_container, #related_purchase_order').table({
             fixedHead: true
         })
 

@@ -39,6 +39,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -142,8 +143,12 @@ public class ProduceOrderController {
             List<GoodsReceiptItem> goodsReceiptItemList = getGoodsReceiptItemList(produceOrder.getCode());
             model.addAttribute("goodsReceiptItemList", goodsReceiptItemList);
 
-            materialService.fillMaterialDescription(Stream.concat(produceOrder.getItemList().stream(), goodsReceiptItemList.stream()).collect(Collectors.toSet()));
-            materialService.fillMaterialDescription(produceOrder.getItemList());
+            // 采购订单
+            List<RelatedPurchaseOrder> relatedPurchaseOrderList = getRelatedPurchaseOrders(id);
+            model.addAttribute("relatedPurchaseOrderList", relatedPurchaseOrderList);
+
+            materialService.fillMaterialDescription(Stream.concat(Stream.concat(produceOrder.getItemList().stream(), goodsReceiptItemList.stream()), relatedPurchaseOrderList.stream()).collect(Collectors.toSet()));
+//            materialService.fillMaterialDescription(produceOrder.getItemList());
 
             // 生产计划
             for (ProduceOrder.Item item : produceOrder.getItemList()) {
@@ -176,6 +181,11 @@ public class ProduceOrderController {
         model.addAttribute("createName", dictService.getDictByTypeAndName("sys_user", produceOrder.getCreateBy().toString()).get().getLabel());
         model.addAttribute("createTime", Time2StringUtils.format(produceOrder.getCreateTime()));
         return "modules/produce_order";
+    }
+
+    private List<RelatedPurchaseOrder> getRelatedPurchaseOrders(long produceOrderId) {
+        return sharpService.query("select material_id materialId, material_code materialCode, batch_id batchId, batch_code batchCode, quantity, purchase_order_code purchaseOrderCode, create_time from pur_purchase_order_item where reference_type2 = 'SO' AND reference_id2 = :produceOrderId",
+                Params.builder(1).pv("produceOrderId", produceOrderId).build(), RelatedPurchaseOrder.class);
     }
 
     private List<ProduceOrderController.GoodsReceiptItem> getGoodsReceiptItemList(String produceOrderCode) {
@@ -309,6 +319,28 @@ public class ProduceOrderController {
     @ResponseBody
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.success(produceOrderDAO.deleteById(id));
+    }
+
+
+    @Data
+    public static class RelatedPurchaseOrder implements MaterialDescriptionHandler {
+
+        private String purchaseOrderCode;
+
+        private Long materialId;
+
+        private String materialCode;
+
+        private BigDecimal quantity;
+
+        private MaterialDescription materialDescription;
+
+        private Long batchId;
+
+        private String batchCode;
+
+        private LocalDateTime createTime;
+
     }
 
     @Data
