@@ -322,7 +322,7 @@ public class ProduceOrderService {
         Map<String, String> materialIdRemark = soItem.stream().collect(Collectors.toMap(item -> item.getMaterialId() + Objects.toString(item.getBatchCode(), ""), item -> item.getRemark(), (item1, item2) -> item1));
         Map<Long, BigDecimal> itemIdQuantityMap = soItem.stream().collect(Collectors.toMap(SimpleEntity::getId, ProduceOrder.Item::getQuantity));
 
-        materialIdRemark.putAll(soItem.stream().flatMap(item -> item.getItemList().stream()).collect(Collectors.toMap(item -> item.getMaterialId() + Objects.toString(item.getBatchCode(), ""), item -> item.getRemark(), (item1, item2) -> item1)));
+        materialIdRemark.putAll(soItem.stream().flatMap(item -> item.getItemList().stream()).collect(Collectors.toMap(item -> item.getMaterialId() + Objects.toString(item.getBatchCode(), ""), item -> Objects.toString(item.getRemark(), ""), (item1, item2) -> item1)));
 
 
         List<ProduceOrder.Item.Detail> purchaseDetailList = soItem.stream().flatMap(item -> item.getItemList().stream()).filter(item -> Objects.toString(item.getRemark(), "").contains("贴花") || Objects.toString(item.getRemark(), "").contains("发") || Arrays.asList(729584784212238336L, 741996205273632769L, 731499486144483329L).contains(item.getMaterialId()))
