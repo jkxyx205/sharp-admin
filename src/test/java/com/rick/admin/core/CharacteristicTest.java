@@ -150,7 +150,9 @@ public class CharacteristicTest {
                         new CpnConfigurer.CpnOption("SM-5A插针"),
                         new CpnConfigurer.CpnOption("SM-5Y插簧"),
                         new CpnConfigurer.CpnOption("SM-6A插针"),
-                        new CpnConfigurer.CpnOption("SM-6Y插簧")
+                        new CpnConfigurer.CpnOption("SM-6Y插簧"),
+                        new CpnConfigurer.CpnOption("SM-7A插针"),
+                        new CpnConfigurer.CpnOption("SM-7Y插簧")
                 ))
                 .required(false)
                 .build());

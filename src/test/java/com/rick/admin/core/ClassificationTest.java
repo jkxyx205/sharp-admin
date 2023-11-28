@@ -1,12 +1,10 @@
 package com.rick.admin.core;
 
-import com.rick.admin.module.core.model.ClassificationDTO;
 import com.rick.admin.module.core.service.ClassificationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 
 /**
  * @author Rick.Xu
@@ -27,7 +25,7 @@ public class ClassificationTest {
 //        classificationService.saveOrUpdate(new ClassificationDTO(null, "LHQ", "离合器组件", Arrays.asList("LHQ")));
 //        classificationService.saveOrUpdate(new ClassificationDTO(null, "NLCL", "尼龙齿轮组件", Arrays.asList("NLCL", "ZHC")));
 //        classificationService.saveOrUpdate(new ClassificationDTO(null, "ZHZ", "转子组件", Arrays.asList("ZHZ", "ZHC","ZHC2", "CIGANG")));
-//        classificationService.saveOrUpdate(new ClassificationDTO(null, "DG", "端盖组件", Arrays.asList("DG", "COLOR", "ZHC")));
+//        classificationService.saveOrUpdate(new ClassificationDTO(null, "DG", "端盖组件", Arrays.asList("COLOR")));
 
 //        classificationService.saveOrUpdate(new ClassificationDTO(null, "HFTL", "高速辐条轮毂组件", Arrays.asList("FTL", "COLOR", "ZHC", "NCQ")));
 //        classificationService.saveOrUpdate(new ClassificationDTO(null, "DFTL", "低速辐条轮毂组件", Arrays.asList("FTL", "COLOR", "ZHC")));
@@ -39,7 +37,7 @@ public class ClassificationTest {
 //        classificationService.saveOrUpdate(new ClassificationDTO(null, "LINE", "普通线", Arrays.asList("XIN", "AREA", "XIANGXIAN","HUOERXIAN","LENGTH", "LINE_BRAND")));
 //        classificationService.saveOrUpdate(new ClassificationDTO(null, "LINE_FS", "防水线", Arrays.asList("XIN", "AREA", "XIANGXIAN","HUOERXIAN","LENGTH", "JIETOU", "BP_LENGTH", "ZX_LENGTH", "LINE_BRAND")));
 //        classificationService.saveOrUpdate(new ClassificationDTO(null, "LINE_FS_M", "防水线（母头）", Arrays.asList("XIN", "AREA", "XIANGXIAN","HUOERXIAN","LENGTH", "BP_LENGTH", "ZX_LENGTH", "LINE_BRAND")));
-        classificationService.saveOrUpdate(new ClassificationDTO(null, "LINE_GQ", "过桥线", Arrays.asList("XIN", "AREA", "JIETOU", "LENGTH", "LINE_BRAND")));
+//        classificationService.saveOrUpdate(new ClassificationDTO(null, "LINE_GQ", "过桥线", Arrays.asList("XIN", "AREA", "JIETOU", "LENGTH", "LINE_BRAND")));
 
 //        classificationService.saveOrUpdate(new ClassificationDTO(null, "LUNZI", "轮子", Arrays.asList("COLOR", "FANGGUANPIAN", "TIEHUA")));
     }
