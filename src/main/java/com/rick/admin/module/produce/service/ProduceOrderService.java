@@ -437,12 +437,12 @@ public class ProduceOrderService {
                 "                                                              union all\n" +
                 "                                                              select material_id, batch_id, batch_code, quantity from pur_purchase_requisition_item where is_complete = 0 and is_deleted = 0\n" +
                 "                                                              union all\n" +
-                "                                                              select produce_order_item_detail.material_id, produce_order_item_detail.batch_id, produce_order_item_detail.batch_code,  (-1 * produce_order_item.quantity * (CASE\n" +
+                "                                                              select produce_order_item_detail.material_id, produce_order_item_detail.batch_id, produce_order_item_detail.batch_code,  (-1 * schedule.quantity * (CASE\n" +
                 "WHEN produce_order_item_detail.component_detail_id = 725451860537794560 THEN 3 * produce_order_item_detail.quantity\n" +
                 "WHEN produce_order_item_detail.component_detail_id = 725451860537794561 THEN 3 * produce_order_item_detail.quantity\n" +
                 "ELSE produce_order_item_detail.quantity\n" +
-                "END)) quantity  from produce_order_item, produce_order, produce_order_item_detail\n" +
-                "                                                              where produce_order.id = produce_order_item.produce_order_id AND produce_order_item_detail.produce_order_item_id = produce_order_item.id\n" +
+                "END)) quantity  from produce_order_item, produce_order, produce_order_item_detail, produce_order_item_schedule schedule\n" +
+                "                                                              where produce_order.id = produce_order_item.produce_order_id AND schedule.produce_order_item_id = produce_order_item.id AND schedule.status = 'PRODUCING' AND produce_order_item_detail.produce_order_item_id = produce_order_item.id\n" +
                 "                                                                AND produce_order.`status` = 'PRODUCING' AND produce_order_item.item_category = 'PRODUCT'\n" +
                 "                                                          ) stock\n" +
                 "                                                     where exists(\n" +
@@ -457,7 +457,7 @@ public class ProduceOrderService {
                 "                                                               )\n" +
                 "group by material_id, batch_id having sum(quantity) < 0";
 
-         return sharpService.query(sql, Params.builder(1).pv("produceOrderId", produceOrderId).pv("materialIdBatchIdString", materialIdBatchIdString).build(), PurchaseRequisition.Item.class);
+         return sharpService.query(sql, Params.builder(2).pv("produceOrderId", produceOrderId).pv("materialIdBatchIdString", materialIdBatchIdString).build(), PurchaseRequisition.Item.class);
     }
 
 }
