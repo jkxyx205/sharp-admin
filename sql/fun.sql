@@ -16,3 +16,24 @@ where is_complete = 0
                                                      from produce_order
                                                      where produce_order.id = pur_purchase_requisition_item.reference_document_id
                                                        AND status <> 'PRODUCING')) as ee);
+
+-- 查看BOM的物料的需求情况
+select produce_order.code,             floor(sum((-1 * schedule.quantity * (CASE
+                                                                                WHEN produce_order_item_detail.component_detail_id = 725451860537794560
+                                                                                    THEN 3 * produce_order_item_detail.quantity
+                                                                                WHEN produce_order_item_detail.component_detail_id = 725451860537794561
+                                                                                    THEN 3 * produce_order_item_detail.quantity
+                                                                                ELSE produce_order_item_detail.quantity
+    END)))) quantity
+from produce_order_item,
+     produce_order,
+     produce_order_item_detail,
+     produce_order_item_schedule schedule
+where produce_order.id = produce_order_item.produce_order_id
+  AND produce_order_item_detail.produce_order_item_id = produce_order_item.id
+  AND schedule.produce_order_item_id = produce_order_item.id
+  AND schedule.status = 'PRODUCING'
+  AND produce_order.`status` = 'PRODUCING'
+  AND produce_order_item.item_category = 'PRODUCT' AND produce_order_item_detail.material_id = :materialCode
+group by code
+order by quantity asc;
