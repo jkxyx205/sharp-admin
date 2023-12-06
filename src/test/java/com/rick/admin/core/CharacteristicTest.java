@@ -91,7 +91,8 @@ public class CharacteristicTest {
                 .cpnType(CpnTypeEnum.RADIO) // 单选
                 .options(Arrays.asList(
                         new CpnConfigurer.CpnOption("公头"),
-                        new CpnConfigurer.CpnOption("母头")
+                        new CpnConfigurer.CpnOption("母头"),
+                        new CpnConfigurer.CpnOption("公母头")
                 ))
                 .required(true)
                 .build());
