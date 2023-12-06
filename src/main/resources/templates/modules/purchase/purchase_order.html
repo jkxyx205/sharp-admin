@@ -319,16 +319,16 @@
                     mode: 'multiple', // 多选,
                     reportId: '718618818011729920',
                     // params: {categoryId: "717389543182962688"},
-                    beforeShow: function ($tr, context) {
-                        let partnerId = $('#partnerId').val()
-
-                        if (!partnerId) {
-                            toastr.warning('请先选择供应商！');
-                            return false
-                        }
-                        context.params.partnerId = partnerId
-                        return true;
-                    },
+                    // beforeShow: function ($tr, context) {
+                    //     let partnerId = $('#partnerId').val()
+                    //
+                    //     if (!partnerId) {
+                    //         toastr.warning('请先选择供应商！');
+                    //         return false
+                    //     }
+                    //     context.params.partnerId = partnerId
+                    //     return true;
+                    // },
                     selected: function ($tr, value) {
                         characteristic.selectedCharacteristic($tr, value);
                     }
@@ -573,7 +573,9 @@
                     return;
                 }
 
-                let historyAddress = addressMapping[item['contactInfo'].contactSubject]
+                let noAddress = (!item['contactInfo'] || !item['contactInfo'].contactSubject)
+
+                let historyAddress = noAddress ? null : addressMapping[item['contactInfo'].contactSubject]
                 if (historyAddress) {
                     if (!item['contactInfo'].contactPerson) {
                         item['contactInfo'].contactPerson = historyAddress.contactPerson
@@ -594,7 +596,9 @@
                     return;
                 }
 
-                addressMapping[item['contactInfo'].contactSubject] = item['contactInfo']
+                if (!noAddress) {
+                    addressMapping[item['contactInfo'].contactSubject] = item['contactInfo']
+                }
             }
 
             console.log(params)
