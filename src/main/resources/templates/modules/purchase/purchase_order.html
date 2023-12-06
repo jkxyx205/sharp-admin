@@ -554,7 +554,7 @@
             // 保存当前 active 到 DOM 中
             let activeTr = $editableTable.editableTablePlus('getActiveRowValue').$tr[0];
             activeTr.receiveContactInfo = $receiveContactInfo.form2json({allowEmptyMultiVal:true})
-
+            let addressMapping = {}
             for (let index in params['itemList']) {
                 let item = params['itemList'][index]
                 let trDom = $('#table-container table.table-tbody tbody tr').eq(index)[0]
@@ -568,10 +568,33 @@
                     "address": trDom.receiveContactInfo.address
                 }
 
+                if (item.purchaseSend && (!item['contactInfo'] || !item['contactInfo'].contactSubject)) {
+                    toastr.error('采购直发客户收货信息不能为空！')
+                    return;
+                }
+
+                let historyAddress = addressMapping[item['contactInfo'].contactSubject]
+                if (historyAddress) {
+                    if (!item['contactInfo'].contactPerson) {
+                        item['contactInfo'].contactPerson = historyAddress.contactPerson
+                    }
+                    if (!item['contactInfo'].contactNumber) {
+                        item['contactInfo'].contactNumber = historyAddress.contactNumber
+                    }
+                    if (!item['contactInfo'].contactMail) {
+                        item['contactInfo'].contactMail = historyAddress.contactMail
+                    }
+                    if (!item['contactInfo'].address) {
+                        item['contactInfo'].address = historyAddress.address
+                    }
+                }
+
                 if (item.purchaseSend && (!item.contactInfo || !item.contactInfo.contactSubject || !item.contactInfo.address || !item.contactInfo.contactPerson || !item.contactInfo.contactNumber)) {
                     toastr.error('采购直发客户收货信息不能为空！')
                     return;
                 }
+
+                addressMapping[item['contactInfo'].contactSubject] = item['contactInfo']
             }
 
             console.log(params)

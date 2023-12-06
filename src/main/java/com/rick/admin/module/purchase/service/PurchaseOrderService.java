@@ -369,11 +369,19 @@ public class PurchaseOrderService {
 
         // 地址表
         int addressSize = 0;
+        final Set<String> addressSet = new HashSet<>();
+
         for (int i = 0; i < purchaseOrder.getItemList().size(); i++) {
             PurchaseOrder.Item item = purchaseOrder.getItemList().get(i);
             if (item.getPurchaseSend()) {
+                String address = (StringUtils.isNotBlank(item.getContactInfo().getContactSubject()) ? item.getContactInfo().getContactSubject() + "：" : "") + item.getContactInfo();
+                if (addressSet.contains(address)) {
+                        continue;
+                }
+
                 excelWriter.insertAndWriteCell(new ExcelCell(1, 16 + rowSize + addressSize, 30f, cellStyles[1],
-                        (StringUtils.isNotBlank(item.getContactInfo().getContactSubject()) ? item.getContactInfo().getContactSubject() + "：" : "") + item.getContactInfo(), 1, 10));
+                        address, 1, 10));
+                addressSet.add(address);
                 addressSize++;
             }
         }
