@@ -125,7 +125,7 @@ public class InventoryController {
                     itemOpenQuantityMap = produceOrderService.salesOpenQuantity(oppositeMovementType, inventoryDocument.getRootReferenceCode());
                 } else {
                     itemOpenQuantityMap = inventoryDocumentService.openQuantity(HandlerHelper.oppositeMovementType(inventoryDocument.getItemList().get(0).getMovementType()),
-                            inventoryDocument.getRootReferenceCode());
+                            inventoryDocument.getCode(), inventoryDocument.getRootReferenceCode());
                 }
             }
 

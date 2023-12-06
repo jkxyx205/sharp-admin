@@ -60,9 +60,8 @@ public class DocumentReturnHandler extends AbstractHandler {
 
         InventoryDocument inventoryDocumentInDb = optional.get();
         Map<Long, InventoryDocument.Item> idDocumentMap = inventoryDocumentInDb.getItemList().stream().collect(Collectors.toMap(InventoryDocument.Item::getId, d -> d));
-
         if (inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PO ||
-                inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PP ||
+//                (inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.PP && inventoryDocumentInDb.getType() != InventoryDocument.TypeEnum.CONSUME) ||
                 inventoryDocumentInDb.getReferenceType() == InventoryDocument.ReferenceTypeEnum.SO) {
             inventoryDocument.setReferenceCode(inventoryDocumentInDb.getReferenceCode());
 
@@ -90,8 +89,8 @@ public class DocumentReturnHandler extends AbstractHandler {
 
         inventoryDocument.setRootReferenceCode(StringUtils.defaultString(inventoryDocumentInDb.getRootReferenceCode(), inventoryDocument.getReferenceCode()));
 
-        Map<Long, BigDecimal> inBoundItemOpenQuantityMap = inventoryDocumentService.openQuantity(InventoryDocument.MovementTypeEnum.INBOUND, inventoryDocumentInDb.getRootReferenceCode());
-        Map<Long, BigDecimal> outBoundItemOpenQuantityMap = inventoryDocumentService.openQuantity(InventoryDocument.MovementTypeEnum.OUTBOUND, inventoryDocumentInDb.getRootReferenceCode());
+        Map<Long, BigDecimal> inBoundItemOpenQuantityMap = inventoryDocumentService.openQuantity(InventoryDocument.MovementTypeEnum.INBOUND, inventoryDocumentInDb.getCode(), inventoryDocumentInDb.getRootReferenceCode());
+        Map<Long, BigDecimal> outBoundItemOpenQuantityMap = inventoryDocumentService.openQuantity(InventoryDocument.MovementTypeEnum.OUTBOUND, inventoryDocumentInDb.getCode(), inventoryDocumentInDb.getRootReferenceCode());
 
         for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
             InventoryDocument.Item itemInDb = idDocumentMap.get(item.getReferenceItemId());
