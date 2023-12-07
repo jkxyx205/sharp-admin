@@ -490,6 +490,14 @@
         $('#plantId').val('726159086739001344')
         $('#plantId option[value!=726159086739001344]').remove()
     </script>
+
+    <script sec:authorize="hasAuthority('ROLE_produce_master')">
+        type.disabled = true
+        if (type.value !== 'DISPLAY') {
+            type.setAttribute('disabled', true)
+            referenceType.setAttribute('disabled', true)
+        }
+    </script>
 </th:block>
 </body>
 </html>

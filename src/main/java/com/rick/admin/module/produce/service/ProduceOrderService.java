@@ -1,6 +1,7 @@
 package com.rick.admin.module.produce.service;
 
 import com.google.common.collect.Lists;
+import com.rick.admin.auth.common.UserContextHolder;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
 import com.rick.admin.module.core.model.ReferenceTypeEnum;
@@ -109,7 +110,10 @@ public class ProduceOrderService {
         produceOrderDAO.insertOrUpdate(order);
 
         if (order.getStatus() == ProduceOrder.StatusEnum.PRODUCING) {
-            handlePurchaseRequisition(order.getItemList(), order.getId(), order.getCode(), order.getPartnerId());
+            // 管理员 和 程文斌 触发采购申请
+            if (UserContextHolder.get().getCode().equals("admin") || UserContextHolder.get().getCode().equals("cpk")) {
+                handlePurchaseRequisition(order.getItemList(), order.getId(), order.getCode(), order.getPartnerId());
+            }
         }
 
         if (order.getStatus() == ProduceOrder.StatusEnum.PRODUCED || order.getStatus() == ProduceOrder.StatusEnum.DONE) {
