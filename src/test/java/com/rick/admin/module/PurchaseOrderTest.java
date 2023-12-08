@@ -35,7 +35,7 @@ public class PurchaseOrderTest {
                         new QueryField("code", "订单号", QueryField.Type.TEXT),
                         new QueryField("partner_id", "供应商", QueryField.Type.SELECT, "core_partner_vendor"),
                         new QueryField("status", "状态", QueryField.Type.SELECT, "purchase_order_status"),
-                        new QueryField("create_by", "创建人", QueryField.Type.SELECT, "sys_user"),
+//                        new QueryField("create_by", "创建人", QueryField.Type.SELECT, "sys_user"),
                         new QueryField("create_time", "创建时间", QueryField.Type.DATE_RANGE)
                 ))
                 .reportColumnList(Arrays.asList(
