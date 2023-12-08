@@ -171,6 +171,10 @@ public class ProduceBOMDownloadController {
                 } else {
                     ProduceOrder.Item.Detail value = componentDetail.getValue();
                     if (Objects.nonNull(value.getMaterialId())) {
+                        if (value.getMaterialName().equals("配件") && Objects.toString(value.getRemark(), "").trim().equals("")) {
+                            continue;
+                        }
+
                         excelWriter.writeRow(new ExcelRow(1, integer.getAndIncrement(), 25f, value.getMaterialName(), (StringUtils.isBlank(value.getMaterialSpecification()) ? "" : value.getMaterialSpecification() + " ") + value.getCharacteristic(),
                                 value.getQuantity().multiply(quantity), value.getUnitText(), value.getRemark()));
                     }
