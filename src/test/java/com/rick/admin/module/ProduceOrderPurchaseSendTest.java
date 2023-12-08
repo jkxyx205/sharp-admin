@@ -48,11 +48,12 @@ public class ProduceOrderPurchaseSendTest {
                         "AND produce_order.id = produce_order_item.produce_order_id\n" +
                         "AND (pur_purchase_requisition_item.reference_id = produce_order.id or pur_purchase_requisition_item.reference_id = produce_order_item.id)) t\n" +
                         "        where mm_material.id = pur_purchase_requisition_item.material_id\n" +
-                        "        and t.reference_id = pur_purchase_requisition_item.reference_id AND pur_purchase_requisition_item.is_complete = 0 and pur_purchase_requisition_item.is_deleted = 0 and (mm_material.code LIKE :materialCode OR mm_material.name LIKE :materialCode OR mm_material.specification LIKE :materialCode) AND produce_order_code LIKE :produceOrderCode")
+                        "        and t.reference_id = pur_purchase_requisition_item.reference_id AND pur_purchase_requisition_item.is_complete = 0 and pur_purchase_requisition_item.is_deleted = 0 and (mm_material.code LIKE :materialCode OR mm_material.name LIKE :materialCode OR mm_material.specification LIKE :materialCode) AND produce_order_code LIKE :produceOrderCode AND partner_id = :partner_id")
                 .queryFieldList(Arrays.asList(
                         new QueryField("materialCode", "物料", QueryField.Type.TEXT).setPlaceholder("物料编号、名称搜索"),
-                        new QueryField("produceOrderCode", "销售订单", QueryField.Type.TEXT)
-                ))
+                        new QueryField("produceOrderCode", "销售订单", QueryField.Type.TEXT),
+                        new QueryField("partner_id", "客户", QueryField.Type.SELECT, "core_partner_customer")
+                        ))
                 .reportColumnList(Arrays.asList(
                         new HiddenReportColumn("id"),
                         new ReportColumn("material_code", "编号"),

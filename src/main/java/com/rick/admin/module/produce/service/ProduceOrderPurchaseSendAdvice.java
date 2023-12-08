@@ -29,22 +29,14 @@ public class ProduceOrderPurchaseSendAdvice implements ReportAdvice {
     private final CharacteristicConverter characteristicConverter;
 
     @Override
-    public void beforeSetRow(Report report, List<Map<String, Object>> rows) {
-        Set<String> materialIdBatchIdStringCollection = rows.stream().map(row -> MaterialProfileSupport.materialIdBatchIdString((Long) row.get("material_id"), (Long) row.get("batch_id"))).collect(Collectors.toSet());
-        Map<String, String> characteristicTextMap = materialProfileService.getCharacteristicText(materialIdBatchIdStringCollection);
-
-        for (Map<String, Object> row : rows) {
-            row.put("characteristic", characteristicTextMap.get(MaterialProfileSupport.materialIdBatchIdString((Long) row.get("material_id"), (Long) row.get("batch_id"))));
-            String specification = characteristicConverter.convert(null, (String) row.get("specification"));
-            row.put("specificationAndCharacteristic", (StringUtils.isBlank(specification) ? "" : specification + " ") + Objects.toString(row.get("characteristic"), ""));
-        }
-
+    public void beforeQuery(Report report, Map<String, Object> requestMap) {
         boolean purchaseOrderAuthority = UserContextHolder.get().getAuthorityList().contains("pur_purchase_order_add");
-        String js;
-
+        String js = "$('#partner_id').multipleSelect({\n" +
+                "    filter: true\n" +
+                "});";
         if (purchaseOrderAuthority) {
             // language=JavaScript
-            js = "$('table tbody tr').each(function() { let $materialTd = $(this).find('td:nth-child(3)'); let materialId = $(this).find('input[name=material_id]').val(); let materialCode = $materialTd.text().trim();$materialTd.html(\"<a href=\\\"javascript:;\\\" name=\\\"material_code\\\" onclick=\\\"showDialog('查看', '\"+materialId+\"')\\\">\"+materialCode+\"</a>\"); let $codeTd = $(this).find('td:nth-child(10)'); let code = $codeTd.text().trim();$codeTd.html(\"<a href=\\\"javascript:;\\\" onclick=\\\"openOnNewTab('\"+code+\"', '/produce_orders/code/\"+code+\"', '\"+code+\"')\\\">\"+code+\"</a>\")});" +
+            js = js + "$('table tbody tr').each(function() { let $materialTd = $(this).find('td:nth-child(3)'); let materialId = $(this).find('input[name=material_id]').val(); let materialCode = $materialTd.text().trim();$materialTd.html(\"<a href=\\\"javascript:;\\\" name=\\\"material_code\\\" onclick=\\\"showDialog('查看', '\"+materialId+\"')\\\">\"+materialCode+\"</a>\"); let $codeTd = $(this).find('td:nth-child(10)'); let code = $codeTd.text().trim();$codeTd.html(\"<a href=\\\"javascript:;\\\" onclick=\\\"openOnNewTab('\"+code+\"', '/produce_orders/code/\"+code+\"', '\"+code+\"')\\\">\"+code+\"</a>\")});" +
                     "$('#batch-cpn-bar .btn-group').html('').append('<button class=\"btn btn-primary\" style=\"padding: .075rem .45rem\" type=\"button\" onclick=\"addPurchase()\" disabled>立即采购...</button><button class=\"btn btn-primary\" style=\"padding: .075rem .45rem\" type=\"button\" onclick=\"deletePurchase()\" disabled>删除</button>')\n" +
                     "function addPurchase() {\n" +
                     "    let itemIds = getItemIds()\n" +
@@ -95,5 +87,17 @@ public class ProduceOrderPurchaseSendAdvice implements ReportAdvice {
 //        report.setAdditionalInfo(new HashMap<>());
         report.getAdditionalInfo().put("js", js);
         report.getAdditionalInfo().put("css", "td:nth-child(9) > span {max-width: 100px; text-wrap: wrap;}");
+    }
+
+    @Override
+    public void beforeSetRow(Report report, List<Map<String, Object>> rows) {
+        Set<String> materialIdBatchIdStringCollection = rows.stream().map(row -> MaterialProfileSupport.materialIdBatchIdString((Long) row.get("material_id"), (Long) row.get("batch_id"))).collect(Collectors.toSet());
+        Map<String, String> characteristicTextMap = materialProfileService.getCharacteristicText(materialIdBatchIdStringCollection);
+
+        for (Map<String, Object> row : rows) {
+            row.put("characteristic", characteristicTextMap.get(MaterialProfileSupport.materialIdBatchIdString((Long) row.get("material_id"), (Long) row.get("batch_id"))));
+            String specification = characteristicConverter.convert(null, (String) row.get("specification"));
+            row.put("specificationAndCharacteristic", (StringUtils.isBlank(specification) ? "" : specification + " ") + Objects.toString(row.get("characteristic"), ""));
+        }
     }
 }
