@@ -162,6 +162,10 @@
     <script th:src="@{/ajaxfileupload.js}"></script>
 
     <script th:inline="javascript">
+        $('span[name=status]').each(function () {
+            $(this).text() === '采购中' ? $(this).css('color', '#f86c6b') : $(this).css('color', '#4dbd74')
+        })
+
         $.fn.multipleSelect.locales['zh-CN'] = {
             formatSelectAll: function () {
                 return '[全选]'
@@ -176,6 +180,10 @@
                 return '没有找到记录'
             }
         }
+
+        $('#partner_id').multipleSelect({
+            filter: true
+        })
 
         $.extend($.fn.multipleSelect.defaults, $.fn.multipleSelect.locales['zh-CN'])
 

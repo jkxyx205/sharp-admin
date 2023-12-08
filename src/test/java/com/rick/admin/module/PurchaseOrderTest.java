@@ -33,7 +33,7 @@ public class PurchaseOrderTest {
                 .querySql("select id, code, partner_id, plant_id, status, remark, create_by, create_time from pur_purchase_order where code LIKE :code and status = :status and partner_id = :partner_id and create_by = :create_by and create_time >= :create_time0 and create_time <= :create_time1")
                 .queryFieldList(Arrays.asList(
                         new QueryField("code", "订单号", QueryField.Type.TEXT),
-                        new QueryField("partner_id", "供应商", QueryField.Type.SELECT, "core_partner"),
+                        new QueryField("partner_id", "供应商", QueryField.Type.SELECT, "core_partner_vendor"),
                         new QueryField("status", "状态", QueryField.Type.SELECT, "purchase_order_status"),
                         new QueryField("create_by", "创建人", QueryField.Type.SELECT, "sys_user"),
                         new QueryField("create_time", "创建时间", QueryField.Type.DATE_RANGE)

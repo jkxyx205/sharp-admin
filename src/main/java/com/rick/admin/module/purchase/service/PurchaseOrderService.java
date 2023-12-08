@@ -408,7 +408,7 @@ public class PurchaseOrderService {
         //画图的顶级管理器，一个sheet只能获取一个（一定要注意这点）
         XSSFDrawing patriarch = sheet.createDrawingPatriarch();
         //anchor主要用于设置图片的属性
-        XSSFClientAnchor anchor = new XSSFClientAnchor(0, 0, 0, 0, (short) 8, 19 + rowSize + addressSize, (short) 10, 30 + rowSize +addressSize);
+        XSSFClientAnchor anchor = new XSSFClientAnchor(0, 0, 0, 0, (short) 7, 21 + rowSize + addressSize, (short) 9, 28 + rowSize + addressSize);
         anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_AND_RESIZE);
         //插入图片
         patriarch.createPicture(anchor, workbook.addPicture(byteArrayOut.toByteArray(), XSSFWorkbook.PICTURE_TYPE_PNG));
