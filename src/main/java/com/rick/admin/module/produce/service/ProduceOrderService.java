@@ -375,7 +375,7 @@ public class ProduceOrderService {
             itemList.add(prItem);
         }
 
-
+        purchaseSendSet.add("764459407009763328");
         List<PurchaseRequisition.Item> produceitemList = purchaseRequisitionForProduce(produceOrderId, purchaseSendSet);
         if (CollectionUtils.isNotEmpty(produceitemList)) {
             materialService.fillMaterialDescription(produceitemList);
@@ -435,7 +435,7 @@ public class ProduceOrderService {
                 "                                                                   on receiving.id = received.root_reference_item_id\n" +
                 "                                                              union all\n" +
                 "                                                              select material_id, batch_id, batch_code, quantity from inv_stock where plant_id = 719893335619162112 " +
-                " AND material_id NOT IN (729584784212238336, 741996205273632769, 731499486144483329)\n" +
+                " AND material_id NOT IN (729584784212238336, 741996205273632769, 731499486144483329, 764459407009763328)\n" +
                 "                                                              union all\n" +
                 "                                                              select produce_order_item.material_id, produce_order_item.batch_id, produce_order_item.batch_code, -1 *produce_order_item.quantity from produce_order_item, mm_material where produce_order_id = :produceOrderId and item_category='PRODUCT' and mm_material.id = produce_order_item.material_id AND mm_material.material_type = 'ROH'\n" +
                 "                                                              union all\n" +

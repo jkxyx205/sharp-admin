@@ -224,7 +224,7 @@ public class InventoryController {
                 "         inner join produce_order_item on produce_order_item.id = produce_order_item_schedule.produce_order_item_id\n" +
                 "         inner join produce_order_item_detail on produce_order_item.id = produce_order_item_detail.`produce_order_item_id`\n" +
                 "         inner join mm_material on mm_material.id = produce_order_item_detail.`material_id`\n" +
-                "where produce_order_item_schedule.code = :referenceCode";
+                "where produce_order_item_schedule.code = :referenceCode AND mm_material.code <> 'R01000'";
 
         List<InventoryDocument.Item> itemList = sharpService.query(sql, Params.builder(1).pv("referenceCode", referenceCode).build(), InventoryDocument.Item.class);
         if (CollectionUtils.isEmpty(itemList)) {
