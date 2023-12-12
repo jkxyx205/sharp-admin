@@ -112,7 +112,8 @@ public class ProduceOrderService {
         if (order.getStatus() == ProduceOrder.StatusEnum.PRODUCING) {
             // 管理员 和 程文斌 触发采购申请
             if (UserContextHolder.get().getCode().equals("admin") || UserContextHolder.get().getCode().equals("cpk")) {
-                handlePurchaseRequisition(order.getItemList(), order.getId(), order.getCode(), order.getPartnerId());
+                LocalDate deliveryDate =  order.getItemList().stream().flatMap(item -> item.getScheduleList().stream()).map(ProduceOrder.Item.Schedule::getStartDate).min(LocalDate::compareTo).orElseGet(() -> order.getItemList().stream().map(ProduceOrder.Item::getDeliveryDate).min(LocalDate::compareTo).get());
+                handlePurchaseRequisition(order.getItemList(), order.getId(), order.getCode(), order.getPartnerId(), deliveryDate);
             }
         }
 
@@ -313,7 +314,7 @@ public class ProduceOrderService {
      * @param soItem
      * @param partnerId
      */
-    private void handlePurchaseRequisition(List<ProduceOrder.Item> soItem, long produceOrderId, String produceOrderCode, @NotNull Long partnerId) {
+    private void handlePurchaseRequisition(List<ProduceOrder.Item> soItem, long produceOrderId, String produceOrderCode, @NotNull Long partnerId, LocalDate deliveryDate) {
 //        boolean purchaseRequisition = produceOrderDAO.selectSingleValueById(produceOrderId, "is_purchase_requisition", Boolean.class).get();
 //        if(purchaseRequisition) {
 //            return;
@@ -358,7 +359,7 @@ public class ProduceOrderService {
         for (ProduceOrder.Item.Detail detail : purchaseDetailList) {
             PurchaseRequisition.Item prItem = new PurchaseRequisition.Item();
             BeanUtils.copyProperties(detail, prItem);
-            prItem.setDeliveryDate(LocalDate.now().plusDays(3));
+            prItem.setDeliveryDate(deliveryDate);
             prItem.setReferenceType(ReferenceTypeEnum.SO);
             prItem.setReferenceDocumentId(produceOrderId);
             prItem.setReferenceDocumentCode(produceOrderCode);
@@ -390,7 +391,7 @@ public class ProduceOrderService {
                 prItem.setMaterialCode(prItem.getMaterialDescription().getCode());
                 prItem.setUnit(prItem.getMaterialDescription().getUnit());
                 prItem.setComplete(false);
-                prItem.setDeliveryDate(LocalDate.now().plusDays(3));
+                prItem.setDeliveryDate(deliveryDate);
                 prItem.setRemark(Objects.toString(materialIdRemark.get(prItem.getMaterialId() + Objects.toString(prItem.getBatchCode(), "")), ""));
                 itemList.add(prItem);
             } 
