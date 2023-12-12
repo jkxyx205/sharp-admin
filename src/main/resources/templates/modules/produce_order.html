@@ -934,9 +934,12 @@
             }
 
             // 保存当前 active 到 DOM 中
-            let activeTr = $editableTable.editableTablePlus('getActiveRowValue').$tr[0];
-            activeTr.schedule = $scheduleTable.editableTablePlus('getValue')
-            activeTr.receiveContactInfo = $receiveContactInfo.form2json({allowEmptyMultiVal:true})
+            let activeRowValue = $editableTable.editableTablePlus('getActiveRowValue')
+            if (activeRowValue) {
+                let activeTr = activeRowValue.$tr[0];
+                activeTr.schedule = $scheduleTable.editableTablePlus('getValue')
+                activeTr.receiveContactInfo = $receiveContactInfo.form2json({allowEmptyMultiVal:true})
+            }
 
             for (let index in params['itemList']) {
                 let item = params['itemList'][index]
