@@ -88,6 +88,8 @@ public class PurchaseOrderService {
 
     ProduceOrderService produceOrderService;
 
+    static final List<Long> SPECIAL_PARTNER_IDS = Arrays.asList(725460000008331264L, 725460000503259136L, 725460024691810304L, 725460046258921472L);
+
     /**
      * 新增或修改
      * @param order
@@ -253,6 +255,8 @@ public class PurchaseOrderService {
     }
 
     public void checkItemOpenQuantity(InventoryDocument.MovementTypeEnum movementType, String purchaseCode, List<IdQuantity> idQuantityList) {
+        Long partnerId = purchaseOrderDAO.selectByParams(Params.builder(1).pv("code", purchaseCode).build(), "partner_id", "code = :code", Long.class).get(0);
+        boolean specialPartnerId = SPECIAL_PARTNER_IDS.contains(partnerId);
         Map<Long, BigDecimal> itemHistroyGoodsReceiptQuantityMap = historyGoodsReceiptQuantity(purchaseCode);
         Map<Long, BigDecimal> itemOrderQuantityMap = itemOrderQuantity(purchaseCode);
 
@@ -264,7 +268,7 @@ public class PurchaseOrderService {
         for (IdQuantity idQuantity : idQuantityList) {
             if (movementType == InventoryDocument.MovementTypeEnum.INBOUND) {
                 // 收货最大容差
-                BigDecimal overReceiptTolerance = new BigDecimal(PropertyUtils.getProperty(PropertiesConstants.OVER_RECEIPT_TOLERANCE));
+                BigDecimal overReceiptTolerance = new BigDecimal(specialPartnerId ? PropertyUtils.getProperty(PropertiesConstants.OVER_RECEIPT_TOLERANCE2) : PropertyUtils.getProperty(PropertiesConstants.OVER_RECEIPT_TOLERANCE));
 
                 if (BigDecimalUtils.gt(itemHistroyGoodsReceiptQuantityMap.get(idQuantity.getId()).add(idQuantity.getQuantity()),
                         itemOrderQuantityMap.get(idQuantity.getId()).multiply(BigDecimal.ONE.add(overReceiptTolerance.divide(BigDecimal.valueOf(100)))))) {

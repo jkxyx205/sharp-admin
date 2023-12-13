@@ -7,5 +7,6 @@ package com.rick.admin.common;
 public class PropertiesConstants {
 
     public static final String OVER_RECEIPT_TOLERANCE = "overReceiptTolerance";
+    public static final String OVER_RECEIPT_TOLERANCE2 = "overReceiptTolerance2";
 
 }
