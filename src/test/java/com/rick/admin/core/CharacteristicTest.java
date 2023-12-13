@@ -219,18 +219,17 @@ public class CharacteristicTest {
 //        insertOrUpdateCharacteristicWithName("FTL", "辐条轮毂", 719895198196322304L);
 //        insertOrUpdateCharacteristicWithName("YTL", "一体轮毂", 719895241229881344L);
 
-        insertOrUpdateCharacteristic("TIEX", "铁芯", 720624056151330816L);
+//        insertOrUpdateCharacteristic("TIEX", "铁芯", 720624056151330816L);
 
         //        insertOrUpdateCharacteristicWithName("TONGX", "铜线", 725412632437219328L);
 
-
-//        characteristicService.saveOrUpdate(CharacteristicDTO.builder()
-//                .type(Characteristic.CharacteristicTypeEnum.NUMBER)
-//                .code("TONGX")
-//                .description("铜线KG")
-//                .cpnType(CpnTypeEnum.RADIO) // 单选
-//                .required(false)
-//                .build());
+        characteristicService.saveOrUpdate(CharacteristicDTO.builder()
+                .type(Characteristic.CharacteristicTypeEnum.TEXT)
+                .code("ZASHU")
+                .description("匝数")
+                .cpnType(CpnTypeEnum.RADIO) // 单选
+                .required(true)
+                .build());
     }
 
     private void insertOrUpdateCharacteristic(String code, String description, Long categoryId) {
