@@ -70,7 +70,7 @@ public class CharacteristicManager {
 
     public static CharacteristicDTO combine(Characteristic characteristic) {
         CpnConfigurer configurer = characteristic.getCpnConfigurer();
-        Map<String, Object> additionalInfo = configurer.getAdditionalInfo();
+
         return CharacteristicDTO.builder()
                 .id(characteristic.getId())
                 .code(characteristic.getCode())
