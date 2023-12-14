@@ -107,7 +107,7 @@ public class MaterialService {
                     materialDescription.setMaterialType(material.getMaterialType());
                 }
 
-                fillCharacteristicText(materialDescriptionList.stream().filter(materialDescriptionHandler -> Objects.nonNull(materialDescriptionHandler.getMaterialId())).collect(Collectors.toSet()));
+                fillCharacteristicText(materialDescriptionList.stream().filter(materialDescriptionHandler -> Objects.nonNull(materialDescriptionHandler.getMaterialId())).collect(Collectors.toList()));
             });
         }
     }

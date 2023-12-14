@@ -147,7 +147,7 @@ public class ProduceOrderController {
             List<RelatedPurchaseOrder> relatedPurchaseOrderList = getRelatedPurchaseOrders(id);
             model.addAttribute("relatedPurchaseOrderList", relatedPurchaseOrderList);
 
-            materialService.fillMaterialDescription(Stream.concat(Stream.concat(produceOrder.getItemList().stream(), goodsReceiptItemList.stream()), relatedPurchaseOrderList.stream()).collect(Collectors.toSet()));
+            materialService.fillMaterialDescription(Stream.concat(Stream.concat(produceOrder.getItemList().stream(), goodsReceiptItemList.stream()), relatedPurchaseOrderList.stream()).collect(Collectors.toList()));
 //            materialService.fillMaterialDescription(produceOrder.getItemList());
 
             // 生产计划
