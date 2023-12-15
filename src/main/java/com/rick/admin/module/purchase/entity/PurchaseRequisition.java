@@ -90,6 +90,9 @@ public class PurchaseRequisition extends BaseCodeEntity {
 
         Long referenceId;
 
+        Long scheduleId;
+
+
         /**
          * 特征值
          */

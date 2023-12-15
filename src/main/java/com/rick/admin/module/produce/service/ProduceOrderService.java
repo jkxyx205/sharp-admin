@@ -14,7 +14,6 @@ import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.admin.module.purchase.entity.PurchaseRequisition;
 import com.rick.admin.module.purchase.service.PurchaseRequisitionItemService;
 import com.rick.common.util.StringUtils;
-import com.rick.db.dto.SimpleEntity;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
 import com.rick.db.plugin.dao.core.EntityDAO;
 import com.rick.db.plugin.dao.support.BaseEntityUtils;
@@ -315,10 +314,11 @@ public class ProduceOrderService {
      * @param partnerId
      */
     private void handlePurchaseRequisition(List<ProduceOrder.Item> soItem, long produceOrderId, String produceOrderCode, @NotNull Long partnerId, LocalDate deliveryDate) {
-        List<Long> purchasedIds = purchaseRequisitionItemDAO.selectByParams(Params.builder(1).pv("produceOrderId", produceOrderId).build(), "reference_id", "reference_document_id = :produceOrderId AND is_complete = 1", Long.class);
+        List<String> purchasedIds = sharpService.query("select concat(ifnull(schedule_id, ''), reference_id) from pur_purchase_requisition_item where reference_document_id = :produceOrderId AND is_complete = 1",
+                Params.builder(1).pv("produceOrderId", produceOrderId).build(), String.class);
 
         Map<String, String> materialIdRemark = soItem.stream().collect(Collectors.toMap(item -> item.getMaterialId() + Objects.toString(item.getBatchCode(), ""), item -> item.getRemark(), (item1, item2) -> item1));
-        Map<Long, BigDecimal> itemIdQuantityMap = soItem.stream().collect(Collectors.toMap(SimpleEntity::getId, ProduceOrder.Item::getQuantity));
+//        Map<Long, BigDecimal> itemIdQuantityMap = soItem.stream().collect(Collectors.toMap(SimpleEntity::getId, ProduceOrder.Item::getQuantity));
 
         materialIdRemark.putAll(soItem.stream().flatMap(item -> item.getItemList().stream()).collect(Collectors.toMap(item -> item.getMaterialId() + Objects.toString(item.getBatchCode(), ""), item -> Objects.toString(item.getRemark(), ""), (item1, item2) -> item1)));
 
@@ -327,13 +327,16 @@ public class ProduceOrderService {
                 .collect(Collectors.toList());
         Set<String> purchaseSendSet = purchaseDetailList.stream().map(item -> item.getMaterialId() + Objects.toString(item.getBatchId(), "")).collect(Collectors.toSet());
 
+
+        Map<Long, List<ProduceOrder.Item.Schedule>> itemIdScheduleMap = soItem.stream().collect(Collectors.toMap(ProduceOrder.Item::getId, ProduceOrder.Item::getScheduleList));
+
         // 删除历史采购
         purchaseRequisitionItemDAO.delete(Params.builder(1).pv("referenceDocumentId", produceOrderId).build(), "reference_document_id = :referenceDocumentId AND is_complete = 0");
 
         List<PurchaseRequisition.Item> itemList = Lists.newArrayListWithExpectedSize(soItem.size());
         for (ProduceOrder.Item item : soItem) {
             if (item.getItemCategory() == ProduceOrder.ItemCategoryEnum.PURCHASE_SEND) {
-                if (purchasedIds.contains(item.getId())) {
+                if (purchasedIds.contains(String.valueOf(item.getId()))) {
                     continue;
                 }
 
@@ -354,27 +357,30 @@ public class ProduceOrderService {
 
         // 直接采购(线，贴花，直发)
         for (ProduceOrder.Item.Detail detail : purchaseDetailList) {
-            if (purchasedIds.contains(detail.getId())) {
-                continue;
+            List<ProduceOrder.Item.Schedule> scheduleDateList = itemIdScheduleMap.get(detail.getProduceOrderItemId());
+            for (ProduceOrder.Item.Schedule schedule : scheduleDateList) {
+                if (purchasedIds.contains(schedule.getId() + "" + detail.getId())) {
+                    continue;
+                }
+                PurchaseRequisition.Item prItem = new PurchaseRequisition.Item();
+                BeanUtils.copyProperties(detail, prItem);
+                prItem.setDeliveryDate(schedule.getStartDate());
+                prItem.setReferenceType(ReferenceTypeEnum.SO);
+                prItem.setReferenceDocumentId(produceOrderId);
+                prItem.setReferenceDocumentCode(produceOrderCode);
+                prItem.setReferenceId(detail.getId());
+                prItem.setScheduleId(schedule.getId());
+                prItem.setPurchaseRequisitionId(1L);
+                prItem.setPurchaseRequisitionCode("STANDARD");
+                prItem.setPurchaseSend(prItem.getRemark().contains("发"));
+                prItem.setComplete(false);
+                prItem.setQuantity(prItem.getQuantity().multiply(schedule.getQuantity()));
+                BaseEntityUtils.resetAdditionalFields(prItem);
+                if (prItem.getMaterialCode().equals("R00548") || prItem.getMaterialCode().equals("R00848") || prItem.getMaterialCode().equals("R00904")) {
+                    prItem.setRemark(dictService.getDictByTypeAndName("core_partner_customer", String.valueOf(partnerId)).get().getLabel() +  StringUtils.appendValue(prItem.getRemark()));
+                }
+                itemList.add(prItem);
             }
-
-            PurchaseRequisition.Item prItem = new PurchaseRequisition.Item();
-            BeanUtils.copyProperties(detail, prItem);
-            prItem.setDeliveryDate(deliveryDate);
-            prItem.setReferenceType(ReferenceTypeEnum.SO);
-            prItem.setReferenceDocumentId(produceOrderId);
-            prItem.setReferenceDocumentCode(produceOrderCode);
-            prItem.setReferenceId(detail.getId());
-            prItem.setPurchaseRequisitionId(1L);
-            prItem.setPurchaseRequisitionCode("STANDARD");
-            prItem.setPurchaseSend(prItem.getRemark().contains("发"));
-            prItem.setComplete(false);
-            prItem.setQuantity(prItem.getQuantity().multiply(itemIdQuantityMap.get(detail.getProduceOrderItemId())));
-            BaseEntityUtils.resetAdditionalFields(prItem);
-            if (prItem.getMaterialCode().equals("R00548") || prItem.getMaterialCode().equals("R00848") || prItem.getMaterialCode().equals("R00904")) {
-                prItem.setRemark(dictService.getDictByTypeAndName("core_partner_customer", String.valueOf(partnerId)).get().getLabel() +  StringUtils.appendValue(prItem.getRemark()));
-            }
-            itemList.add(prItem);
         }
 
         purchaseSendSet.add("764459407009763328");
@@ -403,8 +409,6 @@ public class ProduceOrderService {
         if (CollectionUtils.isEmpty(itemList)) {
             return;
         }
-
-        // 去除已经采购的物料
 
         purchaseRequisitionItemService.insertOrUpdateByReferenceIds(itemList);
     }
