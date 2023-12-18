@@ -314,7 +314,7 @@ public class ProduceOrderService {
      * @param partnerId
      */
     private void handlePurchaseRequisition(List<ProduceOrder.Item> soItem, long produceOrderId, String produceOrderCode, @NotNull Long partnerId, LocalDate deliveryDate) {
-        List<String> purchasedIds = sharpService.query("select concat(ifnull(schedule_id, ''), reference_id) from pur_purchase_requisition_item where reference_document_id = :produceOrderId AND is_complete = 1",
+        List<String> purchasedIds = sharpService.query("select concat(ifnull(schedule_id, ''), reference_id, ifnull(batch_code, '')) from pur_purchase_requisition_item where reference_document_id = :produceOrderId AND is_complete = 1",
                 Params.builder(1).pv("produceOrderId", produceOrderId).build(), String.class);
 
         Map<String, String> materialIdRemark = soItem.stream().collect(Collectors.toMap(item -> item.getMaterialId() + Objects.toString(item.getBatchCode(), ""), item -> item.getRemark(), (item1, item2) -> item1));
@@ -336,7 +336,7 @@ public class ProduceOrderService {
         List<PurchaseRequisition.Item> itemList = Lists.newArrayListWithExpectedSize(soItem.size());
         for (ProduceOrder.Item item : soItem) {
             if (item.getItemCategory() == ProduceOrder.ItemCategoryEnum.PURCHASE_SEND) {
-                if (purchasedIds.contains(String.valueOf(item.getId()))) {
+                if (purchasedIds.contains(item.getId() + item.getBatchCode())) {
                     continue;
                 }
 
@@ -359,7 +359,7 @@ public class ProduceOrderService {
         for (ProduceOrder.Item.Detail detail : purchaseDetailList) {
             List<ProduceOrder.Item.Schedule> scheduleDateList = itemIdScheduleMap.get(detail.getProduceOrderItemId());
             for (ProduceOrder.Item.Schedule schedule : scheduleDateList) {
-                if (purchasedIds.contains(schedule.getId() + "" + detail.getId())) {
+                if (purchasedIds.contains(schedule.getId() + "" + detail.getId() + detail.getBatchCode())) {
                     continue;
                 }
                 PurchaseRequisition.Item prItem = new PurchaseRequisition.Item();

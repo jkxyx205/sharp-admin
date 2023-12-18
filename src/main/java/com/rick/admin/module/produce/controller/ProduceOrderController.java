@@ -184,7 +184,7 @@ public class ProduceOrderController {
     }
 
     private List<RelatedPurchaseOrder> getRelatedPurchaseOrders(long produceOrderId) {
-        return sharpService.query("select material_id materialId, material_code materialCode, batch_id batchId, batch_code batchCode, quantity, purchase_order_code purchaseOrderCode, create_time from pur_purchase_order_item where reference_type2 = 'SO' AND reference_id2 = :produceOrderId",
+        return sharpService.query("select material_id materialId, material_code materialCode, batch_id batchId, batch_code batchCode, quantity, purchase_order_code purchaseOrderCode, create_time from pur_purchase_order_item where reference_type2 = 'SO' AND produce_order_id = :produceOrderId",
                 Params.builder(1).pv("produceOrderId", produceOrderId).build(), RelatedPurchaseOrder.class);
     }
 
@@ -288,6 +288,7 @@ public class ProduceOrderController {
             poItem.setReferenceId1(soItem.getId());
             poItem.setReferenceType2(ReferenceTypeEnum.SO);
             poItem.setReferenceId2(soItem.getReferenceId());
+            poItem.setProduceOrderId(soItem.getReferenceDocumentId());
             poItem.setPurchaseSend(soItem.getPurchaseSend());
             itemList.add(poItem);
         }

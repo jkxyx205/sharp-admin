@@ -259,6 +259,10 @@
                 {
                     type: "hidden",
                     name: "referenceId2",
+                },
+                {
+                    type: "hidden",
+                    name: "produceOrderId",
                 }
             ],
             value,
@@ -353,7 +357,9 @@
                 $editableTable.find("tbody tr:eq("+(index)+")").each(function () {
                     let materialCode = $(this).find(':input[name=materialCode]').val()
                     if (materialCode === 'R00548' || materialCode === 'R00848' || materialCode === 'R00904') {
-                        $(this).find('td.characteristic-td .items > div :input[name=LINE_BRAND]').val($(this).find(':input[name=partnerId]').next().val())
+                        let partnerId = $(this).find(':input[name=partnerId]').val()
+                        let lineBrand = '725460061379387392' == partnerId ? '无锡联为科技有限公司' : $(this).find(':input[name=partnerId]').next().val()
+                        $(this).find('td.characteristic-td .items > div :input[name=LINE_BRAND]').val(lineBrand)
                     }
                 })
             }

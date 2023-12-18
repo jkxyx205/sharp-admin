@@ -130,11 +130,16 @@ public class PurchaseOrder extends BaseCodeEntity {
 
         ReferenceTypeEnum referenceType1;
 
+        @Column(updatable = false)
         Long referenceId1;
 
         ReferenceTypeEnum referenceType2;
 
+        @Column(updatable = false)
         Long referenceId2;
+
+        @Column(updatable = false)
+        Long produceOrderId;
 
         @OneToMany(oneToOne = true, subTable = "core_contact", joinValue = "instance_id", cascadeInsertOrUpdate = true, reversePropertyName = "instanceId")
         private ContactInfo contactInfo;
@@ -153,7 +158,8 @@ public class PurchaseOrder extends BaseCodeEntity {
         @Sql(value = "select source_order_num sourceOrderNum, produce_order.id,\n" +
                 "                       produce_order.code,\n" +
                 "                       produce_order.partner_id,\n" +
-                "                       core_partner.name, core_partner.short_name from pur_purchase_requisition_item, produce_order, core_partner where pur_purchase_requisition_item.id = :referenceId1 and produce_order.id = reference_document_id and core_partner.id = produce_order.partner_id", params = "referenceId1@referenceId1", nullWhenParamsIsNull = {"referenceId1"})
+                "                       core_partner.name, core_partner.short_name from produce_order, core_partner where core_partner.id = produce_order.partner_id\n" +
+                "                       AND produce_order.id = :produceOrderId", params = "produceOrderId@produceOrderId", nullWhenParamsIsNull = {"produceOrderId"})
         private Map<String, Object> soInfo;
 
         public BigDecimal getAmount() {
