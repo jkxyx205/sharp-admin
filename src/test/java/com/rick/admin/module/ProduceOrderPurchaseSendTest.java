@@ -38,7 +38,8 @@ public class ProduceOrderPurchaseSendTest {
                         "        pur_purchase_requisition_item.unit,\n" +
                         "        pur_purchase_requisition_item.`delivery_date`,\n" +
                         "        pur_purchase_requisition_item.remark,\n" +
-                        "        pur_purchase_requisition_item.reference_id,\n" +
+                        "        pur_purchase_requisition_item.reference_id," +
+                        "        pur_purchase_requisition_item.create_time,\n" +
                         "        mm_material.name material_name,\n" +
                         "        mm_material.specification,\n" +
                         "        produce_order.code produce_order_code,\n" +
@@ -57,20 +58,21 @@ public class ProduceOrderPurchaseSendTest {
                         new ReportColumn("material_code", "编号"),
                         new ReportColumn("material_name", "名称", true),
                         new ReportColumn("specificationAndCharacteristic", "规格 & 特征值"),
-                        new ReportColumn("unit", "基本单位", false, "unit", Arrays.asList("dictConverter")),
                         new ReportColumn("quantity", "采购数量").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
+                        new ReportColumn("unit", "基本单位", false, "unit", Arrays.asList("dictConverter")),
                         new ReportColumn("delivery_date", "交货日期", false),
                         new ReportColumn("remark", "备注", false),
                         new ReportColumn("produce_order_code", "销售订单", false),
                         new ReportColumn("partner_id", "客户", false, "core_partner", Arrays.asList("dictConverter")),
+                        new ReportColumn("create_time", "申请时间", false,null, Arrays.asList("localDateTimeConverter")),
                         new HiddenReportColumn("batch_code"),
                         new HiddenReportColumn("batch_id"),
                         new HiddenReportColumn("material_id"),
                         new HiddenReportColumn("reference_id")
                 ))
                 .pageable(false)
-                .sidx("id")
-                .sord(SordEnum.ASC)
+                .sidx("create_time")
+                .sord(SordEnum.DESC)
                 .build());
     }
 }
