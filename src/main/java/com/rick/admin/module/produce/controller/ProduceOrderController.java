@@ -6,7 +6,6 @@ import com.rick.admin.auth.common.UserContextHolder;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
 import com.rick.admin.module.core.model.ReferenceTypeEnum;
-import com.rick.admin.module.material.dao.ClassificationDAO;
 import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.material.service.MaterialDescription;
 import com.rick.admin.module.material.service.MaterialDescriptionHandler;
@@ -69,8 +68,6 @@ public class ProduceOrderController {
     BomService bomService;
 
     BatchService batchService;
-
-    ClassificationDAO materialClassificationDAO;
 
     DictService dictService;
 
@@ -204,7 +201,10 @@ public class ProduceOrderController {
                 "             produce_order_item_detail.material_id,\n" +
                 "             produce_order_item_detail.batch_id,\n" +
                 "             produce_order_item_detail.batch_code,\n" +
-                "             produce_order_item_detail.quantity * produce_order_item.quantity quantity\n" +
+                "             (CASE " +
+                "               WHEN produce_order_item_detail.component_detail_id = 725451860537794560 THEN 3 * produce_order_item_detail.quantity" +
+                "               WHEN produce_order_item_detail.component_detail_id = 725451860537794561 THEN 3 * produce_order_item_detail.quantity" +
+                "               ELSE produce_order_item_detail.quantity END) * produce_order_item.quantity quantity\n" +
                 "      from produce_order\n" +
                 "               inner join produce_order_item on produce_order_item.`produce_order_id` = produce_order.id\n" +
                 "               inner join produce_order_item_detail on produce_order_item.id = produce_order_item_detail.`produce_order_item_id`\n" +
