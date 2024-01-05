@@ -26,7 +26,8 @@ public class PurchaseRequisitionItemService {
     EntityDAO<PurchaseRequisition.Item, Long> purchaseRequisitionItemDAO;
 
     public int deleteByIds(String ids) {
-        return purchaseRequisitionItemDAO.deleteByIds(ids);
+//        return purchaseRequisitionItemDAO.deleteByIds(ids);
+        return purchaseRequisitionItemDAO.deleteLogicallyByIds(ids);
     }
 
     public void insertOrUpdateByReferenceIds(List<PurchaseRequisition.Item> itemList) {
