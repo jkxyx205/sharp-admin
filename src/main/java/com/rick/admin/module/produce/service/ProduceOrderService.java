@@ -333,9 +333,12 @@ public class ProduceOrderService {
         // 删除历史采购
         purchaseRequisitionItemDAO.delete(Params.builder(1).pv("referenceDocumentId", produceOrderId).build(), "reference_document_id = :referenceDocumentId AND is_complete = 0");
 
-        List<PurchaseRequisition.Item> itemList = Lists.newArrayListWithExpectedSize(soItem.size());
+        List<PurchaseRequisition.Item> itemList = Lists.newArrayList();
         for (ProduceOrder.Item item : soItem) {
-            if (item.getItemCategory() == ProduceOrder.ItemCategoryEnum.PURCHASE_SEND) {
+            if (item.getItemCategory() == ProduceOrder.ItemCategoryEnum.PURCHASE_SEND
+                    || item.getMaterialId() == 729584784212238336L
+                    || item.getMaterialId() == 741996205273632769L
+                    || item.getMaterialId() == 731499486144483329L) {
                 if (purchasedIds.contains(item.getId() + item.getBatchCode())) {
                     continue;
                 }
@@ -348,7 +351,7 @@ public class ProduceOrderService {
                 prItem.setReferenceId(item.getId());
                 prItem.setPurchaseRequisitionId(1L);
                 prItem.setPurchaseRequisitionCode("STANDARD");
-                prItem.setPurchaseSend(true);
+//                prItem.setPurchaseSend(true); // copy就是true
                 prItem.setComplete(false);
                 BaseEntityUtils.resetAdditionalFields(prItem);
                 itemList.add(prItem);
@@ -467,7 +470,7 @@ public class ProduceOrderService {
                 "                                                                   where produce_order.id = produce_order_item.produce_order_id AND produce_order_item_detail.produce_order_item_id = produce_order_item.id\n" +
                 "                                                                      AND produce_order.`status` = 'PRODUCING' AND produce_order.id = :produceOrderId\n" +
                 "                                                         AND produce_order_item.item_category = 'PRODUCT'                                                         AND produce_order_item_detail.material_id = stock.material_id AND (produce_order_item_detail.batch_id = stock.batch_id or (produce_order_item_detail.batch_id is null AND stock.batch_id is null ))" +
-                "                     AND concat(produce_order_item_detail.material_id, ifnull(produce_order_item_detail.batch_id, '')) NOT IN (:materialIdBatchIdString)\n" +
+                "                     AND concat(produce_order_item_detail.material_id, ifnull(produce_order_item_detail.batch_id, '')) NOT IN (:materialIdBatchIdString) AND produce_order_item.material_id NOT IN(729584784212238336, 741996205273632769, 731499486144483329, 764459407009763328)\n" +
                 "                                                               )\n" +
                 "group by material_id, batch_id having sum(quantity) < 0";
 
