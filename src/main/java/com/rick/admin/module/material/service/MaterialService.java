@@ -8,6 +8,7 @@ import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.entity.Material;
 import com.rick.admin.module.material.entity.MaterialProfile;
 import com.rick.common.util.IdGenerator;
+import com.rick.common.util.JsonUtils;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
 import com.rick.db.plugin.dao.core.EntityDAO;
 import com.rick.db.plugin.dao.support.EntityCodeIdFillService;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -123,6 +125,41 @@ public class MaterialService {
             consumer.accept(idMaterialMap, dictService);
         }
 
+    }
+
+    /**
+     *
+     * @param materialName 物料名称
+     * @param specificationList 物料规格
+     * @return
+     */
+    public boolean checkMaterialIfExists(String materialName, List<List<String>> specificationList) {
+        List<String> specificationValueList = materialDAO.selectByParams(Params.builder(1).pv("materialName", materialName).build(),
+                "specification", "name = :materialName", String.class);
+
+        if (CollectionUtils.isEmpty(specificationValueList)) {
+            return false;
+        }
+
+        for (String compareSpecificationJson : specificationValueList) {
+            List<List> compareSpecificationList = JsonUtils.toList(compareSpecificationJson, List.class);
+
+            if (CollectionUtils.isEmpty(compareSpecificationList) && CollectionUtils.isEmpty(specificationList)) {
+                return true;
+            } else if(CollectionUtils.isNotEmpty(compareSpecificationList) && CollectionUtils.isNotEmpty(specificationList)) {
+                // 比较规格
+                Set<String> compareSpecificationSet = compareSpecificationList.stream().map(list -> (String)list.get(1)).collect(Collectors.toSet());
+                Set<String> specificationSet = specificationList.stream().map(list -> list.get(1)).collect(Collectors.toSet());
+
+                if (SetUtils.isEqualSet(compareSpecificationSet, specificationSet)) {
+                    return true;
+                }
+            } else {
+                return false;
+            }
+        }
+
+        return false;
     }
 
     private void handleClassification(List<Classification> classificationList) {
