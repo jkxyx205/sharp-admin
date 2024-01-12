@@ -386,7 +386,6 @@ public class ProduceOrderService {
             }
         }
 
-        purchaseSendSet.add("764459407009763328");
         List<PurchaseRequisition.Item> produceitemList = purchaseRequisitionForProduce(produceOrderId, purchaseSendSet);
         if (CollectionUtils.isNotEmpty(produceitemList)) {
             materialService.fillMaterialDescription(produceitemList);
