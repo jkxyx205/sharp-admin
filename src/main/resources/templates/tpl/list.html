@@ -71,7 +71,7 @@
                         <tr>
                             <th style="width: 40px">序号</th>
                             <th class="text-center" th:if="${'multiple' eq params['mode']}" style="width: 40px"><input id="table-select-all-checkbox" type="checkbox"/></th>
-                            <th th:each="n : ${report.reportColumnList}" th:text="${n.label}" th:data-name="${n.name}" th:class="${n.sortable ? 'sortable text-' + n.align.name().toLowerCase() : 'text-' + n.align.name().toLowerCase() }"
+                            <th th:each="n : ${report.reportColumnList}" th:text="${n.label}" th:data-name="${n.name}" th:class="${(n.sortable ? 'sortable text-' + n.align.name().toLowerCase() : 'text-' + n.align.name().toLowerCase()) + (n.name == report.sidx ? ' active' : '') }"
                                 th:style="${n.columnWidth == null ? '': 'width: ' + n.columnWidth + 'px'}" th:if="${!n.hidden}"></th>
                             <th class="text-center" style="width: 100px" sec:authorize="${hasAuthority(#vars.report.code + '_edit') or hasAuthority(#vars.report.code + '_delete')}">操作</th>
                         </tr>
