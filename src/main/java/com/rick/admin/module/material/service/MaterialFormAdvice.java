@@ -143,4 +143,21 @@ public class MaterialFormAdvice implements FormAdvice {
         materialService.saveOrUpdate(material);
         return true;
     }
+
+    @Override
+    public void beforeDeleteInstance(Long instanceId) {
+        // 检查是否允许删除
+        Optional<Long> optional = sharpService.queryForObject("select sum(c) from (\n" +
+                        "select count(*) c from inv_stock where material_id = :materialId\n" +
+                        "union all\n" +
+                        "select count(*) c from `produce_order_item_detail` where material_id = :materialId\n" +
+                        "union all\n" +
+                        "select count(*) c from `pur_purchase_order_item` where material_id = :materialId\n" +
+                        ") count",
+                Params.builder(1).pv("materialId", instanceId).build()
+                , Long.class);
+        if (optional.get().longValue() > 0) {
+            throw new BizException(500, "该物料已经被使用，不能被删除!");
+        }
+    }
 }
