@@ -176,7 +176,7 @@ public class BatchService {
             batchDAO.insert(batch);
         }
 
-        materialClassificationDAO.insertOrUpdate("material_id",  batch.getMaterialId(), batch.getClassificationList());
+        materialClassificationDAO.insertOrUpdate(batch.getClassificationList(), "material_id", batch.getMaterialId());
 
         handleMaterialProfile(batch, characteristicValueList, profileUpdate);
     }
