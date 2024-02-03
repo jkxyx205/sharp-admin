@@ -204,32 +204,33 @@ public class CharacteristicTest {
      */
     @Test
     public void insertOrUpdateCharacteristic() {
-//       insertOrUpdateCharacteristic("LHQ", "离合器", 719895812674441216L);
-
-//        insertOrUpdateCharacteristicWithName("NLCL", "尼龙齿轮", 725412446512111616L);
+       insertOrUpdateCharacteristic("LHQ", "离合器", 719895812674441216L);
+//
+        insertOrUpdateCharacteristic("NLCL", "尼龙齿轮", 725412446512111616L);
 //        insertOrUpdateCharacteristic("ZHC", "轴承", 719895465524482048L);
 //        insertOrUpdateCharacteristic("ZHC2", "轴承", 719895465524482048L);
 //        insertOrUpdateCharacteristic("CIGANG", "磁钢", 719895589763960832L);
-
+//
 //        insertOrUpdateCharacteristic("ZHZ", "转子", 719895650870775808L);
-
+//
 //        insertOrUpdateCharacteristicWithName("DG", "端盖", 719895400634404864L);
-
+//
 //        insertOrUpdateCharacteristicWithName("NCQ", "内齿圈", 719895746853228544L);
 //        insertOrUpdateCharacteristicWithName("FTL", "辐条轮毂", 719895198196322304L);
+
 //        insertOrUpdateCharacteristicWithName("YTL", "一体轮毂", 719895241229881344L);
 
 //        insertOrUpdateCharacteristic("TIEX", "铁芯", 720624056151330816L);
 
-        //        insertOrUpdateCharacteristicWithName("TONGX", "铜线", 725412632437219328L);
+//                insertOrUpdateCharacteristicWithName("TONGX", "铜线", 725412632437219328L);
 
-        characteristicService.saveOrUpdate(CharacteristicDTO.builder()
-                .type(Characteristic.CharacteristicTypeEnum.TEXT)
-                .code("ZASHU")
-                .description("匝数")
-                .cpnType(CpnTypeEnum.RADIO) // 单选
-                .required(true)
-                .build());
+//        characteristicService.saveOrUpdate(CharacteristicDTO.builder()
+//                .type(Characteristic.CharacteristicTypeEnum.TEXT)
+//                .code("ZASHU")
+//                .description("匝数")
+//                .cpnType(CpnTypeEnum.RADIO) // 单选
+//                .required(true)
+//                .build());
     }
 
     private void insertOrUpdateCharacteristic(String code, String description, Long categoryId) {

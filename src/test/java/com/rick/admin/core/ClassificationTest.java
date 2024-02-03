@@ -22,7 +22,7 @@ public class ClassificationTest {
     @Test
     public void testInsertOrUpdate() {
         // classificationService.saveOrUpdate(new ClassificationDTO(null, "COLOR", "颜色", Arrays.asList("COLOR")));
-//        classificationService.saveOrUpdate(new ClassificationDTO(null, "LHQ", "离合器组件", Arrays.asList("LHQ")));
+//        classificationService.saveOrUpdate(new ClassificationDTO(null, "LHQ", "离合器组件", Arrays.asList("LHQ", "NLCL", "ZHC")));
 //        classificationService.saveOrUpdate(new ClassificationDTO(null, "NLCL", "尼龙齿轮组件", Arrays.asList("NLCL", "ZHC")));
 //        classificationService.saveOrUpdate(new ClassificationDTO(null, "ZHZ", "转子组件", Arrays.asList("ZHZ", "ZHC","ZHC2", "CIGANG")));
 //        classificationService.saveOrUpdate(new ClassificationDTO(null, "DG", "端盖组件", Arrays.asList("COLOR")));

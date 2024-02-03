@@ -14,6 +14,8 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Rick.Xu
@@ -47,6 +49,14 @@ public class ClassificationService {
         }
 
         materialClassificationDAO.insert(materialClassificationList);
+    }
+
+    /**
+     * 获取物料的特征值
+     * @return
+     */
+    public Map<Long, List<com.rick.admin.module.material.entity.Classification>> findAllAsMap() {
+        return materialClassificationDAO.selectAll().stream().collect(Collectors.groupingBy(classification -> classification.getMaterialId()));
     }
 
 }
