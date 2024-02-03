@@ -61,7 +61,6 @@ public class StockController {
     private void download(HttpServletRequest request, HttpServletResponse response, Collection<Long> plantId, String fileName) throws IOException {
         Map<String, Map<String, List<StockItem>>> data = data(plantId);
 
-
         ExcelWriter excelWriter = new ExcelWriter(fileName);
         float heightInPoints = 30F;
 

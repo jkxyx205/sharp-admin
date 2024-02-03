@@ -5,9 +5,11 @@ import com.rick.admin.auth.common.UserContextHolder;
 import com.rick.admin.common.exception.ExceptionCodeEnum;
 import com.rick.admin.module.inventory.dao.InventoryDocumentDAO;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
+import com.rick.admin.module.inventory.entity.Stock;
 import com.rick.admin.module.inventory.service.HandlerHelper;
 import com.rick.admin.module.inventory.service.HandlerManager;
 import com.rick.admin.module.inventory.service.InventoryDocumentService;
+import com.rick.admin.module.inventory.service.StockService;
 import com.rick.admin.module.material.dao.ClassificationDAO;
 import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.service.BatchService;
@@ -34,6 +36,7 @@ import lombok.experimental.FieldDefaults;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -83,6 +86,8 @@ public class InventoryController {
     final ClassificationDAO classificationDAO;
 
     final ProduceScheduleService produceScheduleService;
+
+    final StockService stockService;
 
     @GetMapping("move")
     public String gotoInventoryPage() {
@@ -316,9 +321,16 @@ public class InventoryController {
         return inventoryDocument;
     }
 
-
     @GetMapping("count")
-    public String gotoInventoryCountPage() {
+    public String gotoInventoryCountPage(Model model, @RequestParam(required = false) List<Long> materialsIds) {
+        if (CollectionUtils.isEmpty(materialsIds)) {
+            model.addAttribute("stockList", null);
+        } else {
+            List<Stock> stockList = stockService.findAll(719893335619162112L, materialsIds);
+            materialService.fillMaterialDescription(stockList);
+            model.addAttribute("stockList", stockList);
+        }
+
         return "modules/inventory/count";
     }
 

@@ -1,5 +1,8 @@
 package com.rick.admin.module;
 
+import com.rick.admin.module.inventory.entity.Stock;
+import com.rick.admin.module.inventory.service.StockService;
+import com.rick.admin.module.produce.dao.ProduceOrderDAO;
 import com.rick.db.service.support.Params;
 import com.rick.report.core.entity.Report;
 import com.rick.report.core.model.HiddenReportColumn;
@@ -12,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Rick.Xu
@@ -22,6 +26,12 @@ public class InventoryDocumentTest {
 
     @Autowired
     private ReportService reportService;
+
+    @Autowired
+    private StockService stock;
+
+    @Autowired
+    private ProduceOrderDAO produceOrderDAO;
 
     @Test
     public void testReport() {
@@ -69,5 +79,10 @@ public class InventoryDocumentTest {
                 .sidx("id")
                 .sord(SordEnum.DESC)
                 .build());
+    }
+
+    @Test
+    public void testStockFindWithPatch() {
+        List<Stock> stockList = stock.findAll(719893335619162112L, Arrays.asList(731499486144483329L));
     }
 }

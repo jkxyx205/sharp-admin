@@ -48,6 +48,10 @@
                         <label class="col-form-label mr-2" for="remark">备注</label>
                         <input class="form-control" type="text" id="remark" name="remark">
                     </div>
+                    <div class="form-group">
+                        <button class="btn btn-secondary ml-2 mr-2" type="button" id="chooseMaterialsDialogButton">
+                            <i class="fa fa-search"></i>  选择材料仓库物料</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -65,9 +69,9 @@
         <div class="operator-bar text-center" id="operator-bar">
             <button class="btn btn-primary" type="button" name="send" onclick="send()">
                 <i class="fa fa-send"></i> 提交</button>
-
 <!--            <button class="btn btn-secondary ml-2" type="button" name="download" onclick="window.location = '/inventory/count/template'">-->
 <!--                <i class="fa fa-upload"></i> 下载模版</button>-->
+
         </div>
     </div>
 </th:block>
@@ -116,7 +120,7 @@
                 {
                     type: "characteristic",
                     name: "characteristic",
-                    // width: 80,
+                    width: 500,
                     title: "特征值",
                     required: true,
                     disabled: true
@@ -205,8 +209,32 @@
                 }
             });
         }
-    </script>
 
+        $('#chooseMaterialsDialogButton').dialogInput({
+            title: '选择物料',
+            reportId: '697147523487240192',
+            mode: 'multiple', // 多选
+            labelDisplay: function (row) {
+                return ''
+            },
+            specification: function (row) {
+                return ''
+            },
+            selected: function (rows) {
+                $.LoadingOverlay('show')
+                location.href = "/inventory/count?materialsIds=" + rows.map(row => row.id).join(",")
+            }
+        })
+
+
+    </script>
+    <script th:inline="javascript">
+        let itemList = /*[[${stockList}]]*/
+
+        if (itemList) {
+            characteristic.loadCharacteristic($editableTable, itemList)
+        }
+    </script>
     <script sec:authorize="hasAuthority('USER_cqk')">
         $('#plantId').val('726158903766683648')
         $('#plantId option[value!=726158903766683648]').remove()

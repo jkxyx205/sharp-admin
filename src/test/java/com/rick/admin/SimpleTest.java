@@ -134,4 +134,30 @@ public class SimpleTest {
             System.out.println();
         }
     }
+
+    @Test
+    public void testBatchCode() {
+        String s1 = BatchSupport.characteristicToCode(Arrays.asList(
+                Classification.builder()
+                        .classificationCode("LINE_FS").characteristicValueList(Arrays.asList(
+                                CharacteristicValue.builder().characteristicCode("XIN").value("大九芯").build(),
+                                CharacteristicValue.builder().characteristicCode("AREA").value("2.5平方").build(),
+                                CharacteristicValue.builder().characteristicCode("JIETOU").value("公头").build(),
+                                CharacteristicValue.builder().characteristicCode("LENGTH").value("320").build(),
+                                CharacteristicValue.builder().characteristicCode("LINE_BRAND").value("无锡联为科技有限公司").build(),
+                                CharacteristicValue.builder().characteristicCode("XIANGXIAN").value("").build(),
+                                CharacteristicValue.builder().characteristicCode("HUOERXIAN").value("").build(),
+                                CharacteristicValue.builder().characteristicCode("BP_LENGTH").value("").build(),
+                                CharacteristicValue.builder().characteristicCode("ZX_LENGTH").value("").build()
+                        ))
+                        .build()));
+
+
+//        大九芯 2.5平方 公头 线长320mm
+
+        System.out.println(s1); // fc18ced22faf0f4c87b6e9441be8b5bc
+
+
+
+    }
 }

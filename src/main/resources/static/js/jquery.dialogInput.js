@@ -72,8 +72,10 @@ head.appendChild(style)
                 })
 
                 // bind control
-                this.$element.append('<input type="text" class="form-control" style="background-color: #ffffff;" placeholder="'+this.options.placeholder+'" '+(this.options.required === true ? 'required' : '')+'>\n' +
-                    '                    <input type="hidden" name="'+this.options.name+'" class="form-control">')
+                if (this.$element[0].tagName === 'DIV') {
+                    this.$element.append('<input type="text" class="form-control" style="background-color: #ffffff;" placeholder="'+this.options.placeholder+'" '+(this.options.required === true ? 'required' : '')+'>\n' +
+                        '                    <input type="hidden" name="'+this.options.name+'" class="form-control">')
+                }
 
                 this.$element.on('click', () => {
                     this._showReportDialog(this.options.title)
