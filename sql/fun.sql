@@ -5,6 +5,9 @@ delete from mm_batch where material_id = :materialId;
 delete from mm_characteristic_value where reference_id IN (select id from mm_profile where material_id = :materialId);
 delete from mm_profile where material_id = :materialId;
 
+-- 清空产前库库存
+delete from inv_stock where plant_id = 726158903766683648
+
 -- 删除已完成的申请
 delete
 from pur_purchase_requisition_item
