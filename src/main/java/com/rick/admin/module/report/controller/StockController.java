@@ -58,6 +58,12 @@ public class StockController {
         download(request, response, Arrays.asList(726158903766683648L, 726158996003622912L, 726159086739001344L), fileName);
     }
 
+    @GetMapping("defective")
+    public void downloadDefectiveStock(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String fileName = "次品库存表 " + Time2StringUtils.format(new Date());
+        download(request, response, Arrays.asList(731555795392909313L), fileName);
+    }
+
     private void download(HttpServletRequest request, HttpServletResponse response, Collection<Long> plantId, String fileName) throws IOException {
         Map<String, Map<String, List<StockItem>>> data = data(plantId);
 

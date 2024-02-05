@@ -6,7 +6,14 @@ delete from mm_characteristic_value where reference_id IN (select id from mm_pro
 delete from mm_profile where material_id = :materialId;
 
 -- 清空产前库库存
-delete from inv_stock where plant_id = 726158903766683648
+delete from inv_stock where plant_id = 726158903766683648;
+
+-- 物料是否已经被使用过
+select * from pur_purchase_order_item where material_code = 'R00891';
+select * from inv_stock where exists (select 1 from mm_material where id = inv_stock.material_id and code = 'R00891');
+select * from produce_order_item_detail where material_code = 'R00891';
+select * from produce_order_item where material_code = 'R00891';
+
 
 -- 删除已完成的申请
 delete
