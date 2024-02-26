@@ -18,13 +18,13 @@ import java.util.Optional;
 public class PurchaseOrderDAO extends EntityCodeDAOImpl<PurchaseOrder, Long> {
 
     /**
-     * 根据code模糊查询 90 天内的采购订单
+     * 根据code模糊查询 180 天内的采购订单
      * @param keyCode
      * @return
      */
     public Optional<PurchaseOrder> findActivePurchaseOrderByKeyCode(String keyCode) {
         List<PurchaseOrder> purchaseOrderList = selectByParams(Params.builder(1).pv("code", keyCode).build(),
-                "code LIKE CONCAT('%',:code) AND TIMESTAMPDIFF(DAY, update_time, now()) < 90");
+                "code LIKE CONCAT('%',:code) AND TIMESTAMPDIFF(DAY, update_time, now()) < 180");
 
         if (purchaseOrderList.size() > 1) {
             throw new BizException("系统找到了多个订单号，请输入更多的编号来确定唯一订单号");

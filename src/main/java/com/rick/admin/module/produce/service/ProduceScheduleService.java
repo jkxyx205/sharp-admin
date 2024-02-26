@@ -96,10 +96,10 @@ public class ProduceScheduleService {
     public String findActiveProduceScheduleByKeyCode(String keyCode) {
         List<String> codeList = produceOrderItemScheduleDAO.selectByParams(Params.builder(1).pv("code", keyCode).build(),
                 "code",
-                "status <> 'PLANNING' AND code LIKE CONCAT('%',:code) AND TIMESTAMPDIFF(DAY, update_time, now()) < 90", String.class);
+                "status <> 'PLANNING' AND code LIKE CONCAT('%',:code) AND TIMESTAMPDIFF(DAY, update_time, now()) < 360", String.class);
 
         if (codeList.size() == 0) {
-            throw new BizException("没有找到订单号，请输入更多的编号或者完整订单号！");
+            throw new BizException("没有找到订单号，请输入完整订单号！");
         } else if (codeList.size() > 1) {
             throw new BizException("系统找到了多个订单号，请输入更多的编号来确定唯一订单号");
         }
