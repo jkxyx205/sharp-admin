@@ -108,7 +108,7 @@ head.appendChild(style)
         _showReportDialog:function (title) {
             $('#' + this.title).text(title)
             let params = $.param(this.options.params)
-            this.iframe.src = '/reports/' + this.options.reportId + "?mode=" + this.options.mode + (params ? '&' + params : '')
+            this.iframe.src = '/reports/' + this.options.reportId + "/page?mode=" + this.options.mode + (params ? '&' + params : '')
 
             this.$modal.modal({
                 show: true,
