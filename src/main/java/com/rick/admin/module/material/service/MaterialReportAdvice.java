@@ -1,7 +1,6 @@
 package com.rick.admin.module.material.service;
 
 import com.rick.admin.module.core.service.CategoryService;
-import com.rick.admin.module.inventory.dao.StockDAO;
 import com.rick.report.core.entity.Report;
 import com.rick.report.core.service.ReportAdvice;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +24,6 @@ import java.util.stream.Collectors;
 public class MaterialReportAdvice implements ReportAdvice {
 
     private final CategoryService categoryService;
-
-    private final StockDAO stockDAO;
 
     private final MaterialProfileService materialProfileService;
 
@@ -82,7 +79,15 @@ public class MaterialReportAdvice implements ReportAdvice {
         // 添加样式
 //        report.getAdditionalInfo().put("css", "#report-list div.card-body-scroll-panel > table > thead > th:nth-child(10) { color: red;}");
 //        report.getAdditionalInfo().put("css", "div {color: red;}");
-        report.getAdditionalInfo().put("js", "$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock/defective\"><i class=\"fa fa-upload\"></i> 次品库存报表</a>');$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock/produce\"><i class=\"fa fa-upload\"></i> 线边库存报表</a>');$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock\"><i class=\"fa fa-upload\"></i> 材料库存报表</a>'); $('#exportBtn').hide();");
+//        report.getAdditionalInfo().put("js", "$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock/defective\"><i class=\"fa fa-upload\"></i> 次品库存报表</a>');$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock/produce\"><i class=\"fa fa-upload\"></i> 线边库存报表</a>');$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock\"><i class=\"fa fa-upload\"></i> 材料库存报表</a>'); $('#exportBtn').hide();" +
+//                "setTimeout(() => {" +
+//                "$('.report-list-table tr').each(function() {\n" +
+//                "  let $td = $(this).find('td:eq(8)');\n" +
+//                "  let text = $td.text().trim();\n" +
+//                "  let batchId = $(this).find('td:eq(11)').text().trim();\n" +
+//                "  let materialId = $(this).data('id');" +
+//                "  $td.html('<a href=\"javascript:;\" onclick=\"openOnNewTab(\\''+materialId+'\\', \\'reports/699659248728047616?batchId='+batchId+'&material_id='+materialId+'&plantId=719893335619162112&page=1&size=50\\', \\'物料凭证\\')\">'+text+'</a>')\n" +
+//                "})}, 1000)");
 
         // language=javascript
 //        String js = "setTimeout(function () {\n" +
@@ -94,6 +99,25 @@ public class MaterialReportAdvice implements ReportAdvice {
 //                "}, 500)";
 //
 //        report.getAdditionalInfo().put("js", js);
-          report.getAdditionalInfo().put("js-operator-column", "{{ openDetailLink('复制', scope.row.id, '复制') }}");
+//          report.getAdditionalInfo().put("js-operator-column", "{{ openDetailLink('复制', scope.row.id, '复制') }}");
+    }
+
+    /**
+     * ajax_list 需要在此处处理js代码， 否则可以在 beforeSetRow 中处理 js代码
+     * @param report
+     */
+    @Override
+    public void init(Report report) {
+        report.getAdditionalInfo().put("js", "$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock/defective\"><i class=\"fa fa-upload\"></i> 次品库存报表</a>');$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock/produce\"><i class=\"fa fa-upload\"></i> 线边库存报表</a>');$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock\"><i class=\"fa fa-upload\"></i> 材料库存报表</a>'); $('#exportBtn').hide();" +
+                "setInterval(() => {" +
+                "$('.report-list-table tr').each(function() {\n" +
+                "  let $td = $(this).find('td:eq(8)');\n" +
+                "  let text = $td.text().trim();\n" +
+                "  let batchId = $(this).find('td:eq(11)').text().trim();\n" +
+                "  let materialId = $(this).data('id');" +
+                "  $td.html('<a href=\"javascript:;\" onclick=\"openOnNewTab(\\''+materialId+'\\', \\'reports/699659248728047616?batchId='+batchId+'&material_id='+materialId+'&plantId=719893335619162112&page=1&size=50\\', \\'物料凭证\\')\">'+text+'</a>')\n" +
+                "})}, 1000)");
+
+        report.getAdditionalInfo().put("js-operator-column", "{{ openDetailLink('复制', scope.row.id, '复制') }}");
     }
 }
