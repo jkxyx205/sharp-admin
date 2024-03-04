@@ -192,7 +192,7 @@ public class ProduceBOMDownloadController {
                 } else {
                     ProduceOrder.Item.Detail value = componentDetail.getValue();
                     if (Objects.nonNull(value.getMaterialId())) {
-                        dataList.add(new Object[]{value.getMaterialName(), (StringUtils.isBlank(value.getMaterialSpecification()) ? "" : value.getMaterialSpecification() + " ") + value.getCharacteristic(),
+                        dataList.add(new Object[]{value.getMaterialCode(), value.getMaterialName(), (StringUtils.isBlank(value.getMaterialSpecification()) ? "" : value.getMaterialSpecification() + " ") + value.getCharacteristic(),
                                 value.getQuantity().multiply(quantity).stripTrailingZeros().toPlainString(), value.getUnitText(), value.getRemark(), value.getMaterialId(), Objects.toString(value.getBatchCode(), ""), ""});
 
                         if (materialIdBatchCodes != null) {
