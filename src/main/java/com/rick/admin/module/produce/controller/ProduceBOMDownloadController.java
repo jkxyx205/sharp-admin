@@ -83,7 +83,7 @@ public class ProduceBOMDownloadController {
         Map<String, BigDecimal> stockMap = stockDAO.getStockQuantityByMaterialIdAndBatchCode2(719893335619162112L, materialIdBatchCodes);
 
         data.forEach(objects -> {
-            BigDecimal stockQuantity = stockMap.get(objects[5] + "" + objects[6]);
+            BigDecimal stockQuantity = stockMap.get(objects[6] + "" + objects[7]);
             if (Objects.isNull(stockQuantity)) {
                 stockQuantity = BigDecimal.ZERO;
             }
