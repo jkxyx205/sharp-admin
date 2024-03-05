@@ -87,7 +87,7 @@ public class ProduceBOMDownloadController {
             if (Objects.isNull(stockQuantity)) {
                 stockQuantity = BigDecimal.ZERO;
             }
-            objects[7] = stockQuantity.stripTrailingZeros().toPlainString();
+            objects[8] = stockQuantity.stripTrailingZeros().toPlainString();
         });
 
         model.addAttribute("data", data);

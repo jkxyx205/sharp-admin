@@ -59,17 +59,17 @@
     </div>
 <script>
     $('.bom').each(function () {
-        let needQuantity = parseFloat($(this).find('td:nth-child(3)').text());
-        let stockQuantity = parseFloat($(this).find('td:nth-child(4)').text());
+        let needQuantity = parseFloat($(this).find('td:nth-child(4)').text());
+        let stockQuantity = parseFloat($(this).find('td:nth-child(5)').text());
         if (needQuantity > stockQuantity) {
-            $(this).find('td:nth-child(4)').css('background', '#f86c6b').css('color', '#fff')
+            $(this).find('td:nth-child(5)').css('background', '#f86c6b').css('color', '#fff')
         }
 
-        if ($(this).find('td:nth-child(1)').text() === '配件') {
+        if ($(this).find('td:nth-child(2)').text() === '配件') {
             if (!$(this).find('td:last-child').text().trim()) {
                 $(this).remove()
             } else {
-                $(this).find('td:nth-child(4)').css('background', '#fff').text("")
+                $(this).find('td:nth-child(5)').css('background', '#fff').text("")
             }
         }
     })
