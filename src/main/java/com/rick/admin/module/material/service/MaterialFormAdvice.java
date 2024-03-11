@@ -99,7 +99,7 @@ public class MaterialFormAdvice implements FormAdvice {
     public void beforeGetInstance(Long instanceId, Map<String, Object> valueMap) {
         Numbers numbers = new Numbers(Locale.CHINA);
 
-        BigDecimal stockQuantity = stockDAO.getStockQuantityByMaterialId((Long)valueMap.get("id"));
+        BigDecimal stockQuantity = stockDAO.getStockQuantityByMaterialId((Long)valueMap.get("id"), 719893335619162112L);
         valueMap.put("stockQuantity", stockQuantity + " " + dictService.getDictByTypeAndName("unit", valueMap.get("baseUnit").toString()).get().getLabel());
         BigDecimal standardPrice = (BigDecimal) valueMap.get("standardPrice");
 

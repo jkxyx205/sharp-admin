@@ -23,9 +23,9 @@ public class StockDAO extends EntityDAOImpl<Stock, Long> {
         return expectedAsOptional(values);
     }
 
-    public BigDecimal getStockQuantityByMaterialId(Long materialId) {
-        List<BigDecimal> values = sharpService.query("select IFNULL(sum(quantity), 0) from inv_stock where material_id = :materialId",
-                Params.builder(1).pv("materialId", materialId).build(), BigDecimal.class);
+    public BigDecimal getStockQuantityByMaterialId(Long materialId, Long plantId) {
+        List<BigDecimal> values = sharpService.query("select IFNULL(sum(quantity), 0) from inv_stock where material_id = :materialId AND plant_id = :plantId",
+                Params.builder(1).pv("materialId", materialId).pv("plantId", plantId).build(), BigDecimal.class);
         return expectedAsOptional(values).orElse(BigDecimal.ZERO);
     }
 
