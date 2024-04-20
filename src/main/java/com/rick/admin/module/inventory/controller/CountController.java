@@ -88,7 +88,7 @@ public class CountController {
             int classificationListNumber = 0;
             for (int i = 0; i < valueSize; i++) {
                 Map<String, Object> value = valueList.get(i);
-                Long materialId  = (Long) value.get("id");
+                Long materialId = (Long) value.get("id");
                 List<Classification> classificationList = materialIdClassificationMap.get(materialId);
                 List<String> characteristicValueList;
                 if (CollectionUtils.isNotEmpty(classificationList)) {
