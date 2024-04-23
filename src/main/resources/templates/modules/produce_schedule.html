@@ -80,7 +80,7 @@
                                 <span th:name="${report.reportColumnList.get(vStat.index).name}" th:if="${vStat.index != 4 and vStat.index != 11}" th:text="${report.reportColumnList.get(vStat.index).type.name() eq 'NUMERIC' ? #numbers.formatInteger(v, 0, 'COMMA') : (report.reportColumnList.get(vStat.index).type.name() eq 'DECIMAL' ? #numbers.formatDecimal(v,1,'COMMA',2,'POINT') : v) }"></span>
                             </td>
                             <td class="text-center">
-                                <a href="javascript:;" th:onclick="openOnNewTab('[(${m[10]})]', '[(${\'/reports/699659248728047616?plantId=719893335619162112&root_reference_code=\' + m[10]})]', '物料凭证')">领料记录</a>
+                                <a class="have-material" href="javascript:;" th:onclick="openOnNewTab('[(${m[10]})]', '[(${\'/reports/699659248728047616?plantId=719893335619162112&root_reference_code=\' + m[10]})]', '物料凭证')">领料记录</a>
                                 <a href="javascript:;" th:onclick="completeProduce([[${m[0]}]])" th:if="${m[8] == '待生产'}">标记完成</a>
                             </td>
                             <input type="hidden" th:each="v : ${grid.rows[mStat.index]}" th:if="${report.reportColumnList.get(vStat.index).hidden}" th:name="${report.reportColumnList.get(vStat.index).name}" th:value="${v}" />
