@@ -73,6 +73,10 @@ public class MaterialReportAdvice implements ReportAdvice {
             String specification = characteristicConverter.convert(null, (String) row.get("specification"));
             row.put("specificationAndCharacteristic", (StringUtils.isBlank(specification) ? "" : specification + " ") + Objects.toString(row.get("characteristic"), ""));
 
+            if (row.get("batch_id") == null) {
+                row.put("batch_id", "");
+            }
+
             // 可以做一些权限处理，比如将库存金额设置为空； 删选某些数据
         }
 
@@ -109,14 +113,13 @@ public class MaterialReportAdvice implements ReportAdvice {
     @Override
     public void init(Report report) {
         report.getAdditionalInfo().put("js", "$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock/defective\"><i class=\"fa fa-upload\"></i> 次品库存报表</a>');$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock/produce\"><i class=\"fa fa-upload\"></i> 线边库存报表</a>');$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock\"><i class=\"fa fa-upload\"></i> 材料库存报表</a>'); $('#exportBtn').hide();" +
-                "setInterval(() => {" +
-                "$('.report-list-table tr').each(function() {\n" +
-                "  let $td = $(this).find('td:eq(8)');\n" +
+                "function refresh() {$('.report-list-table tr').each(function() {\n" +
+                "  let $td = $(this).find('td[name=stock_quantity]');\n" +
                 "  let text = $td.text().trim();\n" +
-                "  let batchId = $(this).find('td:eq(11)').text().trim();\n" +
+                "  let batchId = $(this).find('input[name=batch_id]').val();\n" +
                 "  let materialId = $(this).data('id');" +
                 "  $td.html('<a href=\"javascript:;\" onclick=\"openOnNewTab(\\''+materialId+'\\', \\'reports/699659248728047616?batchId='+batchId+'&material_id='+materialId+'&plantId=719893335619162112&page=1&size=50\\', \\'物料凭证\\')\">'+text+'</a>')\n" +
-                "})}, 1000)");
+                "})}");
 
         report.getAdditionalInfo().put("js-operator-column", "{{ openDetailLink('复制', scope.row.id, '复制') }}");
     }
