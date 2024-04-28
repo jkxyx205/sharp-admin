@@ -33,6 +33,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -403,8 +404,11 @@ public class ProduceOrderService {
                 prItem.setComplete(false);
                 prItem.setDeliveryDate(deliveryDate);
                 prItem.setRemark(Objects.toString(materialIdRemark.get(prItem.getMaterialId() + Objects.toString(prItem.getBatchCode(), "")), ""));
+
+                // 设置 数量 Tolerance 10%
+                prItem.setQuantity(prItem.getQuantity().multiply(BigDecimal.valueOf(1.1)).setScale(0, RoundingMode.UP));
                 itemList.add(prItem);
-            } 
+            }
         }
 
         produceOrderDAO.update("is_purchase_requisition", new Object[]{1, produceOrderId}, "id = ?");
