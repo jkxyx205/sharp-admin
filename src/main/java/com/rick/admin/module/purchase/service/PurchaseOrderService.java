@@ -3,7 +3,6 @@ package com.rick.admin.module.purchase.service;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.rick.admin.common.BigDecimalUtils;
-import com.rick.admin.common.PropertiesConstants;
 import com.rick.admin.common.exception.ExceptionCodeEnum;
 import com.rick.admin.common.exception.ResourceNotFoundException;
 import com.rick.admin.common.model.IdQuantity;
@@ -29,7 +28,6 @@ import com.rick.db.service.support.Params;
 import com.rick.excel.core.ExcelWriter;
 import com.rick.excel.core.model.ExcelCell;
 import com.rick.meta.dict.entity.Dict;
-import com.rick.meta.props.service.PropertyUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -88,7 +86,7 @@ public class PurchaseOrderService {
 
     ProduceOrderService produceOrderService;
 
-    static final List<Long> SPECIAL_PARTNER_IDS = Arrays.asList(725460000008331264L, 725460000503259136L, 725460024691810304L, 725460046258921472L, 725460049203322880L, 725460013396549632L, 725460011387478016L, 766736335200702464L, 725460000985604096L);
+//    static final List<Long> SPECIAL_PARTNER_IDS = Arrays.asList(725460000008331264L, 725460000503259136L, 725460024691810304L, 725460046258921472L, 725460049203322880L, 725460013396549632L, 725460011387478016L, 766736335200702464L, 725460000985604096L);
 
     /**
      * 新增或修改
@@ -255,8 +253,8 @@ public class PurchaseOrderService {
     }
 
     public void checkItemOpenQuantity(InventoryDocument.MovementTypeEnum movementType, String purchaseCode, List<IdQuantity> idQuantityList) {
-        Long partnerId = purchaseOrderDAO.selectByParams(Params.builder(1).pv("code", purchaseCode).build(), "partner_id", "code = :code", Long.class).get(0);
-        boolean specialPartnerId = SPECIAL_PARTNER_IDS.contains(partnerId);
+//        Long partnerId = purchaseOrderDAO.selectByParams(Params.builder(1).pv("code", purchaseCode).build(), "partner_id", "code = :code", Long.class).get(0);
+//        boolean specialPartnerId = SPECIAL_PARTNER_IDS.contains(partnerId);
         Map<Long, BigDecimal> itemHistroyGoodsReceiptQuantityMap = historyGoodsReceiptQuantity(purchaseCode);
         Map<Long, BigDecimal> itemOrderQuantityMap = itemOrderQuantity(purchaseCode);
 
@@ -268,11 +266,17 @@ public class PurchaseOrderService {
         for (IdQuantity idQuantity : idQuantityList) {
             if (movementType == InventoryDocument.MovementTypeEnum.INBOUND) {
                 // 收货最大容差
-                BigDecimal overReceiptTolerance = new BigDecimal(specialPartnerId ? PropertyUtils.getProperty(PropertiesConstants.OVER_RECEIPT_TOLERANCE2) : PropertyUtils.getProperty(PropertiesConstants.OVER_RECEIPT_TOLERANCE));
+//                BigDecimal overReceiptTolerance = new BigDecimal(specialPartnerId ? PropertyUtils.getProperty(PropertiesConstants.OVER_RECEIPT_TOLERANCE2) : PropertyUtils.getProperty(PropertiesConstants.OVER_RECEIPT_TOLERANCE));
+//
+//                if (BigDecimalUtils.gt(itemHistroyGoodsReceiptQuantityMap.get(idQuantity.getId()).add(idQuantity.getQuantity()),
+//                        itemOrderQuantityMap.get(idQuantity.getId()).multiply(BigDecimal.ONE.add(overReceiptTolerance.divide(BigDecimal.valueOf(100)))))) {
+//                    throw new BizException(idQuantity.getDescription() + " 收货超过订单总数的 " + overReceiptTolerance + "%，不能入库！");
+//                }
 
+                // 默认超过采购订单的 10% 就不能入库，不再分供应商
                 if (BigDecimalUtils.gt(itemHistroyGoodsReceiptQuantityMap.get(idQuantity.getId()).add(idQuantity.getQuantity()),
-                        itemOrderQuantityMap.get(idQuantity.getId()).multiply(BigDecimal.ONE.add(overReceiptTolerance.divide(BigDecimal.valueOf(100)))))) {
-                    throw new BizException(idQuantity.getDescription() + " 收货超过订单总数的 " + overReceiptTolerance + "%，不能入库！");
+                        itemOrderQuantityMap.get(idQuantity.getId()).multiply(BigDecimal.valueOf(1.1)))) {
+                    throw new BizException(idQuantity.getDescription() + " 收货超过订单总数的 10%，不能入库！");
                 }
             } else {
                 if (BigDecimalUtils.gt(idQuantity.getQuantity(), itemOpenQuantityMap.get(idQuantity.getId()))) {
