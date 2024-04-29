@@ -200,6 +200,22 @@ public class PurchaseOrderService {
         return histroyGoodsReceiptQuantityMap;
     }
 
+    /**
+     * 历史收货数量
+     * @param itemIds
+     * @return
+     */
+    public Map<Long, BigDecimal> historyGoodsReceiptQuantity(Collection<Long> itemIds) {
+        String sql = "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where `root_reference_item_id` IN (:itemIds) group by root_reference_item_id";
+        Map<Long, BigDecimal> histroyGoodsReceiptQuantityMap = sharpService.queryForKeyValue(sql, Params.builder(1).pv("itemIds", itemIds).build());
+
+        for (Long itemId : itemIds) {
+            histroyGoodsReceiptQuantityMap.put(itemId, ObjectUtils.defaultIfNull(histroyGoodsReceiptQuantityMap.get(itemId), BigDecimal.ZERO));
+        }
+
+        return histroyGoodsReceiptQuantityMap;
+    }
+
     public Map<Long, BigDecimal> itemOrderQuantity(String rootReferenceCode) {
         return purchaseOrderItemDAO.selectByParamsAsMap
                 (Params.builder(1).pv("purchaseOrderCode", rootReferenceCode).build(),
