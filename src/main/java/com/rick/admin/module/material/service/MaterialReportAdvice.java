@@ -118,7 +118,13 @@ public class MaterialReportAdvice implements ReportAdvice {
                 "  let text = $td.text().trim();\n" +
                 "  let batchId = $(this).find('input[name=batch_id]').val();\n" +
                 "  let materialId = $(this).data('id');" +
-                "  $td.html('<a href=\"javascript:;\" onclick=\"openOnNewTab(\\''+materialId+'\\', \\'reports/699659248728047616?batchId='+batchId+'&material_id='+materialId+'&plantId=719893335619162112&page=1&size=50\\', \\'物料凭证\\')\">'+text+'</a>')\n" +
+                "  let materialCode = $(this).find('td[name=code]').text().trim();" +
+                "  let plantName = $(this).find('td[name=plantId]').text();" +
+                "  if (plantName === '在途') {" +
+                "       $td.html('<a href=\"javascript:;\" onclick=\"openOnNewTab(\\''+materialId+'\\', \\'reports/816284792017412096?batch_id='+batchId+'&material_id='+materialId+'&material_code='+materialCode+'&is_complete=0&page=1&size=50\\', \\'在途库存\\')\">'+text+'</a>')\n" +
+                "   } else {" +
+                "       $td.html('<a href=\"javascript:;\" onclick=\"openOnNewTab(\\''+materialId+'\\', \\'reports/699659248728047616?batchId='+batchId+'&material_id='+materialId+'&plantId=719893335619162112&page=1&size=50\\', \\'物料凭证\\')\">'+text+'</a>')\n" +
+                "   }" +
                 "})}");
 
         report.getAdditionalInfo().put("js-operator-column", "{{ openDetailLink('复制', scope.row.id, '复制') }}");
