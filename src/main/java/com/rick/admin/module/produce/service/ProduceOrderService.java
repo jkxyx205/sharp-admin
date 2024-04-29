@@ -433,7 +433,8 @@ public class ProduceOrderService {
                 "                                                                    WHERE pur_purchase_order.status = 'PLANNING'\n" +
                 "                                                                      and pur_purchase_order.is_deleted = 0\n" +
                 "                                                                      AND pur_purchase_order.id = pur_purchase_order_item.`purchase_order_id`\n" +
-                "                                                                      AND pur_purchase_order_item.`is_complete` = 0) receiving\n" +
+                "                                                                      AND pur_purchase_order_item.`is_complete` = 0 " +
+                "                                                                      AND pur_purchase_order_item.is_purchase_send = 0) receiving\n" +
                 "                                                                       left join\n" +
                 "                                                                   (select root_reference_item_id,\n" +
                 "                                                                           ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) received_quantity\n" +
@@ -445,6 +446,7 @@ public class ProduceOrderService {
                 "                                                                                   and pur_purchase_order.is_deleted = 0\n" +
                 "                                                                                   AND pur_purchase_order.id = pur_purchase_order_item.`purchase_order_id`\n" +
                 "                                                                                   AND pur_purchase_order_item.`is_complete` = 0\n" +
+                "                                                                                   AND pur_purchase_order_item.`is_purchase_send` = 0\n" +
                 "                                                                                   AND pur_purchase_order_item.id = root_reference_item_id)\n" +
                 "                                                                    group by root_reference_item_id) received\n" +
                 "                                                                   on receiving.id = received.root_reference_item_id\n" +
