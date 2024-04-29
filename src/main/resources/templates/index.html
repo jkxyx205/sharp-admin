@@ -101,6 +101,11 @@
                                 <i class="nav-icon icon-list"></i> 订单管理
                             </a>
                         </li>
+                        <li class="nav-item" sec:authorize="hasAuthority('pur_purchase_order_detail')">
+                            <a class="nav-link" href="javascript:addTab('purchase_order_detail_list', '订单明细', '/reports/816284792017412096')">
+                                <i class="nav-icon icon-list"></i> 订单明细
+                            </a>
+                        </li>
                     </ul>
                 </li>
                 <li class="nav-item nav-dropdown" sec:authorize="hasAuthority('inventory')">
