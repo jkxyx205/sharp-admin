@@ -418,6 +418,7 @@ public class MaterialTest {
                         "       mm_material.category_id,\n" +
                         "       base_unit,\n" +
                         "       plant_id plantId,\n" +
+                        "       plant_id plantName,\n" +
                         "       standard_price,\n" +
                         "       batch_management                                                                batchManagement,\n" +
                         "       sys_user.name                                                                   create_name,\n" +
@@ -477,12 +478,13 @@ public class MaterialTest {
                         new ReportColumn("category_path", "分类", false),
                         new ReportColumn("attachment", "附件"),
 //                        new ReportColumn("standard_price", "标准价格(元)").setType(ReportColumn.TypeEnum.DECIMAL).setAlign(AlignEnum.RIGHT),
-                        new ReportColumn("plantId", "库房", false, "core_plant2", Arrays.asList("dictConverter")),
+                        new ReportColumn("plantName", "库房", false, "core_plant2", Arrays.asList("dictConverter")),
                         new ReportColumn("stock_quantity", "库存").setType(ReportColumn.TypeEnum.NUMERIC).setAlign(AlignEnum.RIGHT),
 //                        new ReportColumn("stock_quantity_standard_price", "库存金额(元)").setType(ReportColumn.TypeEnum.DECIMAL).setAlign(AlignEnum.RIGHT),
                         new ReportColumn("create_name", "创建人").setColumnWidth(100),
                         new ReportColumn("create_time", "创建时间").setColumnWidth(180).setAlign(AlignEnum.CENTER),
-                        new HiddenReportColumn("batch_id")
+                        new HiddenReportColumn("batch_id"),
+                        new HiddenReportColumn("plantId")
                 ))
                 .pageable(true)
                 .sidx("id")
