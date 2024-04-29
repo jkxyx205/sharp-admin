@@ -28,6 +28,8 @@
         <div class="card">
             <div class="card-body">
                 <form class="form-inline query-form-container">
+                    <input type="hidden" name="batch_id" id="batch_id">
+                    <input type="hidden" name="material_id" id="material_id">
                     <div class="form-group">
                         <label class="col-form-label mr-2" for="code">订单号</label>
                         <input class="form-control" id="code" type="text" name="code" autocomplete="" value="">
@@ -52,10 +54,12 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <button class="btn btn-primary mr-2" type="button" name="search">
+                        <button class="btn btn-primary mr-2" type="button" name="search" th:if="${report.queryFieldList.size() > 0}">
                             <i class="fa fa-search"></i> 查询</button>
-                        <button class="btn btn-secondary mr-2" type="button" name="reset">
+                        <button class="btn btn-secondary mr-2" type="button" name="reset" th:if="${report.queryFieldList.size() > 0}">
                             <i class="fa fa-remove"></i> 重置</button>
+<!--                        <a class="btn btn-secondary mr-2" id="exportBtn" th:href="${'/reports/' + id + '/export'}" sec:authorize="${hasAuthority(#vars.report.code + '_read')}">-->
+<!--                            <i class="fa fa-upload"></i> 导出</a>-->
                     </div>
                 </form>
             </div>
