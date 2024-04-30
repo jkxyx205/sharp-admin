@@ -407,6 +407,10 @@ public class ProduceOrderService {
 
                 // 设置 数量 Tolerance 10%
                 prItem.setQuantity(prItem.getQuantity().multiply(BigDecimal.valueOf(1.1)).setScale(0, RoundingMode.UP));
+                // 取整10
+                BigDecimal quantity = prItem.getQuantity().intValue() % 10 == 0 ? prItem.getQuantity() : BigDecimal.valueOf((prItem.getQuantity().intValue() / 10 + 1) * 10);
+                prItem.setQuantity(quantity);
+
                 itemList.add(prItem);
             }
         }
