@@ -46,8 +46,9 @@ public class ListDetailReportAdvice implements ReportAdvice {
         materialService.consumeMaterialDescription(materialIds, (idMaterialMap, dictService) -> {
             for (Map<String, Object> row : rows) {
                 row.put("materialName", idMaterialMap.get(row.get("material_id")).getName());
+                String specification = idMaterialMap.get(row.get("material_id")).getSpecificationText();
                 String characteristic = characteristicTextMap.get(MaterialProfileSupport.materialIdBatchIdString((Long) row.get("material_id"), (Long) row.get("batch_id")));
-                String specification = characteristicConverter.convert(null, (String) row.get("specification"));
+//                String specification = characteristicConverter.convert(null, (String) row.get("specification"));
                 row.put("specificationAndCharacteristic", (StringUtils.isBlank(specification) ? "" : specification + " ") + Objects.toString(characteristic, ""));
                 row.put("unit_price", ((BigDecimal)row.get("unit_price")).stripTrailingZeros().toPlainString());
                 row.put("total_price", ((BigDecimal)row.get("total_price")).stripTrailingZeros().toPlainString());
