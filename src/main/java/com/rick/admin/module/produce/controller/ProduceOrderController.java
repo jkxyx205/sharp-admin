@@ -310,9 +310,8 @@ public class ProduceOrderController {
         batchService.handleClassificationAndFillCharacteristicValue(itemList);
     }
 
-
     /**
-     * 逻辑删除
+     * 删除
      * @param id
      * @return
      */
@@ -321,7 +320,6 @@ public class ProduceOrderController {
     public Result<Integer> delete(@PathVariable Long id) {
         return ResultUtils.success(produceOrderDAO.deleteById(id));
     }
-
 
     @Data
     public static class RelatedPurchaseOrder implements MaterialDescriptionHandler {
