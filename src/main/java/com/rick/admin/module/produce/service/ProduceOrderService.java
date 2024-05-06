@@ -36,6 +36,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -65,6 +67,8 @@ public class ProduceOrderService {
     MaterialService materialService;
 
     DictService dictService;
+
+    ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     /**
      * 新增或修改
@@ -112,8 +116,10 @@ public class ProduceOrderService {
         if (order.getStatus() == ProduceOrder.StatusEnum.PRODUCING) {
             // 管理员 和 程文斌 触发采购申请
             if (UserContextHolder.get().getCode().equals("admin") || UserContextHolder.get().getCode().equals("cpk")) {
-                LocalDate deliveryDate =  order.getItemList().stream().flatMap(item -> item.getScheduleList().stream()).map(ProduceOrder.Item.Schedule::getStartDate).min(LocalDate::compareTo).orElseGet(() -> order.getItemList().stream().map(ProduceOrder.Item::getDeliveryDate).min(LocalDate::compareTo).get());
-                handlePurchaseRequisition(order.getItemList(), order.getId(), order.getCode(), order.getPartnerId(), deliveryDate);
+                executorService.submit(() -> {
+                    LocalDate deliveryDate =  order.getItemList().stream().flatMap(item -> item.getScheduleList().stream()).map(ProduceOrder.Item.Schedule::getStartDate).min(LocalDate::compareTo).orElseGet(() -> order.getItemList().stream().map(ProduceOrder.Item::getDeliveryDate).min(LocalDate::compareTo).get());
+                    handlePurchaseRequisition(order.getItemList(), order.getId(), order.getCode(), order.getPartnerId(), deliveryDate);
+                });
             }
         }
 
