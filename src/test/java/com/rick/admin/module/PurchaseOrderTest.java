@@ -65,6 +65,7 @@ public class PurchaseOrderTest {
                 .name("采购明细列表")
                 .reportAdviceName("listDetailReportAdvice")
                 .additionalInfo(new HashMap<>())
+                .summaryColumnNames("total_price")
                 .querySql("select pur_purchase_order_item.id, pur_purchase_order.partner_id, pur_purchase_order.id order_id, pur_purchase_order.code, pur_purchase_order_item.material_id, pur_purchase_order_item.material_code,\n" +
                         "pur_purchase_order_item.batch_id, pur_purchase_order_item.batch_code, pur_purchase_order_item.quantity, pur_purchase_order_item.unit, pur_purchase_order_item.unit_price, (pur_purchase_order_item.quantity * pur_purchase_order_item.unit_price) total_price, pur_purchase_order.create_time, pur_purchase_order_item.delivery_date, (pur_purchase_order_item.is_complete + 0) is_complete from pur_purchase_order_item, pur_purchase_order where pur_purchase_order_item.purchase_order_code = pur_purchase_order.code and " +
                         "code = :code and partner_id = :partner_id and material_id = :material_id and material_code = :material_code and batch_id = :batch_id and is_complete = :is_complete and pur_purchase_order_item.create_time >= :create_time0 and pur_purchase_order_item.create_time <= :create_time1")
