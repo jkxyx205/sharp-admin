@@ -138,11 +138,10 @@
                             </td>
                             <input type="hidden" th:each="v : ${grid.rows[mStat.index]}" th:if="${report.reportColumnList.get(vStat.index).hidden}" th:name="${report.reportColumnList.get(vStat.index).name}" th:value="${v}" />
                         </tr>
-                        <tr th:if="${summary ne null}">
+                        <tr th:if="${summary ne null}" sec:authorize="${hasAuthority('pur_purchase_order_add') or hasAuthority('pur_purchase_order_edit')}">
                             <td style="font-weight: bold;">合计</td>
                             <td th:if="${'multiple' eq params['mode']}"></td>
                             <td class="text-right bold" th:each="n : ${report.reportColumnList}" th:text="${#numbers.formatDecimal(summary.get(n.name),1,'COMMA',2,'POINT')}" th:if="${!n.hidden}"></td>
-                            <td></td>
                         </tr>
                         <tr class="tr-empty non-data" th:if="${grid.records < 1}">
                             <td th:colspan="${report.visibleColumnSize + 2 + ('multiple' eq params['mode'] ? 1 : 0)}" style="text-align: center;"><span class="empty-text">暂无数据</span></td>
