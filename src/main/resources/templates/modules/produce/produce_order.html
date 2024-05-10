@@ -471,7 +471,10 @@
 
         <div id="dialogInput" style="display: none"></div>
         <div class="operator-bar text-center" id="operator-bar" sec:authorize="hasAuthority('produce_order_edit')">
-            <button class="btn btn-primary" type="button" name="send" onclick="send()">
+            <button class="btn btn-primary" type="button" name="send" onclick="send()" th:if="${po.id == null}">
+                <i class="fa fa-save"></i> 保存并继续添加</button>
+
+            <button class="btn btn-primary" type="button" name="send" onclick="send()" th:if="${po.id}">
                 <i class="fa fa-save"></i> 保存</button>
         </div>
     </div>
@@ -1087,9 +1090,11 @@
                 contentType: "application/json; charset=utf-8",
                 success: function(res){
                     toastr.success('生产单保存成功');
-                    // if (isAdd) {
-                    window.location = '/produce_orders/'+res.id+'?readonly=true'
-                    // }
+                    if (isAdd) {
+                        window.location = '/produce_orders/new'
+                    } else {
+                        window.location = '/produce_orders/'+res.id+'?readonly=true'
+                    }
                     reloadTab('produce_order_list')
                 }
             });
