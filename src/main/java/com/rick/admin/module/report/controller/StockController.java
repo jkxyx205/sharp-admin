@@ -52,10 +52,16 @@ public class StockController {
         download(request, response, Arrays.asList(719893335619162112L), fileName);
     }
 
+//    @GetMapping("produce")
+//    public void downloadProduceStock(HttpServletRequest request, HttpServletResponse response) throws IOException {
+//        String fileName = "生产库存表 " + Time2StringUtils.format(new Date());
+//        download(request, response, Arrays.asList(726158903766683648L, 726158996003622912L, 726159086739001344L), fileName);
+//    }
+
     @GetMapping("produce")
     public void downloadProduceStock(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String fileName = "生产库存表 " + Time2StringUtils.format(new Date());
-        download(request, response, Arrays.asList(726158903766683648L, 726158996003622912L, 726159086739001344L), fileName);
+        String fileName = "产前库存表 " + Time2StringUtils.format(new Date());
+        download(request, response, Arrays.asList(726158903766683648L), fileName);
     }
 
     @GetMapping("defective")
@@ -64,6 +70,18 @@ public class StockController {
         download(request, response, Arrays.asList(731555795392909313L), fileName);
     }
 
+
+    @GetMapping("machine")
+    public void downloadMachineStock(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String fileName = "机芯库存表 " + Time2StringUtils.format(new Date());
+        download(request, response, Arrays.asList(726158996003622912L), fileName);
+    }
+
+    @GetMapping("product")
+    public void downloadProductStock(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String fileName = "成品库存表 " + Time2StringUtils.format(new Date());
+        download(request, response, Arrays.asList(726159086739001344L), fileName);
+    }
     private void download(HttpServletRequest request, HttpServletResponse response, Collection<Long> plantId, String fileName) throws IOException {
         Map<String, Map<String, List<StockItem>>> data = data(plantId);
 

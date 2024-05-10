@@ -112,7 +112,34 @@ public class MaterialReportAdvice implements ReportAdvice {
      */
     @Override
     public void init(Report report) {
-        report.getAdditionalInfo().put("js", "$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock/defective\"><i class=\"fa fa-upload\"></i> 次品库存报表</a>');$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock/produce\"><i class=\"fa fa-upload\"></i> 线边库存报表</a>');$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock\"><i class=\"fa fa-upload\"></i> 材料库存报表</a>'); $('#exportBtn').hide();" +
+//        report.getAdditionalInfo().put("js", "$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock/defective\"><i class=\"fa fa-upload\"></i> 次品库存报表</a>');$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock/produce\"><i class=\"fa fa-upload\"></i> 线边库存报表</a>');$('#exportBtn').after('<a class=\"btn btn-secondary mr-2\" href=\"/reports/stock\"><i class=\"fa fa-upload\"></i> 材料库存报表</a>'); $('#exportBtn').hide();" +
+//                "function refresh() {$('.report-list-table tr').each(function() {\n" +
+//                "  let $td = $(this).find('td[name=stock_quantity]');\n" +
+//                "  let text = $td.text().trim();\n" +
+//                "  let batchId = $(this).find('input[name=batch_id]').val();\n" +
+//                "  let materialId = $(this).data('id');" +
+//                "  let materialCode = $(this).find('td[name=code]').text().trim();" +
+//                "  let plantId = $(this).find('input[name=plantId]').val();\n" +
+//                "  let plantName = $(this).find('td[name=plantName]').text();" +
+//                "  if (plantName === '在途') {" +
+//                "       $td.html('<a href=\"javascript:;\" onclick=\"openOnNewTab(\\''+materialId+'\\', \\'reports/816284792017412096?batch_id='+batchId+'&material_id='+materialId+'&material_code='+materialCode+'&is_complete=0&page=1&size=50\\', \\'在途库存\\')\">'+text+'</a>')\n" +
+//                "   } else {" +
+//                "       $td.html('<a href=\"javascript:;\" onclick=\"openOnNewTab(\\''+materialId+'\\', \\'reports/699659248728047616?batchId='+batchId+'&material_id='+materialId+'&plantId='+plantId+'&page=1&size=50\\', \\'物料凭证\\')\">'+text+'</a>')\n" +
+//                "   }" +
+//                "})}");
+
+        report.getAdditionalInfo().put("js", "$('#exportBtn').after(`<div class=\"dropdown mr-2\">\n" +
+                "  <button class=\"btn btn-secondary dropdown-toggle\" type=\"button\" id=\"dropdownMenuButton\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">\n" +
+                "    报表导出\n" +
+                "  </button>\n" +
+                "  <div class=\"dropdown-menu\" aria-labelledby=\"dropdownMenuButton\">\n" +
+                "    <a class=\"dropdown-item\" href=\"/reports/stock\">材料库</a>\n" +
+                "    <a class=\"dropdown-item\" href=\"/reports/stock/produce\">产前库</a>\n" +
+                "    <a class=\"dropdown-item\" href=\"/reports/stock/machine\">机芯库</a>\n" +
+                "    <a class=\"dropdown-item\" href=\"/reports/stock/product\">成品库</a>\n" +
+                "    <a class=\"dropdown-item\" href=\"/reports/stock/defective\">次品库</a>\n" +
+                "  </div>\n" +
+                "</div>`); $('#exportBtn').hide();" +
                 "function refresh() {$('.report-list-table tr').each(function() {\n" +
                 "  let $td = $(this).find('td[name=stock_quantity]');\n" +
                 "  let text = $td.text().trim();\n" +
