@@ -34,7 +34,7 @@ public class BomController {
 
     @GetMapping("new")
     public String gotoNewPage() {
-        return "modules/produce_bom";
+        return "modules/produce/produce_bom";
     }
 
     @GetMapping("{id}")
@@ -47,7 +47,7 @@ public class BomController {
         materialService.fillMaterialDescription(detailSet);
 
         model.addAttribute("bomTemplate", bomTemplate);
-        return "modules/produce_bom";
+        return "modules/produce/produce_bom";
     }
 
     @PostMapping

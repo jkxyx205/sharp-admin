@@ -177,7 +177,7 @@ public class ProduceOrderController {
 
         model.addAttribute("createName", dictService.getDictByTypeAndName("sys_user", produceOrder.getCreateBy().toString()).get().getLabel());
         model.addAttribute("createTime", Time2StringUtils.format(produceOrder.getCreateTime()));
-        return "modules/produce_order";
+        return "modules/produce/produce_order";
     }
 
     private List<RelatedPurchaseOrder> getRelatedPurchaseOrders(long produceOrderId) {

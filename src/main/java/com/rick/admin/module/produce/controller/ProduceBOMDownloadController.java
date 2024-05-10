@@ -97,7 +97,7 @@ public class ProduceBOMDownloadController {
         model.addAttribute("remark", Objects.toString(produceOrderDAO.selectSingleValueById(item.getProduceOrderId(), "remark", String.class).get(), "") +  Objects.toString(item.getRemark(), "") + Objects.toString(schedule.getRemark(), ""));
         model.addAttribute("itemMaterialSpecification", (StringUtils.isBlank(item.getMaterialSpecification()) ? "" : item.getMaterialSpecification() + " ") + item.getCharacteristic() +    " " + item.getSpecification());
         model.addAttribute("scheduleQuantity", schedule.getQuantity().stripTrailingZeros().toPlainString());
-        return "modules/produce_schedule_detail";
+        return "modules/produce/produce_schedule_detail";
     }
 
     @GetMapping("schedule/{scheduleId}/download")
