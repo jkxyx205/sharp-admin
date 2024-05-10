@@ -228,6 +228,17 @@ public class ProduceOrderService {
         return histroyGoodsIssueQuantityMap;
     }
 
+    public Map<Long, BigDecimal> salesHistoryGoodsIssueQuantity(Collection<Long> itemIds) {
+        String sql = "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where `root_reference_item_id` IN (:itemIds) and type IN ('OUTBOUND', 'RETURN') group by root_reference_item_id";
+        Map<Long, BigDecimal> histroyGoodsIssueQuantityMap = sharpService.queryForKeyValue(sql, Params.builder(1).pv("itemIds", itemIds).build());
+
+        for (Long itemId : itemIds) {
+            histroyGoodsIssueQuantityMap.put(itemId, ObjectUtils.defaultIfNull(histroyGoodsIssueQuantityMap.get(itemId), BigDecimal.ZERO));
+        }
+
+        return histroyGoodsIssueQuantityMap;
+    }
+
     /**
      * 设置状态： 领料完成
      *
