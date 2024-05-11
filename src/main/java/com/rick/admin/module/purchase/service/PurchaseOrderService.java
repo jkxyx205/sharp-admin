@@ -191,10 +191,11 @@ public class PurchaseOrderService {
         String sql = "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where `root_reference_code` = :rootReferenceCode group by root_reference_item_id";
         Map<Long, BigDecimal> histroyGoodsReceiptQuantityMap = sharpService.queryForKeyValue(sql, Params.builder(1).pv("rootReferenceCode", rootReferenceCode).build());
 
-        PurchaseOrder purchaseOrder = purchaseOrderDAO.selectByCode(rootReferenceCode).orElseThrow(() -> new ResourceNotFoundException());
+//        PurchaseOrder purchaseOrder = purchaseOrderDAO.selectByCode(rootReferenceCode).orElseThrow(() -> new ResourceNotFoundException());
+        List<Long> itemIds = purchaseOrderItemDAO.selectIdsByParams(Params.builder(1).pv("purchaseOrderCode", rootReferenceCode).build());
 
-        for (PurchaseOrder.Item item : purchaseOrder.getItemList()) {
-            histroyGoodsReceiptQuantityMap.put(item.getId(), ObjectUtils.defaultIfNull(histroyGoodsReceiptQuantityMap.get(item.getId()), BigDecimal.ZERO));
+        for (Long itemId : itemIds) {
+            histroyGoodsReceiptQuantityMap.put(itemId, ObjectUtils.defaultIfNull(histroyGoodsReceiptQuantityMap.get(itemId), BigDecimal.ZERO));
         }
 
         return histroyGoodsReceiptQuantityMap;
