@@ -71,6 +71,9 @@ public class ProduceOrder extends BaseCodeEntity {
     @Column(comment = "附件", columnDefinition = "text", value = "attachment", nullable = false)
     private List<Map<String, Object>> attachmentList;
 
+    @Version
+    Integer version;
+
     public void setItemList(List<Item> itemList) {
         CharacteristicHelper.handlerSameReference(itemList);
         this.itemList = itemList;
