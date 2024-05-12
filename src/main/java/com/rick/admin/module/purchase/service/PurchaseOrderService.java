@@ -291,10 +291,10 @@ public class PurchaseOrderService {
 //                }
 
                 // 默认超过采购订单的 10% 就不能入库，不再分供应商
-                if (BigDecimalUtils.gt(itemHistroyGoodsReceiptQuantityMap.get(idQuantity.getId()).add(idQuantity.getQuantity()),
-                        itemOrderQuantityMap.get(idQuantity.getId()).multiply(BigDecimal.valueOf(1.1)))) {
-                    throw new BizException(idQuantity.getDescription() + " 收货超过订单总数的 10%，不能入库！");
-                }
+//                if (BigDecimalUtils.gt(itemHistroyGoodsReceiptQuantityMap.get(idQuantity.getId()).add(idQuantity.getQuantity()),
+//                        itemOrderQuantityMap.get(idQuantity.getId()).multiply(BigDecimal.valueOf(1.1)))) {
+//                    throw new BizException(idQuantity.getDescription() + " 收货超过订单总数的 10%，不能入库！");
+//                }
             } else {
                 if (BigDecimalUtils.gt(idQuantity.getQuantity(), itemOpenQuantityMap.get(idQuantity.getId()))) {
                     throw new BizException(ExceptionCodeEnum.MATERIAL_OVER_MAX_MOVEMENT_ERROR, new Object[]{idQuantity.getDescription()});
