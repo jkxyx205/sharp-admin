@@ -17,6 +17,7 @@ import com.rick.common.util.Time2StringUtils;
 import com.rick.db.plugin.dao.core.EntityDAO;
 import com.rick.excel.core.ExcelWriter;
 import com.rick.excel.core.model.ExcelRow;
+import com.rick.meta.dict.service.DictService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -60,6 +61,8 @@ public class ProduceBOMDownloadController {
 
     StockDAO stockDAO;
 
+    DictService dictService;
+
     @PutMapping("schedule/{scheduleId}")
     @ResponseBody
     public Result markStatus(@PathVariable Long scheduleId) {
@@ -73,6 +76,7 @@ public class ProduceBOMDownloadController {
         BomTemplate bomTemplate = resolveItemAndReturnBomTemplate(item);
         model.addAttribute("schedule", schedule);
         model.addAttribute("item", item);
+        model.addAttribute("partnerName", dictService.getDictByTypeAndName("core_partner_customer", produceOrderDAO.selectSingleValueById(item.getProduceOrderId(), "partner_id", String.class).get()).get().getLabel());
         model.addAttribute("bomTemplate", bomTemplate);
 
         List<Object[]> data = Lists.newArrayList();
@@ -106,28 +110,31 @@ public class ProduceBOMDownloadController {
         ProduceOrder.Item item = produceOrderItemDAO.selectById(schedule.getProduceOrderItemId()).get();
         BomTemplate bomTemplate = resolveItemAndReturnBomTemplate(item);
         String startDate = Time2StringUtils.format(schedule.getStartDate());
-        float heightInPoints = 25f;
+        float heightInPoints = 20f;
 
         ExcelWriter excelWriter = new ExcelWriter();
         excelWriter.getActiveSheet().setColumnWidth(0, 5000);
         excelWriter.getActiveSheet().setColumnWidth(1, 9000);
         excelWriter.getBook().setSheetName(0, startDate);
 
-        excelWriter.writeRow(new ExcelRow(1,1, heightInPoints, "生产单号：" + schedule.getCode()));
-        excelWriter.writeRow(new ExcelRow(3,1, heightInPoints, new Object[]{"交货日期：" + Time2StringUtils.format(item.getDeliveryDate())}));
+        excelWriter.writeRow(new ExcelRow(1,1, heightInPoints, "销售单号：" + item.getProduceOrderCode()));
+        excelWriter.writeRow(new ExcelRow(3,1, heightInPoints, new Object[]{"客户：" + dictService.getDictByTypeAndName("core_partner_customer", produceOrderDAO.selectSingleValueById(item.getProduceOrderId(), "partner_id", String.class).get()).get().getLabel()}));
 
-        excelWriter.writeRow(new ExcelRow(1,2, heightInPoints, new Object[]{"计划生产日期：" + startDate}));
-        excelWriter.writeRow(new ExcelRow(1,3, heightInPoints, new Object[]{"备注：" + Objects.toString(produceOrderDAO.selectSingleValueById(item.getProduceOrderId(), "remark", String.class).get(), "") +  Objects.toString(item.getRemark(), "") + Objects.toString(schedule.getRemark(), "")}));
+        excelWriter.writeRow(new ExcelRow(1,2, heightInPoints, "生产单号：" + schedule.getCode()));
+        excelWriter.writeRow(new ExcelRow(3,2, heightInPoints, new Object[]{"交货日期：" + Time2StringUtils.format(item.getDeliveryDate())}));
 
-        excelWriter.writeRow(new ExcelRow(1,4, heightInPoints, new Object[]{"产成品名称", "规格 & 特征值", "数量", "单位", "备注"}));
-        excelWriter.writeRow(new ExcelRow(1,5, heightInPoints, new Object[]{item.getMaterialName(), (StringUtils.isBlank(item.getMaterialSpecification()) ? "" : item.getMaterialSpecification() + " ") + item.getCharacteristic() +    " " + item.getSpecification(),
+        excelWriter.writeRow(new ExcelRow(1,3, heightInPoints, new Object[]{"计划生产日期：" + startDate}));
+        excelWriter.writeRow(new ExcelRow(1,4, heightInPoints, new Object[]{"备注：" + Objects.toString(produceOrderDAO.selectSingleValueById(item.getProduceOrderId(), "remark", String.class).get(), "") +  Objects.toString(item.getRemark(), "") + Objects.toString(schedule.getRemark(), "")}));
+
+        excelWriter.writeRow(new ExcelRow(1,5, heightInPoints, new Object[]{"产成品名称", "规格 & 特征值", "数量", "单位", "备注"}));
+        excelWriter.writeRow(new ExcelRow(1,6, heightInPoints, new Object[]{item.getMaterialName(), (StringUtils.isBlank(item.getMaterialSpecification()) ? "" : item.getMaterialSpecification() + " ") + item.getCharacteristic() +    " " + item.getSpecification(),
                 schedule.getQuantity(), item.getUnitText(), item.getRemark()}));
 
-        excelWriter.writeRow(new ExcelRow(1,6));
-        excelWriter.writeRow(new ExcelRow(1,7, heightInPoints, new Object[]{"BOM:"}));
-        excelWriter.writeRow(new ExcelRow(1,8));
+        excelWriter.writeRow(new ExcelRow(1,7));
+        excelWriter.writeRow(new ExcelRow(1,8, heightInPoints, new Object[]{"BOM:"}));
+        excelWriter.writeRow(new ExcelRow(1,9));
 
-        AtomicInteger integer = new AtomicInteger(9);
+        AtomicInteger integer = new AtomicInteger(10);
 
         writeBomList(schedule.getQuantity(), bomTemplate, excelWriter, integer);
         excelWriter.toFile(HttpServletResponseUtils.getOutputStreamAsAttachment(request, response, schedule.getCode() + "_" + item.getMaterialName() + "_" + Time2StringUtils.format(schedule.getStartDate()) + ".xlsx"));
