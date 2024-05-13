@@ -845,10 +845,21 @@
                     title: "备注"
                 },
                 {
-                    type: "label",
+                    type: "hidden",
                     name: "code",
                     width: 160,
                     title: "生产单号"
+                },
+                {
+                    type: "render",
+                    width: 160,
+                    title: "生产单号",
+                    render: function (row) {
+                        if (row.materialType === 'ROH' || !row.code) {
+                            return ''
+                        }
+                        return '<a href="javascript:;" onclick="openOnNewTab(\''+row.code+'\', \'/reports/736036369939337216?code='+row.code+'\', \'物料凭证\')">'+row.code+'</a>'
+                    }
                 },
                 {
                     type: isAdd ? "hidden": "render",
@@ -1094,8 +1105,7 @@
                     if (isAdd) {
                         window.location = '/produce_orders/new'
                     } else {
-                        $('#version').val(parseInt($('#version').val()) + 1)
-                        // window.location = '/produce_orders/'+res.id+'?readonly=true'
+                        window.location = '/produce_orders/'+res.id+'?readonly=true'
                     }
                     reloadTab('produce_order_list')
                 }
@@ -1206,9 +1216,12 @@
                 let itemId = row.item_id
                 let isCopy = true
                 $.get('/produce_orders/bom?materialId=' + materialId + (itemId ? ('&itemId=' + itemId) : '') + (isCopy != undefined ? ('&isCopy=' + isCopy) : ''), function (res) {
-                    // 合并remark
+                    // 合并 id & remark
                     let remarks = {}
+                    let detailIds = {}
                     readTemplate(vue.$data.form, function (d) {
+                        detailIds[d.id + ''] = d.value.id
+
                         let remark = d.value.remark.trim()
                         if (remark) {
                             remarks[d.id + ''] = remark
@@ -1233,6 +1246,11 @@
                         let remark = remarks[d.id + '']
                         if (remark) {
                             d.value.remark = remark
+                        }
+
+                        let detailId = detailIds[d.id + '']
+                        if (detailId) {
+                            d.value.id = detailId
                         }
                     })
                     // 合并remark end

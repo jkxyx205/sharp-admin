@@ -24,6 +24,7 @@ import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
@@ -50,6 +51,7 @@ import java.util.stream.Stream;
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class ProduceOrderService {
 
     EntityCodeDAO<ProduceOrder, Long> produceOrderDAO;
@@ -128,6 +130,7 @@ public class ProduceOrderService {
             purchaseRequisitionItemService.deleteUnCompletePurchaseRequisitionByReferenceDocumentCode(order.getCode());
         }
 
+        log.info("{} 更新销售订单【{}】信息", UserContextHolder.get().getName(), order.getCode());
     }
 
     public void markItemCompleted(@NonNull Long itemId) {
@@ -332,6 +335,7 @@ public class ProduceOrderService {
      * @param partnerId
      */
     private void handlePurchaseRequisition(List<ProduceOrder.Item> soItem, long produceOrderId, String produceOrderCode, @NotNull Long partnerId, LocalDate deliveryDate) {
+        log.info("发起采购申请");
         List<String> purchasedIds = sharpService.query("select concat(ifnull(schedule_id, ''), reference_id, ifnull(batch_code, '')) from pur_purchase_requisition_item where reference_document_id = :produceOrderId AND is_complete = 1",
                 Params.builder(1).pv("produceOrderId", produceOrderId).build(), String.class);
 
@@ -344,6 +348,7 @@ public class ProduceOrderService {
         List<ProduceOrder.Item.Detail> purchaseDetailList = soItem.stream().flatMap(item -> item.getItemList().stream()).filter(item -> Objects.toString(item.getRemark(), "").contains("贴花") || Objects.toString(item.getRemark(), "").contains("发") || Arrays.asList(729584784212238336L, 741996205273632769L, 731499486144483329L).contains(item.getMaterialId()))
                 .collect(Collectors.toList());
         Set<String> purchaseSendSet = purchaseDetailList.stream().map(item -> item.getMaterialId() + Objects.toString(item.getBatchId(), "")).collect(Collectors.toSet());
+        Set<Long> ignoreDetailSet = purchaseDetailList.stream().map(item -> item.getId()).collect(Collectors.toSet());
 
 
         Map<Long, List<ProduceOrder.Item.Schedule>> itemIdScheduleMap = soItem.stream().collect(Collectors.toMap(ProduceOrder.Item::getId, ProduceOrder.Item::getScheduleList));
@@ -398,6 +403,7 @@ public class ProduceOrderService {
                 prItem.setQuantity(prItem.getQuantity().multiply(schedule.getQuantity()));
                 BaseEntityUtils.resetAdditionalFields(prItem);
                 if (prItem.getMaterialCode().equals("R00548") || prItem.getMaterialCode().equals("R00848") || prItem.getMaterialCode().equals("R00904")) {
+                    // 控制线带上客户信息
                     prItem.setRemark(dictService.getDictByTypeAndName("core_partner_customer", String.valueOf(partnerId)).get().getLabel() +  StringUtils.appendValue(prItem.getRemark()));
                 }
                 itemList.add(prItem);
@@ -405,15 +411,40 @@ public class ProduceOrderService {
         }
 
         purchaseSendSet.add("764459407009763328"); // 配件忽略采购申请
+        ignoreDetailSet.add(764459407009763328L); // 配件忽略采购申请
+
         List<PurchaseRequisition.Item> produceitemList = purchaseRequisitionForProduce(produceOrderId, purchaseSendSet);
         if (CollectionUtils.isNotEmpty(produceitemList)) {
             materialService.fillMaterialDescription(produceitemList);
 
+            Map<Long, BigDecimal> orderQuantityMap = new HashMap<>();
+            for (ProduceOrder.Item item : soItem) {
+                for (ProduceOrder.Item.Detail detail : item.getItemList()) {
+                    if (ignoreDetailSet.contains(detail.getId())) {
+                        continue;
+                    }
+
+                    BigDecimal quantity = orderQuantityMap.get(detail.getMaterialId());
+                    if (Objects.isNull(quantity)) {
+                        quantity = BigDecimal.ZERO;
+
+                    }
+                    orderQuantityMap.put(detail.getMaterialId(), quantity.add(item.getQuantity().multiply(detail.getQuantity())));
+                }
+            }
+
             for (PurchaseRequisition.Item prItem : produceitemList) {
+                if (purchasedIds.contains(produceOrderId + "" +prItem.getMaterialId() + Objects.toString(prItem.getBatchCode(), ""))) {
+                    continue;
+                }
+
                 prItem.setReferenceType(ReferenceTypeEnum.SO);
+                prItem.setScheduleId(produceOrderId);
                 prItem.setReferenceDocumentId(produceOrderId);
                 prItem.setReferenceDocumentCode(produceOrderCode);
-                prItem.setReferenceId(produceOrderId);
+                prItem.setReferenceId(prItem.getMaterialId());
+                prItem.setBatchCode(prItem.getBatchCode());
+                prItem.setBatchId(prItem.getBatchId());
                 prItem.setPurchaseRequisitionId(1L);
                 prItem.setPurchaseRequisitionCode("STANDARD");
                 prItem.setMaterialCode(prItem.getMaterialDescription().getCode());
@@ -422,11 +453,13 @@ public class ProduceOrderService {
                 prItem.setDeliveryDate(deliveryDate);
                 prItem.setRemark(Objects.toString(materialIdRemark.get(prItem.getMaterialId() + Objects.toString(prItem.getBatchCode(), "")), ""));
 
+                // 原单数量采购， 不依据计算的结果
+                prItem.setQuantity(orderQuantityMap.get(prItem.getMaterialId()).setScale(0, RoundingMode.UP));
                 // 设置 数量 Tolerance 10%
-                prItem.setQuantity(prItem.getQuantity().multiply(BigDecimal.valueOf(1.1)).setScale(0, RoundingMode.UP));
+//                prItem.setQuantity(prItem.getQuantity().multiply(BigDecimal.valueOf(1.1)).setScale(0, RoundingMode.UP));
                 // 取整10
-                BigDecimal quantity = prItem.getQuantity().intValue() % 10 == 0 ? prItem.getQuantity() : BigDecimal.valueOf((prItem.getQuantity().intValue() / 10 + 1) * 10);
-                prItem.setQuantity(quantity);
+//                BigDecimal quantity = prItem.getQuantity().intValue() % 10 == 0 ? prItem.getQuantity() : BigDecimal.valueOf((prItem.getQuantity().intValue() / 10 + 1) * 10);
+//                prItem.setQuantity(quantity);
 
                 itemList.add(prItem);
             }
