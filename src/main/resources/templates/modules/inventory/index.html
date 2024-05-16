@@ -492,7 +492,7 @@
     </script>
 
     <script sec:authorize="hasAuthority('ROLE_produce_master')">
-        type.disabled = true
+        // type.disabled = true
         if (type.value !== 'DISPLAY') {
             type.setAttribute('disabled', true)
             referenceType.setAttribute('disabled', true)
