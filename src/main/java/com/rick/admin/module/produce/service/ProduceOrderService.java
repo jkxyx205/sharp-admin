@@ -419,6 +419,12 @@ public class ProduceOrderService {
 
             Map<Long, BigDecimal> orderQuantityMap = new HashMap<>();
             for (ProduceOrder.Item item : soItem) {
+                if (orderQuantityMap.get(item.getMaterialId()) == null) {
+                    orderQuantityMap.put(item.getMaterialId(), item.getQuantity());
+                } else {
+                    orderQuantityMap.put(item.getMaterialId(), item.getQuantity().add(orderQuantityMap.get(item.getMaterialId())));
+                }
+
                 for (ProduceOrder.Item.Detail detail : item.getItemList()) {
                     if (ignoreDetailSet.contains(detail.getId())) {
                         continue;
@@ -508,7 +514,7 @@ public class ProduceOrderService {
                 "                                                              select material_id, batch_id, batch_code, quantity from inv_stock where plant_id = 719893335619162112 " +
                 " AND material_id NOT IN (729584784212238336, 741996205273632769, 731499486144483329, 764459407009763328)\n" +
                 "                                                              union all\n" +
-                "                                                              select produce_order_item.material_id, produce_order_item.batch_id, produce_order_item.batch_code, -1 * produce_order_item.quantity from produce_order_item, mm_material where produce_order_id = :produceOrderId and item_category='PRODUCT' and mm_material.id = produce_order_item.material_id AND mm_material.material_type = 'ROH'\n" +
+                "                                                              select produce_order_item.material_id, produce_order_item.batch_id, produce_order_item.batch_code, -1 * produce_order_item.quantity from produce_order_item, mm_material where item_category='PRODUCT' AND produce_order_item.is_complete = 0 and mm_material.id = produce_order_item.material_id AND mm_material.material_type = 'ROH'\n" +
                 "                                                              union all" +
                 "                                                              select material_id, batch_id, batch_code, inv_document_item.quantity from inv_document_item, produce_order_item_schedule, produce_order where type = 'MOVING_TO_PRODUCE' AND plant_id = 719893335619162112 and reference_type = 'PP' and inv_document_item.root_reference_code = produce_order_item_schedule.code and produce_order_item_schedule.`produce_order_id` = produce_order.id and produce_order.status = 'PRODUCING'" +
                 "                                                              union all\n" +
@@ -525,7 +531,7 @@ public class ProduceOrderService {
                 "                                                     where exists(\n" +
                 "                                                                   select 1 from produce_order_item, produce_order, (select material_id, batch_id, produce_order_item_id from produce_order_item_detail\n" +
                 "union all\n" +
-                " select produce_order_item.material_id, produce_order_item.batch_id, produce_order_item.id produce_order_item_id from produce_order_item, mm_material where produce_order_id = :produceOrderId and item_category='PRODUCT' and mm_material.id = produce_order_item.material_id AND mm_material.material_type = 'ROH'\n" +
+                " select produce_order_item.material_id, produce_order_item.batch_id, produce_order_item.id produce_order_item_id from produce_order_item, mm_material where produce_order_id = :produceOrderId and item_category='PRODUCT' and produce_order_item.is_complete = 0 and mm_material.id = produce_order_item.material_id AND mm_material.material_type = 'ROH'\n" +
                 ") produce_order_item_detail\n" +
                 "                                                                   where produce_order.id = produce_order_item.produce_order_id AND produce_order_item_detail.produce_order_item_id = produce_order_item.id\n" +
                 "                                                                      AND produce_order.`status` = 'PRODUCING' AND produce_order.id = :produceOrderId\n" +
