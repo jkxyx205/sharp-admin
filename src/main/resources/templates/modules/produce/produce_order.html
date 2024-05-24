@@ -1222,7 +1222,7 @@
                     readTemplate(vue.$data.form, function (d) {
                         detailIds[d.id + ''] = d.value.id
 
-                        let remark = d.value.remark.trim()
+                        let remark = d.value.remark && d.value.remark.trim()
                         if (remark) {
                             remarks[d.id + ''] = remark
                         }
