@@ -62,6 +62,7 @@ head.appendChild(style)
             $fileList.val(JSON.stringify(json.concat(attachments)))
         },
         deleteAttachment: function (attachmentId, obj, name) {
+            name = name || 'attachment_file'
             let $fileUpload = $('#' + name)
             let $fileList = $fileUpload.next()
 
