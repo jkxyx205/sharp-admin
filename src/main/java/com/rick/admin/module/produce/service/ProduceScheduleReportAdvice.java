@@ -45,7 +45,7 @@ public class ProduceScheduleReportAdvice implements ReportAdvice {
                 Params.builder(1).pv("scheduleCodes", scheduleCodes).build(),
                 String.class);
 
-        if (CollectionUtils.isNotEmpty(haveMaterialScheduleCodes)) {
+        if (CollectionUtils.isNotEmpty(haveMaterialScheduleCodes) && report.getAdditionalInfo() != null) {
             report.getAdditionalInfo().put("js", "const haveMaterialScheduleCodes = '"+String.join(",", haveMaterialScheduleCodes)+"';" +
                     "$('table td span[name=code]').each(function() {\n" +
                     "\tif (haveMaterialScheduleCodes.indexOf($(this).text()) > -1) {\n" +

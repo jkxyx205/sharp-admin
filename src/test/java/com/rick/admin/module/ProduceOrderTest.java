@@ -80,7 +80,8 @@ public class ProduceOrderTest {
                 .reportColumnList(Arrays.asList(
                         new HiddenReportColumn("id"),
                         new HiddenReportColumn("materialId"),
-                        new ReportColumn("startDate", "生产日期").setColumnWidth(100),
+//                        new ReportColumn("startDate", "生产日期").setColumnWidth(100),
+                        new ReportColumn("startDate", "生产日期", false,null, Arrays.asList("sqlDateConverter")).setColumnWidth(100),
                         new ReportColumn("materialCode", "物料").setColumnWidth(80),
                         new ReportColumn("name", "名称").setTooltip(true),
                         new ReportColumn("specificationAndCharacteristic", "规格 & 特征值"),

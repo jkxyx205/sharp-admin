@@ -54,7 +54,7 @@ public class ListDetailReportAdvice implements ReportAdvice {
                 row.put("total_price", ((BigDecimal)row.get("total_price")).stripTrailingZeros().toPlainString());
 
                 row.put("goodsReceiptQuantity", historyGoodsReceiptQuantityMap.get(row.get("id")).stripTrailingZeros().toPlainString());
-                if (1L == (Long) row.get("is_complete")) {
+                if (1L == ((Number) row.get("is_complete")).intValue()) {
                     row.put("openQuantity", "0");
 
                     if ("0".equals(row.get("goodsReceiptQuantity"))) {
