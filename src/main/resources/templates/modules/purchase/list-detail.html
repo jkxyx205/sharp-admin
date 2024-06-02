@@ -58,8 +58,8 @@
                             <i class="fa fa-search"></i> 查询</button>
                         <button class="btn btn-secondary mr-2" type="button" name="reset" th:if="${report.queryFieldList.size() > 0}">
                             <i class="fa fa-remove"></i> 重置</button>
-<!--                        <a class="btn btn-secondary mr-2" id="exportBtn" th:href="${'/reports/' + id + '/export'}" sec:authorize="${hasAuthority(#vars.report.code + '_read')}">-->
-<!--                            <i class="fa fa-upload"></i> 导出</a>-->
+                        <a class="btn btn-secondary mr-2" id="exportBtn" href="/reports/816284792017412096/export" sec:authorize="hasAuthority('ROLE_admin')">
+                            <i class="fa fa-upload"></i> 导出</a>
                     </div>
                 </form>
             </div>

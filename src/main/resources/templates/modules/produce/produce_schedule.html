@@ -49,6 +49,8 @@
                             <i class="fa fa-search"></i> 查询</button>
                         <button class="btn btn-secondary mr-2" type="button" name="reset" th:if="${report.queryFieldList != null && report.queryFieldList.size() > 0}">
                             <i class="fa fa-remove"></i> 重置</button>
+                        <a class="btn btn-secondary mr-2" id="exportBtn" href="/reports/736036369939337216/export">
+                            <i class="fa fa-upload"></i> 导出</a>
                     </div>
                 </form>
             </div>
