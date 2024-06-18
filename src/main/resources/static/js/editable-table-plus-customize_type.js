@@ -299,7 +299,6 @@
                     let characteristicValueList = []
 
                     $(this).find('> div :input').map((index, input) => {
-                        debugger
                         characteristicValueList.push({
                             characteristicCode: input.name,
                             val: (input.value && input.value.trim()) || input.value // 去掉值的前后空格
