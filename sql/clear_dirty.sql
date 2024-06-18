@@ -13,7 +13,6 @@ delete from produce_bom_template_component_detail where type = 'MATERIAL' AND no
 
 delete from produce_bom_template_component_detail where type = 'CATEGORY' AND not exists(select 1 from core_material_category where id = produce_bom_template_component_detail.type_instance_id);
 
-delete from `inv_document` where not exists(select 1 from inv_document_item where inv_document.id = inv_document_item.inventory_document_id);
 
 -- 删除物料， 级联删除
 delete from mm_material where is_deleted = 1;
@@ -25,4 +24,5 @@ delete from `inv_stock` where not exists(select 1 from mm_material where id = in
 
 -- 删除物料的关联数据
 delete from `mm_characteristic_value` where not exists(select 1 from mm_profile where id = mm_characteristic_value.`reference_id`);
-delete from inv_document where not exists(select 1 from inv_document_item where inv_document_item.inventory_document_id = inv_document.id);
+-- 下面的sql执行时间较长
+-- delete from inv_document where not exists(select 1 from inv_document_item where inv_document.id = inv_document_item.inventory_document_id);
