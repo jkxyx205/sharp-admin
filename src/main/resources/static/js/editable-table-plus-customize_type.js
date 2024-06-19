@@ -301,7 +301,7 @@
                     $(this).find('> div :input').map((index, input) => {
                         characteristicValueList.push({
                             characteristicCode: input.name,
-                            val: (input.value && input.value.trim()) || input.value // 去掉值的前后空格
+                            val: (input.tagName === 'INPUT' && input.value && input.value.trim()) || input.value // input 控件去掉值的前后空格
                         })
                     })
 
@@ -335,7 +335,8 @@
                             item = "<div class='mb-2'>\n" +
                                 "            <label style='width: 60px; text-align: left' class='"+(characteristicValue.required ? 'required = "required"' : '')+"' for=\"" + characteristicValue.code + "\">" + characteristicValue.description + "</label>\n" +
                                 "            <input class='form-control' style='display: inline-block; width: auto;border-width: 1px;' id=\"" + characteristicValue.code + "\" name=\"" + characteristicValue.code + "\" " + (characteristicValue.required ? 'required = "required"' : '') + " placeholder='"+characteristicValue.placeholder+"'" +
-                                " "+(characteristicValue.type === 'NUMBER' ? 'pattern="-?\\d+(\\.\\d+)?"' : '')+">\n" +
+                                " "+(characteristicValue.type === 'NUMBER' ? 'pattern="-?\\d+(\\.\\d+)?"' : '')+" " +
+                                " "+(characteristicValue.pattern ? 'pattern="'+characteristicValue.pattern+'"' : '')+">\n" +
                                 "        </div>\n"
                         }
 

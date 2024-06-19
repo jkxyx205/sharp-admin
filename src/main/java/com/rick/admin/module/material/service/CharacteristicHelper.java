@@ -89,6 +89,14 @@ public class CharacteristicHelper {
                         }
                     }
 
+                    // 验证自定义
+                    List<Validator> validators = characteristic.getCpnConfigurer().getValidatorList();
+                    if (CollectionUtils.isNotEmpty(validators)) {
+                        for (Validator cpnValidator : validators) {
+                            cpnValidator.valid(val);
+                        }
+                    }
+
                     CpnInstanceProcessor cpnInstanceProcessor = new CpnInstanceProcessor(new FormBO.Property(characteristic.getId(), characteristic.getDescription(), characteristic.getCpnConfigurer(), val)
                             , val, result);
 

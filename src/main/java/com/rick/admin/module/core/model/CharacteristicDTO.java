@@ -41,6 +41,8 @@ public class CharacteristicDTO {
 
     private String placeholder;
 
+    private String pattern;
+
     /**
      * 控件值
      */

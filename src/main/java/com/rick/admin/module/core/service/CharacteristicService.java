@@ -11,6 +11,7 @@ import com.rick.formflow.form.cpn.Date;
 import com.rick.formflow.form.cpn.Text;
 import com.rick.formflow.form.cpn.Time;
 import com.rick.formflow.form.cpn.core.*;
+import com.rick.formflow.form.valid.CustomizeRegex;
 import com.rick.formflow.form.valid.DecimalRegex;
 import com.rick.formflow.form.valid.Required;
 import com.rick.formflow.form.valid.core.Validator;
@@ -69,15 +70,22 @@ public class CharacteristicService {
     }
 
     private CpnConfigurer createConfigurer(CharacteristicDTO characteristicDTO) {
-        List<Validator> requiredValidator = Boolean.TRUE.equals(characteristicDTO.getRequired()) ? Lists.newArrayListWithExpectedSize(1) : null;
-        if (Objects.nonNull(requiredValidator)) {
-            requiredValidator.add(new Required(true));
+        List<Validator> validators = Boolean.TRUE.equals(characteristicDTO.getRequired()) ? Lists.newArrayListWithExpectedSize(1) : null;
+        if (Objects.nonNull(validators)) {
+            validators.add(new Required(true));
+        }
+
+        if (StringUtils.isNotBlank(characteristicDTO.getPattern())) {
+            if (validators == null) {
+                validators = Lists.newArrayListWithExpectedSize(1);
+            }
+            validators.add(new CustomizeRegex(characteristicDTO.getPattern(), ""));
         }
 
         CpnConfigurer configurer = CpnConfigurer.builder()
                 .name(characteristicDTO.getCode())
                 .label(characteristicDTO.getDescription())
-                .validatorList(requiredValidator)
+                .validatorList(validators)
                 .options(characteristicDTO.getOptions())
                 .cpnType(characteristicDTO.getCpnType())
                 .additionalInfo(characteristicDTO.getAdditionalInfo())

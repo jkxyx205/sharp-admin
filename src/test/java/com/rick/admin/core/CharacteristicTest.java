@@ -205,7 +205,7 @@ public class CharacteristicTest {
     @Test
     public void insertOrUpdateCharacteristic() {
        insertOrUpdateCharacteristic("LHQ", "离合器", 719895812674441216L);
-//
+
         insertOrUpdateCharacteristic("NLCL", "尼龙齿轮", 725412446512111616L);
 //        insertOrUpdateCharacteristic("ZHC", "轴承", 719895465524482048L);
 //        insertOrUpdateCharacteristic("ZHC2", "轴承", 719895465524482048L);
@@ -230,6 +230,8 @@ public class CharacteristicTest {
 //                .description("匝数")
 //                .cpnType(CpnTypeEnum.RADIO) // 单选
 //                .required(true)
+//                .pattern("^\\d+(\\.\\d+)?T$") // 数字 2.3T
+//                .pattern("^.+)?T$")
 //                .build());
     }
 
