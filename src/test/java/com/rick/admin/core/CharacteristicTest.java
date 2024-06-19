@@ -231,7 +231,6 @@ public class CharacteristicTest {
 //                .cpnType(CpnTypeEnum.RADIO) // 单选
 //                .required(true)
 //                .pattern("^\\d+(\\.\\d+)?T$") // 数字 2.3T
-//                .pattern("^.+)?T$")
 //                .build());
     }
 
