@@ -13,6 +13,7 @@ import com.rick.admin.module.produce.dao.ProduceOrderItemDAO;
 import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.admin.module.purchase.entity.PurchaseRequisition;
 import com.rick.admin.module.purchase.service.PurchaseRequisitionItemService;
+import com.rick.admin.sys.user.entity.User;
 import com.rick.common.util.StringUtils;
 import com.rick.db.plugin.dao.core.EntityCodeDAO;
 import com.rick.db.plugin.dao.core.EntityDAO;
@@ -118,7 +119,9 @@ public class ProduceOrderService {
         if (order.getStatus() == ProduceOrder.StatusEnum.PRODUCING) {
             // 管理员 和 程文斌 触发采购申请
             if (UserContextHolder.get().getCode().equals("admin") || UserContextHolder.get().getCode().equals("cpk")) {
+                final User user = UserContextHolder.get();
                 executorService.submit(() -> {
+                    UserContextHolder.set(user);
                     LocalDate deliveryDate =  order.getItemList().stream().flatMap(item -> item.getScheduleList().stream()).map(ProduceOrder.Item.Schedule::getStartDate).min(LocalDate::compareTo).orElseGet(() -> order.getItemList().stream().map(ProduceOrder.Item::getDeliveryDate).min(LocalDate::compareTo).get());
                     handlePurchaseRequisition(order.getItemList(), order.getId(), order.getCode(), order.getPartnerId(), deliveryDate);
                 });
