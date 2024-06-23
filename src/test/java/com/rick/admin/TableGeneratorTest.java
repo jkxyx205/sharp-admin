@@ -1,6 +1,6 @@
 package com.rick.admin;
 
-import com.rick.admin.module.core.entity.CodeSequence;
+import com.rick.admin.module.purchase.entity.LatestPrice;
 import com.rick.db.plugin.dao.core.TableGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +55,8 @@ public class TableGeneratorTest {
 //        tableGenerator.createTable(PurchaseRequisition.class);
 //        tableGenerator.createTable(PurchaseRequisition.Item.class);
 
-        tableGenerator.createTable(CodeSequence.class);
+//        tableGenerator.createTable(CodeSequence.class);
+        tableGenerator.createTable(LatestPrice.class);
 
     }
 }

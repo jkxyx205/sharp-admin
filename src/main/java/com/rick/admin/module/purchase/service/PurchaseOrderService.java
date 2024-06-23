@@ -19,6 +19,7 @@ import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.produce.service.ProduceOrderService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
 import com.rick.admin.module.purchase.dao.PurchaseOrderItemDAO;
+import com.rick.admin.module.purchase.entity.LatestPrice;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
 import com.rick.common.http.HttpServletResponseUtils;
 import com.rick.common.http.exception.BizException;
@@ -31,6 +32,7 @@ import com.rick.meta.dict.entity.Dict;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -86,6 +88,8 @@ public class PurchaseOrderService {
 
     ProduceOrderService produceOrderService;
 
+    LatestPriceService latestPriceService;
+
 //    static final List<Long> SPECIAL_PARTNER_IDS = Arrays.asList(725460000008331264L, 725460000503259136L, 725460024691810304L, 725460046258921472L, 725460049203322880L, 725460013396549632L, 725460011387478016L, 766736335200702464L, 725460000985604096L);
 
     /**
@@ -119,9 +123,11 @@ public class PurchaseOrderService {
         purchaseOrderDAO.insertOrUpdate(order);
 
         // 更新物料的价格
-        List<Object[]> paramList = order.getItemList().stream().filter(item -> Objects.nonNull(item.getUnitPrice()))
-                .map(item -> new Object[]{item.getUnitPrice(), item.getMaterialId()}).collect(Collectors.toList());
-        materialDAO.updatePrice(paramList);
+//        List<Object[]> paramList = order.getItemList().stream().filter(item -> Objects.nonNull(item.getUnitPrice()))
+//                .map(item -> new Object[]{item.getUnitPrice(), item.getMaterialId()}).collect(Collectors.toList());
+//        materialDAO.updatePrice(paramList);
+
+        latestPriceService.updatePrice(order.getItemList().stream().map(item -> LatestPrice.builder().materialId(item.getMaterialId()).materialCode(item.getMaterialCode()).batchCode(item.getBatchCode()).batchId(item.getBatchId()).price(item.getUnitPrice()).partnerId(order.getPartnerId()).build()).collect(Collectors.toSet()));
         materialService.fillMaterialDescription(order.getItemList());
 
     }
@@ -144,9 +150,15 @@ public class PurchaseOrderService {
         purchaseOrderDAO.insert(list);
 
          // 更新物料的价格
-        List<Object[]> paramList = list.stream().flatMap(purchaseOrder -> purchaseOrder.getItemList().stream()).filter(item -> Objects.nonNull(item.getUnitPrice()))
-                .map(item -> new Object[]{item.getUnitPrice(), item.getMaterialId()}).collect(Collectors.toList());
-        materialDAO.updatePrice(paramList);
+//        List<Object[]> paramList = list.stream().flatMap(purchaseOrder -> purchaseOrder.getItemList().stream()).filter(item -> Objects.nonNull(item.getUnitPrice()))
+//                .map(item -> new Object[]{item.getUnitPrice(), item.getMaterialId()}).collect(Collectors.toList());
+//        materialDAO.updatePrice(paramList);
+
+        if (CollectionUtils.isNotEmpty(list)) {
+            for (PurchaseOrder order : list) {
+                latestPriceService.updatePrice(order.getItemList().stream().map(item -> LatestPrice.builder().materialId(item.getMaterialId()).materialCode(item.getMaterialCode()).batchCode(item.getBatchCode()).batchId(item.getBatchId()).price(item.getUnitPrice()).partnerId(order.getPartnerId()).build()).collect(Collectors.toSet()));
+            }
+        }
     }
 
     private CodeSequence getNextSequence(String prefix, int num) {

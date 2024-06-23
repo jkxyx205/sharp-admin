@@ -1,11 +1,9 @@
 package com.rick.admin.module.material.dao;
 
 import com.rick.admin.module.material.entity.Material;
-import com.rick.db.plugin.SQLUtils;
 import com.rick.db.plugin.dao.core.ColumnFillType;
 import com.rick.db.plugin.dao.core.EntityCodeDAOImpl;
 import com.rick.db.service.support.Params;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,18 +17,18 @@ import java.util.Objects;
 @Repository
 public class MaterialDAO extends EntityCodeDAOImpl<Material, Long> {
 
-    /**
-     * 第一个参数是价格；第二个参数是物料id
-     * @param paramsList
-     * @return
-     */
-    public int[] updatePrice(List<Object[]> paramsList) {
-        if (CollectionUtils.isEmpty(paramsList)) {
-            return new int[0];
-        }
-
-        return SQLUtils.update(getTableName(), "standard_price", paramsList, "id = ?");
-    }
+//    /**
+//     * 第一个参数是价格；第二个参数是物料id
+//     * @param paramsList
+//     * @return
+//     */
+////    public int[] updatePrice(List<Object[]> paramsList) {
+//        if (CollectionUtils.isEmpty(paramsList)) {
+//            return new int[0];
+//        }
+//
+//        return SQLUtils.update(getTableName(), "standard_price", paramsList, "id = ?");
+//    }
 
     public List<String> getSpecificationByCategory(Long categoryId) {
         return selectByParams(Params.builder(1).pv("categoryId", categoryId).build(),
