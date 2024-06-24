@@ -9,10 +9,13 @@ import com.rick.admin.module.core.entity.ContactInfo;
 import com.rick.admin.module.core.entity.Partner;
 import com.rick.admin.module.core.model.ReferenceTypeEnum;
 import com.rick.admin.module.core.service.ContactInfoService;
+import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.service.BatchService;
+import com.rick.admin.module.material.service.BatchSupport;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
+import com.rick.admin.module.purchase.service.LatestPriceService;
 import com.rick.admin.module.purchase.service.PurchaseOrderService;
 import com.rick.admin.module.purchase.service.PurchaseRequisitionItemService;
 import com.rick.common.http.model.Result;
@@ -64,6 +67,8 @@ public class PurchaseOrderController {
     final ContactInfoService contactInfoService;
 
     final PurchaseRequisitionItemService purchaseRequisitionItemService;
+
+    final LatestPriceService latestPriceService;
 
     @PostMapping
     @ResponseBody
@@ -211,6 +216,14 @@ public class PurchaseOrderController {
     @GetMapping("{id}/download")
     public void downloadById(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) throws IOException {
         purchaseOrderService.downloadById(id, request, response);
+    }
+
+    @PostMapping("/latest-price")
+    @ResponseBody
+    public Result<String> getLatestPrice(Long materialId, @RequestBody List<Classification> classificationList, Long partnerId) {
+        Optional<BigDecimal> optional = latestPriceService.getLatestPrice(materialId,
+                latestPriceService.priceBatchCode(materialId, BatchSupport.characteristicToCode(classificationList), classificationList), partnerId);
+        return ResultUtils.success(optional.isPresent() ? optional.get().stripTrailingZeros().toPlainString() : "");
     }
 
     class GoodsReceiptItem extends PurchaseOrder.Item {

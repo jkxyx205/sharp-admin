@@ -226,6 +226,21 @@
                     name: "partnerId",
                     required: true,
                     datasource: vendor_datasource,
+                    onchange: function (value, text) {
+                        let activeRowValue = $editableTable.editableTablePlus('getActiveRowValue')
+                        characteristic.getItemCharacteristicParams($editableTable, activeRowValue, activeRowValue.activeIndex)
+
+                        $.ajax({
+                            url: '/purchase_order/latest-price?materialId='+activeRowValue.value.materialId+'&partnerId=' + value,
+                            type: "POST",
+                            data: JSON.stringify(activeRowValue.classificationList),
+                            dataType: "json",
+                            contentType: "application/json; charset=utf-8",
+                            success: function(res){
+                                res.data && activeRowValue.$tr.find('input[name=unitPrice]').val(res.data)
+                            }
+                        });
+                    }
                 },
                 {
                     type: "text",

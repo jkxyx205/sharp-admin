@@ -127,7 +127,7 @@ public class PurchaseOrderService {
 //                .map(item -> new Object[]{item.getUnitPrice(), item.getMaterialId()}).collect(Collectors.toList());
 //        materialDAO.updatePrice(paramList);
 
-        latestPriceService.updatePrice(order.getItemList().stream().map(item -> LatestPrice.builder().materialId(item.getMaterialId()).materialCode(item.getMaterialCode()).batchCode(item.getBatchCode()).batchId(item.getBatchId()).price(item.getUnitPrice()).partnerId(order.getPartnerId()).build()).collect(Collectors.toSet()));
+        latestPriceService.updatePrice(order.getItemList().stream().map(item -> LatestPrice.builder().materialId(item.getMaterialId()).materialCode(item.getMaterialCode()).batchCode(latestPriceService.priceBatchCode(item.getMaterialId(), item.getBatchCode(), item.getClassificationList())).batchId(item.getBatchId()).price(item.getUnitPrice()).partnerId(order.getPartnerId()).build()).collect(Collectors.toSet()));
         materialService.fillMaterialDescription(order.getItemList());
 
     }
@@ -156,7 +156,7 @@ public class PurchaseOrderService {
 
         if (CollectionUtils.isNotEmpty(list)) {
             for (PurchaseOrder order : list) {
-                latestPriceService.updatePrice(order.getItemList().stream().map(item -> LatestPrice.builder().materialId(item.getMaterialId()).materialCode(item.getMaterialCode()).batchCode(item.getBatchCode()).batchId(item.getBatchId()).price(item.getUnitPrice()).partnerId(order.getPartnerId()).build()).collect(Collectors.toSet()));
+                latestPriceService.updatePrice(order.getItemList().stream().map(item -> LatestPrice.builder().materialId(item.getMaterialId()).materialCode(item.getMaterialCode()).batchCode(latestPriceService.priceBatchCode(item.getMaterialId(), item.getBatchCode(), item.getClassificationList())).batchId(item.getBatchId()).price(item.getUnitPrice()).partnerId(order.getPartnerId()).build()).collect(Collectors.toSet()));
             }
         }
     }
