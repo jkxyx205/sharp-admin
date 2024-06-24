@@ -45,6 +45,8 @@
 					if (node.className) {
 						this.valueElement.value = node.getAttribute("value")
 						this.inputElement.value = node.innerText
+
+						this.options.onchange && this.options.onchange(this.valueElement.value, this.inputElement.value)
 						break
 					}
 				}
@@ -93,6 +95,7 @@
 		this.ul.addEventListener('click', (event) => {
 			this.valueElement.value = event.target.getAttribute("value")
 			this.inputElement.value = event.target.innerText
+			this.options.onchange && this.options.onchange(this.valueElement.value, this.inputElement.value)
 			this.clearItems()
 		})
 

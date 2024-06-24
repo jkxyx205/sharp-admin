@@ -421,7 +421,8 @@
                         '        <ul></ul>\n' +
                         '      </div>\n')
                     new select2($td[0], {
-                        datasource: columnConfig.datasource
+                        datasource: columnConfig.datasource,
+                        onchange: columnConfig.onchange
                     })
                 } else if (columnConfig.type === 'radio') {
                     let radios = []
@@ -577,7 +578,7 @@
         showRowNumber: true, // 是否显示行号
         readonly: false, // 只读
         allowEmpty: false, // 表格允许为空,
-        highlight: false, // 行点击后highlight
+        highlight: true, // 行点击后highlight
     };
 
 })(jQuery);

@@ -313,6 +313,27 @@
                 })
             }
         },
+        getItemCharacteristicParams: function ($editableTable, item, activeIndex) {
+            // 获取特征值
+            item.classificationList = []
+
+            $editableTable.find("tbody tr:eq("+(activeIndex - 1)+") td.characteristic-td .items > div").each(function () {
+                let characteristicValueList = []
+
+                $(this).find('> div :input').map((index, input) => {
+                    characteristicValueList.push({
+                        characteristicCode: input.name,
+                        val: (input.tagName === 'INPUT' && input.value && input.value.trim()) || input.value // input 控件去掉值的前后空格
+                    })
+                })
+
+                item.classificationList.push({
+                    materialId: item.materialId,
+                    classificationCode: $(this).data('classification_code'),
+                    characteristicValueList
+                })
+            })
+        },
         _render: function($input, classificationList, characteristicValueConsumer) {
             if (classificationList.length > 0) {
                 $input.attr('disabled', false).attr('readonly', false)
