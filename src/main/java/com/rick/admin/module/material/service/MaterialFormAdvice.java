@@ -49,9 +49,19 @@ public class MaterialFormAdvice implements FormAdvice {
                             .build(),
                     String.class);
 
+
+            Long newNumber;
+            String newCode;
             Long currentNumber = Long.parseLong(remarkOptional.get());
-            Long newNumber = ++currentNumber;
-            values.put("code", materialType.charAt(0) + String.format("%05d", newNumber));
+            while (true) {
+                newNumber = ++currentNumber;
+                newCode = materialType.charAt(0) + String.format("%05d", newNumber);
+                try {
+                    materialDAO.assertCodeNotExists(newCode);
+                    values.put("code", newCode);
+                    break;
+                } catch (Exception e) {}
+            }
 
             sharpService.getNamedJdbcTemplate().update("update sys_dict set remark = :newNumber where type = :type AND name = :name",
                     Params.builder(2).pv("type", "MATERIAL_TYPE").pv("name", materialType).pv("newNumber", newNumber)
