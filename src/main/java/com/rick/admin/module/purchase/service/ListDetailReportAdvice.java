@@ -1,10 +1,7 @@
 package com.rick.admin.module.purchase.service;
 
 import com.rick.admin.common.BigDecimalUtils;
-import com.rick.admin.module.material.service.CharacteristicConverter;
-import com.rick.admin.module.material.service.MaterialProfileService;
-import com.rick.admin.module.material.service.MaterialProfileSupport;
-import com.rick.admin.module.material.service.MaterialService;
+import com.rick.admin.module.material.service.*;
 import com.rick.report.core.entity.Report;
 import com.rick.report.core.service.ReportAdvice;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +30,11 @@ public class ListDetailReportAdvice implements ReportAdvice {
     private final MaterialService materialService;
 
     private final PurchaseOrderService purchaseOrderService;
+
+    @Override
+    public void beforeQuery(Report report, Map<String, Object> requestMap) {
+        MaterialKeywordsHelper.keywordsConditionSQLSet(report, requestMap);
+    }
 
     @Override
     public void beforeSetRow(Report report, List<Map<String, Object>> rows) {
