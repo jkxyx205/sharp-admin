@@ -77,7 +77,7 @@ public class CharacteristicManager {
                 .description(characteristic.getDescription())
                 .type(characteristic.getType())
                 .options(configurer.getOptions())
-                .required(CollectionUtils.isNotEmpty(configurer.getValidatorList()) && configurer.getValidatorList().stream().allMatch(validator -> validator.getValidatorType() == ValidatorTypeEnum.REQUIRED && ((Required)validator).isRequired()))
+                .required(CollectionUtils.isNotEmpty(configurer.getValidatorList()) && configurer.getValidatorList().stream().anyMatch(validator -> validator.getValidatorType() == ValidatorTypeEnum.REQUIRED && ((Required)validator).isRequired()))
                 .pattern((String) characteristic.getCpnConfigurer().getValidatorProperties().get("CustomizeRegex.regex"))
                 .placeholder(StringUtils.defaultString(characteristic.getCpnConfigurer().getPlaceholder(), ""))
                 .cpnType(configurer.getCpnType())
