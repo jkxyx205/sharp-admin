@@ -183,7 +183,7 @@ public class PartnerTest {
                 .cpnType(CpnTypeEnum.TEXT)
                 .name("accountNumber")
                 .label("银行账号")
-                .placeholder("请输入银行账户")
+                .placeholder("请输入银行账号")
                 .validatorList(Arrays.asList(new Length(32)))
                 .build();
 
