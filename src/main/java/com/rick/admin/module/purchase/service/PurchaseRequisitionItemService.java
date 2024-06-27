@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Rick.Xu
@@ -24,6 +24,18 @@ import java.util.List;
 public class PurchaseRequisitionItemService {
 
     EntityDAO<PurchaseRequisition.Item, Long> purchaseRequisitionItemDAO;
+
+    public Map<String, Integer> requisitionQuantityMapping() {
+        List<PurchaseRequisition.Item> items = purchaseRequisitionItemDAO.selectByParamsWithoutCascade(Collections.emptyMap(),
+                "material_id, batch_id, quantity"
+                ,"is_complete = 0 and is_deleted = 0");
+
+        Map<String, Integer> requisitionQuantityMapping = items.stream().collect(Collectors.groupingBy(item -> item.getMaterialId() + (Objects.isNull(item.getBatchId()) ? "" : "" + item.getBatchId()),
+                Collectors.summingInt(item -> item.getQuantity().intValue()))
+        );
+
+        return requisitionQuantityMapping;
+    }
 
     public int deleteByIds(String ids) {
 //        return purchaseRequisitionItemDAO.deleteByIds(ids);

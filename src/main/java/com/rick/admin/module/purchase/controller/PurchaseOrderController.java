@@ -22,6 +22,7 @@ import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
 import com.rick.common.util.Time2StringUtils;
 import com.rick.db.plugin.dao.support.BaseEntityUtils;
+import com.rick.db.service.support.Params;
 import com.rick.meta.dict.entity.Dict;
 import com.rick.meta.dict.service.DictService;
 import lombok.AccessLevel;
@@ -30,6 +31,7 @@ import lombok.experimental.FieldDefaults;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -69,6 +71,8 @@ public class PurchaseOrderController {
     final PurchaseRequisitionItemService purchaseRequisitionItemService;
 
     final LatestPriceService latestPriceService;
+
+    final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @PostMapping
     @ResponseBody
@@ -112,7 +116,43 @@ public class PurchaseOrderController {
                 .filter(purchaseOrderItem -> purchaseOrderItem.getReferenceType1() == ReferenceTypeEnum.PR).collect(Collectors.toList()));
 
         purchaseOrderService.save(purchaseOrderList);
+
+        Set<String> deletedKeys = handleOverPurchasedMaterialKeys(purchaseOrderList.stream().flatMap(purchaseOrder -> purchaseOrder.getItemList().stream()).collect(Collectors.toList()));
+
+        Set<Long> prItemIds = purchaseOrderList.stream().flatMap(purchaseOrder -> purchaseOrder.getItemList().stream())
+                .filter(purchaseOrderItem -> purchaseOrderItem.getReferenceType1() == ReferenceTypeEnum.PR).collect(Collectors.toList()).stream().map(PurchaseOrder.Item::getReferenceId1).collect(Collectors.toSet());
+        if (CollectionUtils.isNotEmpty(prItemIds)) {
+            purchaseRequisitionItemService.markCompleted(prItemIds);
+        }
+
+        // 删除重复的采购申请
+        if (CollectionUtils.isNotEmpty(deletedKeys)) {
+            namedParameterJdbcTemplate.update("UPDATE pur_purchase_requisition_item SET is_deleted = 1 WHERE concat(material_id, IFNULL(batch_id, '')) IN (:keys) and is_complete = 0",
+                    Params.builder(1).pv("keys", deletedKeys).build());
+        }
+
         return ResultUtils.success();
+    }
+
+    private Set<String> handleOverPurchasedMaterialKeys(List<PurchaseOrder.Item> itemList) {
+        Map<String, Integer> requisitionQuantityMapping = purchaseRequisitionItemService.requisitionQuantityMapping();
+        Map<String, Integer> purchaseQuantityMapping = itemList.stream().collect(Collectors.groupingBy(item -> item.getMaterialId() + (Objects.isNull(item.getBatchId()) ? "" : "" + item.getBatchId()),
+                Collectors.summingInt(item -> item.getQuantity().intValue()))
+        );
+
+        Set<String> deletedKeys = new HashSet<>();
+
+        for (Map.Entry<String, Integer> purchaseQuantityEntry : purchaseQuantityMapping.entrySet()) {
+            String key = purchaseQuantityEntry.getKey();
+            Integer quantity = purchaseQuantityEntry.getValue();
+
+            if (requisitionQuantityMapping.get(key) != null && quantity >= requisitionQuantityMapping.get(key)) {
+                // 标记删除
+                deletedKeys.add(key);
+            }
+        }
+
+        return deletedKeys;
     }
 
     @DeleteMapping("requisition")
@@ -128,7 +168,7 @@ public class PurchaseOrderController {
         }
 
         Set<Long> produceItemIds = itemList.stream().map(PurchaseOrder.Item::getReferenceId2).collect(Collectors.toSet());
-        Set<Long> prItemIds = itemList.stream().map(PurchaseOrder.Item::getReferenceId1).collect(Collectors.toSet());
+
         Map<Long, ContactInfo> instanceIdEntityMap = contactInfoService.getInstanceIdEntityMap(produceItemIds);
 
         for (PurchaseOrder.Item item : itemList) {
@@ -140,8 +180,6 @@ public class PurchaseOrderController {
                 item.setContactInfo(contactInfo);
             }
         }
-
-        purchaseRequisitionItemService.markCompleted(prItemIds);
     }
 
     @GetMapping
