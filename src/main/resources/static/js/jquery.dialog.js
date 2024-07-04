@@ -52,17 +52,24 @@
                 _this.options.hidden && _this.options.hidden()
                 _this.isGlobal && _this.$modal.remove()
             })
+
+            _this.options.mounted && _this.options.mounted(_this.$modal)
         },
         _fetchData: function () {
             if (!this.options.lazy || (this.options.lazy && !this.fetched)) {
-                $.get((!this.isGlobal && this.$element.data('url')) || this.options.content, res => {
-                    this.$modal.find('.modal-body').html(res)
+                if (this.options.html) {
+                    this.$modal.find('.modal-body').html(this.options.html)
+                    this.$modal.modal('show');
+                } else {
+                    $.get((!this.isGlobal && this.$element.data('url')) || this.options.content, res => {
+                        this.$modal.find('.modal-body').html(res)
 
-                    this.$modal.modal({
-                        show: true,
-                        backdrop: this.options.backdrop
+                        this.$modal.modal({
+                            show: true,
+                            backdrop: this.options.backdrop
+                        })
                     })
-                })
+                }
             } else {
                 this.$modal.modal('show');
             }
