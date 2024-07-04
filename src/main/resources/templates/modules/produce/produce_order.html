@@ -75,6 +75,11 @@
         #form-detail tbody tr td:nth-child(6) {
             width: 60px;
         }
+
+        table.bom tr.active {
+            background: #20a8d8!important;
+            color: #fff;
+        }
     </style>
 </head>
 <body class="app">
@@ -176,6 +181,7 @@
                         <div v-show="form.id" v-cloak>
                             <div class="card-body-scroll-panel">
                                 <label sec:authorize="hasAuthority('produce_order_edit')"><a href="javascript:;" @click="copyBOM">复制 BOM</a></label>
+                                <label sec:authorize="hasAuthority('produce_order_edit')" class="ml-5"><a href="javascript:;" @click="copyBOM2">从本单复制 BOM</a></label>
                                 <div v-for="c in form.componentList">
                                     <!--                                        <div class="component-name" v-text="c.description + '（' + c.quantity + c.unitText + '）'"></div>-->
                                     <form class="form-item">
@@ -491,6 +497,7 @@
     <script th:src="@{/js/jquery.table.js}"></script>
     <script th:src="@{/js/editable-table-plus.js}"></script>
 
+    <script th:src="@{/js/jquery.dialog.js}"></script>
     <script th:src="@{/js/jquery.dialogInput.js}"></script>
     <script th:src="@{/js/editable-table-plus-customize_type.js}"></script>
 
@@ -1371,6 +1378,8 @@
                             }
 
                             value.materialId = row.materialId
+                            value.itemId = row.id
+
                             $tr[0].form = value
                         })
                 }
@@ -1382,6 +1391,126 @@
                 copyBOM: function () {
                     materialBOMTemplete.dialogInput('setParams', {'materialId' : this.form.materialId})
                     materialBOMTemplete.click()
+                },
+                copyBOM2: function () {
+                    let items = $editableTable.editableTablePlus('getAllTr')
+                    let activeIndex = $editableTable.editableTablePlus('getActiveRowValue').activeIndex
+                    let includeItems = []
+
+                    for (let i = 0; i < items.length; i++) {
+                        let item = items[i]
+                        if (item.form.materialId === this.form.materialId && activeIndex !== i + 1) {
+                            let value = $editableTable.editableTablePlus('_getValue', $(item))
+                            value.index = i + 1
+                            includeItems.push(value)
+                        }
+                    }
+
+                    if (includeItems.length == 0) {
+                        toastr.error('没有可以复制的BOM')
+                        return
+                    }
+
+                    let tr = []
+                    includeItems.forEach((item, index) => {
+                        tr.push('      <tr data-index="'+item.index+'">\n' +
+                            '         <td class="text-left">'+(index + 1)+'</td>\n' +
+                            '         <td name="code" class="text-left">'+item.materialCode+'</td>\n' +
+                            '         <td name="name" class="text-left">'+item.materialName+'</td>\n' +
+                            '         <td name="specificationAndCharacteristic" class="text-left">'+item.specification+'</td>\n' +
+                            '         <td name="specificationAndCharacteristic" class="text-left">'+item.index+'</td>\n' +
+                            '      </tr>\n')
+                    })
+
+                    $.dialog({
+                        title: '选择 BOM 模版',
+                        html: '<table class="table table-responsive-sm table-bordered table-striped table-sm table-tbody bom">\n' +
+                            '   <thead>\n' +
+                            '      <tr>\n' +
+                            '         <th class="text-left" style="width: 40px;">序号</th>\n' +
+                            '         <th data-name="code" class="text-left" style="width: 80px;">物料</th>\n' +
+                            '         <th data-name="name" class="text-left">名称</th>\n' +
+                            '         <th data-name="specificationAndCharacteristic" class="text-left">规格 &amp; 特征值</th>\n' +
+                            '         <th data-name="index" class="text-left">当前订单序号</th>\n' +
+                            '      </tr>\n' +
+                            '   </thead>\n' +
+                            '   <!----> \n' +
+                            '   <tbody>\n ' +
+                            ''+tr.join('')+'' +
+                            '   </tbody>\n' +
+                            '</table>',
+                        ok: {
+                            label: "确定",
+                            success: function ($modal) {
+                                let activeTr = $modal.find('tbody tr.active')
+                                if (activeTr.length == 0) {
+                                    toastr.error('请选择复制的BOM')
+                                    return
+                                }
+
+                                let trIndex = activeTr.data('index');
+                                // copy bom start
+                                let copyedComponentList = $editableTable.editableTablePlus('getTrByIndex', trIndex - 1)[0].form.componentList
+                                copyedComponentList = JSON.parse(JSON.stringify(copyedComponentList))
+
+                                // 合并 id & remark
+                                let remarks = {}
+                                let detailIds = {}
+                                readTemplate(vue.$data.form, function (d) {
+                                    detailIds[d.id + ''] = d.value.id
+
+                                    let remark = d.value.remark && d.value.remark.trim()
+                                    if (remark) {
+                                        remarks[d.id + ''] = remark
+                                    }
+                                })
+
+                                function readTemplate(tpl, handler) {
+                                    if(tpl) {
+                                        for (let c of tpl.componentList) {
+
+                                            for (d of c.componentDetailList) {
+                                                handler(d)
+                                                if (d.bomTemplate) {
+                                                    readTemplate(d.bomTemplate, handler)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                readTemplate({componentList: copyedComponentList}, function (d) {
+                                    let remark = remarks[d.id + '']
+                                    if (remark) {
+                                        d.value.remark = remark
+                                    }
+
+                                    if (!vue.form.itemId) {
+                                        d.value.id = null
+                                    } else  {
+                                        let detailId = detailIds[d.id + '']
+                                        if (detailId) {
+                                            d.value.id = detailId
+                                        }
+                                    }
+                                })
+                                // 合并 end
+                                $editableTable.editableTablePlus('getActiveRowValue').$tr[0].form.componentList = vue.$data.form.componentList = copyedComponentList
+                                // copy bom end
+                                $modal.modal('hide')
+                            }
+                        },
+                        mounted: function ($modal) {
+                            // 绑定事件
+                            $modal.find('tbody tr'). on('click', function () {
+                                $(this).addClass("active").siblings().removeClass()
+                            })
+
+                            $modal.find('tbody tr'). on('dblclick', () => {
+                                this.ok.success($modal)
+                            })
+                        }
+                    })
                 },
                 showMaterialDialog: function (e) {
                     materialDetailInput.dialogInput('setParams', {'categoryId' : e.target.getAttribute('type_instance_id')})
