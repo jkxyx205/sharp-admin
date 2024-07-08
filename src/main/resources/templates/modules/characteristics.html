@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+>
+<head th:replace="includes/base :: common_header(~{},~{::link},~{::style})">
+    <link rel="stylesheet" th:href="@{/css/tab-common.css}">
+    <style>
+
+    </style>
+</head>
+<body class="app">
+<th:block th:replace="includes/base :: common_content(~{::div})">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">特征值</div>
+            <div class="card-body">
+                <select class="form-control" id="select" onchange="showCharacteristicList(this)">
+                    <option></option>
+                    <option value="728895421564325888">颜色</option>
+                    <option value="737944275693604864">芯</option>
+                    <option value="737944276536659968">平方</option>
+                    <option value="737944274867326976">接头</option>
+                    <option value="737944281729208320">供应商</option>
+                    <option value="737944277367132160">相线</option>
+                    <option value="737944278176632832">霍尔线</option>
+                    <option value="785292414037291008">铁芯</option>
+                </select>
+                <textarea class="form-control mt-4" id="list-container"></textarea>
+                <button class="btn btn-primary mt-4" type="button" name="send" onclick="send()">
+                    <i class="fa fa-send"></i> 提交</button>
+            </div>
+        </div>
+    </div>
+</th:block>
+<th:block th:replace="includes/base :: common_js(~{::script})">
+    <script>
+        let listContainer = document.getElementById('list-container')
+        let select = document.getElementById('select')
+
+        function showCharacteristicList(obj) {
+            listContainer.value = ''
+            if (obj.value) {
+                $.get("/characteristics/" + obj.value, (res) => {
+                    if (res.success) {
+                        res.data.forEach(c => {
+                            listContainer.value = listContainer.value ? (listContainer.value + "\n" + c.name) : c.name
+                        })
+
+                        listContainer.rows = res.data.length + 5
+                    }
+                })
+            }
+        }
+        
+        function send() {
+            if (select.value) {
+                $.post("/characteristics/" + select.value, {"options": listContainer.value}, function () {
+                    toastr.success('保存成功')
+                })
+            }
+        }
+    </script>
+</th:block>
+</body>
+</html>
