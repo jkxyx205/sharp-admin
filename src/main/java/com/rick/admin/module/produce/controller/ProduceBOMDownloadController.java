@@ -15,6 +15,8 @@ import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
 import com.rick.common.util.Time2StringUtils;
 import com.rick.db.plugin.dao.core.EntityDAO;
+import com.rick.db.service.SharpService;
+import com.rick.db.service.support.Params;
 import com.rick.excel.core.ExcelWriter;
 import com.rick.excel.core.model.ExcelRow;
 import com.rick.meta.dict.service.DictService;
@@ -62,6 +64,8 @@ public class ProduceBOMDownloadController {
     StockDAO stockDAO;
 
     DictService dictService;
+
+    SharpService sharpService;
 
     @PutMapping("schedule/{scheduleId}")
     @ResponseBody
@@ -182,7 +186,7 @@ public class ProduceBOMDownloadController {
                             continue;
                         }
 
-                        excelWriter.writeRow(new ExcelRow(1, integer.getAndIncrement(), 25f, value.getMaterialName(), (StringUtils.isBlank(value.getMaterialSpecification()) ? "" : value.getMaterialSpecification() + " ") + value.getCharacteristic(),
+                        excelWriter.writeRow(new ExcelRow(1, integer.getAndIncrement(), 25f, value.getMaterialCode() + "-" + value.getMaterialName(), (StringUtils.isBlank(value.getMaterialSpecification()) ? "" : value.getMaterialSpecification() + " ") + value.getCharacteristic(),
                                 value.getQuantity().multiply(quantity), value.getUnitText(), value.getRemark()));
                     }
                 }
@@ -199,6 +203,11 @@ public class ProduceBOMDownloadController {
                 } else {
                     ProduceOrder.Item.Detail value = componentDetail.getValue();
                     if (Objects.nonNull(value.getMaterialId())) {
+                        if (value.getMaterialId() == 729584784212238336L || value.getMaterialId() == 731499486144483329L || value.getMaterialId() == 741996205273632769L) {
+                            // 使用采购线的特征代替BOM
+                            handleLineByPO(value);
+                        }
+
                         dataList.add(new Object[]{value.getMaterialCode(), value.getMaterialName(), (StringUtils.isBlank(value.getMaterialSpecification()) ? "" : value.getMaterialSpecification() + " ") + value.getCharacteristic(),
                                 value.getQuantity().multiply(quantity).stripTrailingZeros().toPlainString(), value.getUnitText(), value.getRemark(), value.getMaterialId(), Objects.toString(value.getBatchCode(), ""), ""});
 
@@ -208,6 +217,16 @@ public class ProduceBOMDownloadController {
                     }
                 }
             }
+        }
+    }
+
+    private void handleLineByPO(ProduceOrder.Item.Detail value) {
+        Optional<Map<String, Object>> optionalMap = sharpService.queryForObject("select id, batch_id, batch_code from `pur_purchase_order_item` where `reference_type2` = 'SO' and `reference_id2` = :detailId",
+                Params.builder(1).pv("detailId", value.getId()).build());
+        if (optionalMap.isPresent()) {
+            Map<String, Object> data = optionalMap.get();
+            value.setBatchId((Long) data.get("batch_id"));
+            value.setBatchCode((String) data.get("batch_code"));
         }
     }
 
