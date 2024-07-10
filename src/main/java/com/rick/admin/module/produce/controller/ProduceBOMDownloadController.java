@@ -221,7 +221,7 @@ public class ProduceBOMDownloadController {
     }
 
     private void handleLineByPO(ProduceOrder.Item.Detail value) {
-        Optional<Map<String, Object>> optionalMap = sharpService.queryForObject("select id, batch_id, batch_code from `pur_purchase_order_item` where `reference_type2` = 'SO' and `reference_id2` = :detailId",
+        Optional<Map<String, Object>> optionalMap = sharpService.queryForObject("select id, batch_id, batch_code from `pur_purchase_order_item` where `reference_type2` = 'SO' and `reference_id2` = :detailId LIMIT 1",
                 Params.builder(1).pv("detailId", value.getId()).build());
         if (optionalMap.isPresent()) {
             Map<String, Object> data = optionalMap.get();
