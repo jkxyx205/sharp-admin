@@ -6,8 +6,9 @@
         <table class="table table-responsive-sm table-bordered table-sm">
             <tbody>
                 <tr>
-                    <td colspan="3"><span class="bold">销售单号：</span><span th:text="${item.produceOrderCode}"></span></td>
-                    <td colspan="4"><span class="bold">客户：</span><span th:text="${partnerName}"></span></td>
+                    <td colspan="2"><span class="bold">销售单号：</span><span th:text="${item.produceOrderCode}"></span></td>
+                    <td colspan="3"><span class="bold">客户：</span><span th:text="${partnerName}"></span></td>
+                    <td colspan="2"><span class="bold">客户订单号：</span><span th:text="${sourceOrderNum}"></span></td>
                 </tr>
                 <tr>
                     <td colspan="3"><span class="bold">生产单号：</span><span th:text="${schedule.code}"></span></td>

@@ -17,6 +17,7 @@ import com.rick.common.util.Time2StringUtils;
 import com.rick.db.plugin.dao.core.EntityDAO;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
+import com.rick.db.util.OptionalUtils;
 import com.rick.excel.core.ExcelWriter;
 import com.rick.excel.core.model.ExcelRow;
 import com.rick.meta.dict.service.DictService;
@@ -77,6 +78,8 @@ public class ProduceBOMDownloadController {
     public String preview(@PathVariable Long scheduleId, Model model) {
         ProduceOrder.Item.Schedule schedule = produceOrderItemScheduleDAO.selectById(scheduleId).get();
         ProduceOrder.Item item = produceOrderItemDAO.selectById(schedule.getProduceOrderItemId()).get();
+        ProduceOrder produceOrder = OptionalUtils.expectedAsOptional(produceOrderDAO.selectByParamsWithoutCascade(Params.builder(1).pv("id", item.getProduceOrderId()).build(), "source_order_num, remark", "id = :id")).get();
+
         BomTemplate bomTemplate = resolveItemAndReturnBomTemplate(item);
         model.addAttribute("schedule", schedule);
         model.addAttribute("item", item);
@@ -102,7 +105,8 @@ public class ProduceBOMDownloadController {
 
         model.addAttribute("startDate", Time2StringUtils.format(schedule.getStartDate()));
         model.addAttribute("deliveryDate", Time2StringUtils.format(item.getDeliveryDate()));
-        model.addAttribute("remark", Objects.toString(produceOrderDAO.selectSingleValueById(item.getProduceOrderId(), "remark", String.class).get(), "") +  Objects.toString(item.getRemark(), "") + Objects.toString(schedule.getRemark(), ""));
+        model.addAttribute("remark", Objects.toString(produceOrder.getRemark(), "") +  Objects.toString(item.getRemark(), "") + Objects.toString(schedule.getRemark(), ""));
+        model.addAttribute("sourceOrderNum", produceOrder.getSourceOrderNum());
         model.addAttribute("itemMaterialSpecification", (StringUtils.isBlank(item.getMaterialSpecification()) ? "" : item.getMaterialSpecification() + " ") + item.getCharacteristic() +    " " + item.getSpecification());
         model.addAttribute("scheduleQuantity", schedule.getQuantity().stripTrailingZeros().toPlainString());
         return "modules/produce/produce_schedule_detail";
@@ -112,23 +116,28 @@ public class ProduceBOMDownloadController {
     public void scheduleDownload(@PathVariable Long scheduleId, HttpServletRequest request, HttpServletResponse response) throws IOException {
         ProduceOrder.Item.Schedule schedule = produceOrderItemScheduleDAO.selectById(scheduleId).get();
         ProduceOrder.Item item = produceOrderItemDAO.selectById(schedule.getProduceOrderItemId()).get();
+        ProduceOrder produceOrder = OptionalUtils.expectedAsOptional(produceOrderDAO.selectByParamsWithoutCascade(Params.builder(1).pv("id", item.getProduceOrderId()).build(), "source_order_num, remark", "id = :id")).get();
+
         BomTemplate bomTemplate = resolveItemAndReturnBomTemplate(item);
         String startDate = Time2StringUtils.format(schedule.getStartDate());
         float heightInPoints = 20f;
 
         ExcelWriter excelWriter = new ExcelWriter();
-        excelWriter.getActiveSheet().setColumnWidth(0, 5000);
+        excelWriter.getActiveSheet().setColumnWidth(0, 6800);
         excelWriter.getActiveSheet().setColumnWidth(1, 9000);
+        excelWriter.getActiveSheet().setColumnWidth(2, 1500);
+        excelWriter.getActiveSheet().setColumnWidth(3, 1500);
         excelWriter.getBook().setSheetName(0, startDate);
 
         excelWriter.writeRow(new ExcelRow(1,1, heightInPoints, "销售单号：" + item.getProduceOrderCode()));
-        excelWriter.writeRow(new ExcelRow(3,1, heightInPoints, new Object[]{"客户：" + dictService.getDictByTypeAndName("core_partner_customer", produceOrderDAO.selectSingleValueById(item.getProduceOrderId(), "partner_id", String.class).get()).get().getLabel()}));
+        excelWriter.writeRow(new ExcelRow(2,1, heightInPoints, new Object[]{"客户：" + dictService.getDictByTypeAndName("core_partner_customer", produceOrderDAO.selectSingleValueById(item.getProduceOrderId(), "partner_id", String.class).get()).get().getLabel()}));
+        excelWriter.writeRow(new ExcelRow(3,1, heightInPoints, "客户订单号：" + Objects.toString(produceOrder.getSourceOrderNum(), "")));
 
         excelWriter.writeRow(new ExcelRow(1,2, heightInPoints, "生产单号：" + schedule.getCode()));
         excelWriter.writeRow(new ExcelRow(3,2, heightInPoints, new Object[]{"交货日期：" + Time2StringUtils.format(item.getDeliveryDate())}));
 
         excelWriter.writeRow(new ExcelRow(1,3, heightInPoints, new Object[]{"计划生产日期：" + startDate}));
-        excelWriter.writeRow(new ExcelRow(1,4, heightInPoints, new Object[]{"备注：" + Objects.toString(produceOrderDAO.selectSingleValueById(item.getProduceOrderId(), "remark", String.class).get(), "") +  Objects.toString(item.getRemark(), "") + Objects.toString(schedule.getRemark(), "")}));
+        excelWriter.writeRow(new ExcelRow(1,4, heightInPoints, new Object[]{"备注：" + Objects.toString(produceOrder.getRemark(), "") +  Objects.toString(item.getRemark(), "") + Objects.toString(schedule.getRemark(), "")}));
 
         excelWriter.writeRow(new ExcelRow(1,5, heightInPoints, new Object[]{"产成品名称", "规格 & 特征值", "数量", "单位", "备注"}));
         excelWriter.writeRow(new ExcelRow(1,6, heightInPoints, new Object[]{item.getMaterialName(), (StringUtils.isBlank(item.getMaterialSpecification()) ? "" : item.getMaterialSpecification() + " ") + item.getCharacteristic() +    " " + item.getSpecification(),
