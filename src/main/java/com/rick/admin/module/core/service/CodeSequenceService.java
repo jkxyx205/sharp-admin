@@ -36,12 +36,12 @@ public class CodeSequenceService {
         int sequence;
         if (codeSequenceOptional.isPresent()) {
             CodeSequence codeSequence = codeSequenceOptional.get();
-            sequence =  codeSequence.getSequence();
+            sequence = codeSequence.getSequence();
         } else {
             sequence = 0;
         }
 
-        codeSequenceDAO.update("sequence, name", new Object[] {sequence + num, name, prefix}, "prefix = ?");
+        codeSequenceDAO.update("sequence, name", new Object[]{sequence + num, name, prefix}, "prefix = ?");
 
         return sequence + 1;
     }
