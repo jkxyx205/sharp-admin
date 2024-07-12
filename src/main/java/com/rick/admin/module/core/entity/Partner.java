@@ -54,7 +54,7 @@ public class Partner extends BaseCodeEntity {
     @Column(comment = "账户名")
     String accountName;
 
-    @Column(comment = "银行账号")
+    @Column(comment = "银行账户")
     String accountNumber;
 
     @Column(comment = "纳税人识别号")
