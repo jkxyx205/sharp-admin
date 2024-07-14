@@ -140,8 +140,6 @@ public class InventoryController {
                     item.setQuantity(itemOpenQuantityMap.get(item.getRootReferenceItemId()));
                 }
             }
-
-            materialService.fillMaterialDescription(inventoryDocument.getItemList());
         } else if (referenceType == InventoryDocument.ReferenceTypeEnum.PO) {
             inventoryDocument = getDocumentFromPurchaseOrder(type == InventoryDocument.TypeEnum.RETURN ? InventoryDocument.MovementTypeEnum.OUTBOUND : InventoryDocument.MovementTypeEnum.INBOUND, type, referenceType, referenceCode);
         } else if (referenceType == InventoryDocument.ReferenceTypeEnum.PP) {
@@ -154,7 +152,23 @@ public class InventoryController {
 
         materialService.fillMaterialDescription(inventoryDocument.getItemList());
         batchService.fillCharacteristicValue(inventoryDocument.getItemList());
+
+        if (referenceType == InventoryDocument.ReferenceTypeEnum.SO) {
+            fillOrderItemSpecification(inventoryDocument);
+        }
         return inventoryDocument;
+    }
+
+    private void fillOrderItemSpecification(InventoryDocument inventoryDocument) {
+        String referenceCode = inventoryDocument.getReferenceCode();
+
+        Map<Long, String> idSpecificationMap = sharpService.queryForKeyValue("select id, specification from produce_order_item where produce_order_code = :referenceCode", Params.builder(1).pv("referenceCode", referenceCode).build());
+        for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
+            String specification = idSpecificationMap.get(item.getReferenceItemId());
+            if (org.apache.commons.lang3.StringUtils.isNotBlank(specification)) {
+                item.getMaterialDescription().setSpecification(specification);
+            }
+        }
     }
 
     private InventoryDocument getDocumentFromPurchaseOrder(InventoryDocument.MovementTypeEnum movementType, InventoryDocument.TypeEnum type, InventoryDocument.ReferenceTypeEnum referenceType, String referenceCode) {
