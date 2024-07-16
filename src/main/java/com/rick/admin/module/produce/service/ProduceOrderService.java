@@ -498,7 +498,7 @@ public class ProduceOrderService {
             // 处理detail
             for (ProduceOrder.Item.Detail detail : newDetailList) {
                 ProduceOrder.Item.Detail oldDetail = oldParamsMap.get(detail.getId());
-                if (!(Objects.equals(detail.getMaterialId(), oldDetail.getMaterialId()) && Objects.equals(detail.getBatchId(), oldDetail.getBatchId()))) {
+                if (oldDetail == null || !(Objects.equals(detail.getMaterialId(), oldDetail.getMaterialId()) && Objects.equals(detail.getBatchId(), oldDetail.getBatchId()))) {
                     changedDetail.add(detail.getMaterialId() + (Objects.toString(detail.getBatchId(), "")));
                     changedDetailIds.add(detail.getId());
                 }
