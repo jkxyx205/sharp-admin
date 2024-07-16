@@ -117,7 +117,7 @@ public class ProduceOrderService {
 
         Map<Long, ProduceOrder.Item.Detail> oldParamsMap;
         if (order.getId() != null) {
-            oldParamsMap = sharpService.query("select id, material_id, material_code, batch_id, batch_code from produce_order_item_detail where exists (select 1 from produce_order_item where produce_order_id = :produceOrderId and produce_order_item.id = produce_order_item_detail.produce_order_item_id)",
+            oldParamsMap = sharpService.query("select id, material_id, material_code, batch_id, batch_code, remark from produce_order_item_detail where exists (select 1 from produce_order_item where produce_order_id = :produceOrderId and produce_order_item.id = produce_order_item_detail.produce_order_item_id)",
                     Params.builder(1).pv("produceOrderId", order.getId()).build(), ProduceOrder.Item.Detail.class).stream().collect(Collectors.toMap(item -> item.getId(), Function.identity()));
         } else {
             oldParamsMap = null;
@@ -498,7 +498,8 @@ public class ProduceOrderService {
             // 处理detail
             for (ProduceOrder.Item.Detail detail : newDetailList) {
                 ProduceOrder.Item.Detail oldDetail = oldParamsMap.get(detail.getId());
-                if (oldDetail == null || !(Objects.equals(detail.getMaterialId(), oldDetail.getMaterialId()) && Objects.equals(detail.getBatchId(), oldDetail.getBatchId()))) {
+                if (oldDetail == null || !(Objects.equals(detail.getMaterialId(), oldDetail.getMaterialId()) && Objects.equals(detail.getBatchId(), oldDetail.getBatchId())) ||
+                !Objects.equals(Objects.toString(oldDetail.getRemark(), ""), Objects.toString(detail.getRemark(), ""))) {
                     changedDetail.add(detail.getMaterialId() + (Objects.toString(detail.getBatchId(), "")));
                     changedDetailIds.add(detail.getId());
                 }
