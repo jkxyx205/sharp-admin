@@ -386,7 +386,7 @@ public class ProduceOrderService {
                 prItem.setReferenceId(item.getId());
                 prItem.setPurchaseRequisitionId(1L);
                 prItem.setPurchaseRequisitionCode("STANDARD");
-//                prItem.setPurchaseSend(true); // copy就是true
+                prItem.setPurchaseSend(item.getItemCategory() == ProduceOrder.ItemCategoryEnum.PURCHASE_SEND);
                 prItem.setComplete(false);
                 BaseEntityUtils.resetAdditionalFields(prItem);
                 itemList.add(prItem);
@@ -466,6 +466,7 @@ public class ProduceOrderService {
                 prItem.setBatchId(prItem.getBatchId());
                 prItem.setPurchaseRequisitionId(1L);
                 prItem.setPurchaseRequisitionCode("STANDARD");
+                prItem.setPurchaseSend(false);
                 prItem.setMaterialCode(prItem.getMaterialDescription().getCode());
                 prItem.setUnit(prItem.getMaterialDescription().getUnit());
                 prItem.setComplete(false);
