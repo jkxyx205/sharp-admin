@@ -15,6 +15,7 @@ import com.rick.admin.module.material.service.BatchSupport;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
+import com.rick.admin.module.purchase.entity.PurchaseRequisition;
 import com.rick.admin.module.purchase.service.LatestPriceService;
 import com.rick.admin.module.purchase.service.PurchaseOrderService;
 import com.rick.admin.module.purchase.service.PurchaseRequisitionItemService;
@@ -117,7 +118,8 @@ public class PurchaseOrderController {
 
         purchaseOrderService.save(purchaseOrderList);
 
-        Set<String> deletedKeys = handleOverPurchasedMaterialKeys(purchaseOrderList.stream().flatMap(purchaseOrder -> purchaseOrder.getItemList().stream()).collect(Collectors.toList()));
+        Set<String> deletedKeys = handleOverPurchasedMaterialKeys(purchaseOrderList.stream().flatMap(purchaseOrder -> purchaseOrder.getItemList().stream())
+                .filter(purchaseOrderItem -> purchaseOrderItem.getReferenceType1() != ReferenceTypeEnum.PR).collect(Collectors.toList()));
 
         Set<Long> prItemIds = purchaseOrderList.stream().flatMap(purchaseOrder -> purchaseOrder.getItemList().stream())
                 .filter(purchaseOrderItem -> purchaseOrderItem.getReferenceType1() == ReferenceTypeEnum.PR).collect(Collectors.toList()).stream().map(PurchaseOrder.Item::getReferenceId1).collect(Collectors.toSet());
@@ -135,21 +137,45 @@ public class PurchaseOrderController {
     }
 
     private Set<String> handleOverPurchasedMaterialKeys(List<PurchaseOrder.Item> itemList) {
+        if (CollectionUtils.isEmpty(itemList)) {
+            return null;
+        }
+
         Map<String, Integer> requisitionQuantityMapping = purchaseRequisitionItemService.requisitionQuantityMapping();
         Map<String, Integer> purchaseQuantityMapping = itemList.stream().collect(Collectors.groupingBy(item -> item.getMaterialId() + (Objects.isNull(item.getBatchId()) ? "" : "" + item.getBatchId()),
                 Collectors.summingInt(item -> item.getQuantity().intValue()))
         );
 
         Set<String> deletedKeys = new HashSet<>();
+        Set<Long> deletedRequisitionIds = new HashSet<>();
 
         for (Map.Entry<String, Integer> purchaseQuantityEntry : purchaseQuantityMapping.entrySet()) {
             String key = purchaseQuantityEntry.getKey();
             Integer quantity = purchaseQuantityEntry.getValue();
 
             if (requisitionQuantityMapping.get(key) != null && quantity >= requisitionQuantityMapping.get(key)) {
-                // 标记删除
+                // 标记删除全部申请记录
                 deletedKeys.add(key);
+            } else if (requisitionQuantityMapping.get(key) != null && quantity < requisitionQuantityMapping.get(key)) {
+                // 删除部分采购申请记录
+                List<PurchaseRequisition.Item> items = purchaseRequisitionItemService.requisitionItemList(key);
+                if (CollectionUtils.isNotEmpty(items)) {
+                    BigDecimal count = BigDecimal.ZERO;
+                    for (PurchaseRequisition.Item item : items) {
+                        count = count.add(item.getQuantity());
+
+                        if (count.intValue() > quantity) {
+                            break;
+                        }
+                        deletedRequisitionIds.add(item.getId());
+                    }
+                }
+
             }
+        }
+
+        if (CollectionUtils.isNotEmpty(deletedRequisitionIds)) {
+             purchaseRequisitionItemService.deleteByIds(deletedRequisitionIds);
         }
 
         return deletedKeys;

@@ -37,7 +37,19 @@ public class PurchaseRequisitionItemService {
         return requisitionQuantityMapping;
     }
 
+    public List<PurchaseRequisition.Item> requisitionItemList(String key) {
+        return purchaseRequisitionItemDAO.selectByParamsWithoutCascade(Params.builder(1).pv("key", key).build(),
+                "id, material_id, batch_id, quantity"
+                ,"is_complete = 0 and is_deleted = 0 and concat(material_id, IFNULL(batch_id, '')) = :key");
+
+    }
+
     public int deleteByIds(String ids) {
+//        return purchaseRequisitionItemDAO.deleteByIds(ids);
+        return purchaseRequisitionItemDAO.deleteLogicallyByIds(ids);
+    }
+
+    public int deleteByIds(Set<Long> ids) {
 //        return purchaseRequisitionItemDAO.deleteByIds(ids);
         return purchaseRequisitionItemDAO.deleteLogicallyByIds(ids);
     }
