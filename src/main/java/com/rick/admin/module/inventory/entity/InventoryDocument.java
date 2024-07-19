@@ -157,6 +157,12 @@ public class InventoryDocument extends BaseCodeEntity {
         boolean allowNegativeStock = false;
 
         /**
+         * BOM的的detailId
+         */
+        @Transient
+        Long detailId;
+
+        /**
          * 特征值
          */
         @Transient

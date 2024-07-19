@@ -234,7 +234,7 @@ public class InventoryController {
             referenceCode = produceScheduleService.findActiveProduceScheduleByKeyCode(referenceCode);
         }
 
-        String sql = "select produce_order_item_detail.`material_id`,\n" +
+        String sql = "select produce_order_item_detail.id as detailId, produce_order_item_detail.`material_id`,\n" +
                 "       mm_material.code material_code,       produce_order_item_detail.batch_id,       produce_order_item_detail.batch_code,       produce_order_item_detail.`id`                               referenceItemId,\n" +
                 "       produce_order_item_detail.`id`                               rootReferenceItemId,\n" +
                 "       produce_order_item_detail.quantity * produce_order_item_schedule.quantity quantity,\n" +
@@ -275,11 +275,27 @@ public class InventoryController {
             item.setQuantity(ObjectUtils.defaultIfNull(itemOpenQuantityMap.get(item.getRootReferenceItemId()), BigDecimal.ZERO));
 //            item.setClassificationList(idDetailMap.get(item.getReferenceItemId()).getClassificationList());
 //            item.setClassificationList(ObjectUtils.defaultIfNull(materialIdClassificationMap.get(item.getMaterialId()), Collections.emptyList()));
+
+            // 线的供应商从采购信息处获得
+            if (item.getMaterialId() == 729584784212238336L || item.getMaterialId() == 731499486144483329L || item.getMaterialId() == 741996205273632769L) {
+                // 使用采购线的特征代替BOM
+                handleLineByPO(item);
+            }
         }
 
         batchService.handleClassificationAndFillCharacteristicValue(itemList);
         inventoryDocument.setReferenceCode(referenceCode);
         return inventoryDocument;
+    }
+
+    private void handleLineByPO(InventoryDocument.Item item) {
+        Optional<Map<String, Object>> optionalMap = sharpService.queryForObject("select id, batch_id, batch_code from `pur_purchase_order_item` where `reference_type2` = 'SO' and `reference_id2` = :detailId LIMIT 1",
+                Params.builder(1).pv("detailId", item.getDetailId()).build());
+        if (optionalMap.isPresent()) {
+            Map<String, Object> data = optionalMap.get();
+            item.setBatchId((Long) data.get("batch_id"));
+            item.setBatchCode((String) data.get("batch_code"));
+        }
     }
 
     private InventoryDocument getDocumentFromSalesOrder(InventoryDocument.MovementTypeEnum movementType, InventoryDocument.TypeEnum type, InventoryDocument.ReferenceTypeEnum referenceType, String referenceCode2) {
