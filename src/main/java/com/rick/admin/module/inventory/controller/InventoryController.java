@@ -384,6 +384,24 @@ public class InventoryController {
         } else {
             List<Stock> stockList = stockService.findAll(719893335619162112L, materialsIds);
             materialService.fillMaterialDescription(stockList);
+
+            // 设置线的供应商为必填项
+            for (Stock item : stockList) {
+                if (item.getMaterialId() == 729584784212238336L
+                        || item.getMaterialId() == 741996205273632769L
+                        || item.getMaterialId() == 731499486144483329L) {
+                    for (Classification classification : item.getClassificationList()) {
+                        for (Characteristic characteristic : classification.getClassification().getCharacteristicList()) {
+                            if (characteristic.getCode().equals("LINE_BRAND")) {
+                                List<Validator> validatorList = characteristic.getCpnConfigurer().getValidatorList();
+                                Validator validator = new Required();
+                                validatorList.add(validator);
+                            }
+                        }
+                    }
+                }
+            }
+
             model.addAttribute("stockList", stockList);
         }
 
