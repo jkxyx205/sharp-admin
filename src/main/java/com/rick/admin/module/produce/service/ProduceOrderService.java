@@ -28,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -116,11 +117,15 @@ public class ProduceOrderService {
         }
 
         Map<Long, ProduceOrder.Item.Detail> oldParamsMap;
+        Map<Long, ProduceOrder.Item> oldItemParamsMap;
         if (order.getId() != null) {
             oldParamsMap = sharpService.query("select id, material_id, material_code, batch_id, batch_code, remark from produce_order_item_detail where exists (select 1 from produce_order_item where produce_order_id = :produceOrderId and produce_order_item.id = produce_order_item_detail.produce_order_item_id)",
                     Params.builder(1).pv("produceOrderId", order.getId()).build(), ProduceOrder.Item.Detail.class).stream().collect(Collectors.toMap(item -> item.getId(), Function.identity()));
+            oldItemParamsMap =  sharpService.query("select id, material_id, material_code, batch_id, batch_code, remark from produce_order_item where produce_order_id = :produceOrderId AND material_code not like 'F%'",
+                    Params.builder(1).pv("produceOrderId", order.getId()).build(), ProduceOrder.Item.class).stream().collect(Collectors.toMap(item -> item.getId(), Function.identity()));
         } else {
             oldParamsMap = null;
+            oldItemParamsMap = null;
         }
 
         batchService.saveBatch(Stream.concat(order.getItemList().stream(), order.getItemList().stream().flatMap(item -> CollectionUtils.isNotEmpty(item.getItemList()) ? item.getItemList().stream() : Stream.empty())).collect(Collectors.toSet()));
@@ -133,7 +138,7 @@ public class ProduceOrderService {
                 executorService.submit(() -> {
                     UserContextHolder.set(user);
                     LocalDate deliveryDate =  order.getItemList().stream().flatMap(item -> item.getScheduleList().stream()).map(ProduceOrder.Item.Schedule::getStartDate).min(LocalDate::compareTo).orElseGet(() -> order.getItemList().stream().map(ProduceOrder.Item::getDeliveryDate).min(LocalDate::compareTo).get());
-                    handlePurchaseRequisition(order.getItemList(), order.getId(), order.getCode(), order.getPartnerId(), oldParamsMap, deliveryDate);
+                    handlePurchaseRequisition(order.getItemList(), order.getId(), order.getCode(), order.getPartnerId(), oldParamsMap, oldItemParamsMap, deliveryDate);
                 });
             }
         }
@@ -347,7 +352,7 @@ public class ProduceOrderService {
      * @param soItem
      * @param partnerId
      */
-    private void handlePurchaseRequisition(List<ProduceOrder.Item> soItem, long produceOrderId, String produceOrderCode, @NotNull Long partnerId, Map<Long, ProduceOrder.Item.Detail> oldParamsMap, LocalDate deliveryDate) {
+    private void handlePurchaseRequisition(List<ProduceOrder.Item> soItem, long produceOrderId, String produceOrderCode, @NotNull Long partnerId, Map<Long, ProduceOrder.Item.Detail> oldParamsMap, Map<Long, ProduceOrder.Item> oldItemParamsMap, LocalDate deliveryDate) {
         log.info("发起采购申请");
         List<String> purchasedIds = sharpService.query("select concat(ifnull(schedule_id, ''), reference_id, ifnull(batch_code, '')) from pur_purchase_requisition_item where reference_document_id = :produceOrderId AND is_complete = 1",
                 Params.builder(1).pv("produceOrderId", produceOrderId).build(), String.class);
@@ -490,11 +495,24 @@ public class ProduceOrderService {
         }
 
         Boolean purchaseRequisition = produceOrderDAO.selectSingleValueById(produceOrderId, "is_purchase_requisition", Boolean.class).get();
-        if (purchaseRequisition && oldParamsMap != null) {
+        if (purchaseRequisition && (MapUtils.isNotEmpty(oldItemParamsMap) || MapUtils.isNotEmpty(oldParamsMap))) {
             // 只采购修改的参数的物料
             List<ProduceOrder.Item.Detail> newDetailList = soItem.stream().flatMap(item -> item.getItemList().stream()).collect(Collectors.toList());
             Set<String> changedDetail = Sets.newHashSet();
             Set<Long> changedDetailIds = Sets.newHashSet();
+
+            // 处理item
+            for (ProduceOrder.Item item : soItem) {
+                if (!item.getMaterialCode().startsWith("F")) {
+                    ProduceOrder.Item oldItem = oldItemParamsMap.get(item.getId());
+
+                    if (oldItem == null || !(Objects.equals(item.getMaterialId(), oldItem.getMaterialId()) && Objects.equals(item.getBatchId(), oldItem.getBatchId())) ||
+                            !Objects.equals(Objects.toString(oldItem.getRemark(), ""), Objects.toString(item.getRemark(), ""))) {
+                        changedDetail.add(item.getMaterialId() + (Objects.toString(item.getBatchId(), "")));
+                        changedDetailIds.add(item.getId());
+                    }
+                }
+            }
 
             // 处理detail
             for (ProduceOrder.Item.Detail detail : newDetailList) {

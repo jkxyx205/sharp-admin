@@ -225,11 +225,23 @@
      */
     window.characteristic = {
         selectedCharacteristic: function ($tr, value) {
+            this.selectedCharacteristic($tr, value, false)
+        },
+        selectedCharacteristic: function ($tr, value, addLineBrand) {
             if (Array.isArray(value)) {
                 // 获取特征值
                 $.get("/materials/classifications?materialIds=" + value.map(row => row.id).join(','), (res) => {
                     for (let row of value) {
                         if (res[row.id] && res[row.id].length > 0) {
+                            if (addLineBrand && "725412890470801408" == row.category_id) {
+                                for (let value of res[row.id]) {
+                                    for (let c of value.characteristicValue) {
+                                        if (c.code === 'LINE_BRAND') {
+                                            c.required = true
+                                        }
+                                    }
+                                }
+                            }
                             this._render($tr.find('input[name=characteristic]'), res[row.id])
                         }
 
@@ -238,6 +250,15 @@
                 })
             } else {
                 $.get(`/materials/${value.id}/classifications`, (res) => {
+                    if (addLineBrand && "725412890470801408" == value.category_id) {
+                        for (let value of res) {
+                            for (let c of value.characteristicValue) {
+                                if (c.code === 'LINE_BRAND') {
+                                    c.required = true
+                                }
+                            }
+                        }
+                    }
                     this._render($tr.find('input[name=characteristic]'), res)
                 })
             }
@@ -273,10 +294,22 @@
             $editableTable.editableTablePlus('setValue', value, $tr)
         },
         loadCharacteristic: function ($editableTable, itemList) {
+          this.loadCharacteristic($editableTable, itemList, true)
+        },
+        loadCharacteristic: function ($editableTable, itemList, addLineBrand) {
             // 获取特征值
             let $cursorTr = $editableTable.find("tbody tr:eq(0)")
             for (let row of itemList) {
                 let characteristic = []
+                if (addLineBrand && row.materialDescription.categoryId === "725412890470801408") {
+                    for (let value of row.classificationList) {
+                        for (let c of value.classification.characteristicValue) {
+                            if (c.code === 'LINE_BRAND') {
+                                c.required = true
+                            }
+                        }
+                    }
+                }
                 this._render($cursorTr.find('input[name=characteristic]'), row.classificationList.map(classification => classification.classification), (characteristicValue) => {
                     row[characteristicValue.code] = characteristicValue.value
                     characteristic.push(characteristicValue.value)
