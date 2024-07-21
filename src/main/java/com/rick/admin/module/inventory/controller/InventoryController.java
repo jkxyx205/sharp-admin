@@ -3,6 +3,7 @@ package com.rick.admin.module.inventory.controller;
 import com.google.common.collect.Lists;
 import com.rick.admin.auth.common.UserContextHolder;
 import com.rick.admin.common.exception.ExceptionCodeEnum;
+import com.rick.admin.module.core.entity.Characteristic;
 import com.rick.admin.module.inventory.dao.InventoryDocumentDAO;
 import com.rick.admin.module.inventory.entity.InventoryDocument;
 import com.rick.admin.module.inventory.entity.Stock;
@@ -12,6 +13,7 @@ import com.rick.admin.module.inventory.service.InventoryDocumentService;
 import com.rick.admin.module.inventory.service.StockService;
 import com.rick.admin.module.material.dao.ClassificationDAO;
 import com.rick.admin.module.material.dao.MaterialDAO;
+import com.rick.admin.module.material.entity.Classification;
 import com.rick.admin.module.material.service.BatchService;
 import com.rick.admin.module.material.service.MaterialService;
 import com.rick.admin.module.produce.dao.ProduceOrderDAO;
@@ -30,6 +32,8 @@ import com.rick.common.util.StringUtils;
 import com.rick.db.dto.SimpleEntity;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
+import com.rick.formflow.form.valid.Required;
+import com.rick.formflow.form.valid.core.Validator;
 import com.rick.meta.dict.service.DictService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -159,6 +163,24 @@ public class InventoryController {
         } else if (referenceType == InventoryDocument.ReferenceTypeEnum.PP) {
             inventoryDocument.setItemList(inventoryDocument.getItemList().stream().filter(item -> SpecialMaterialConstant.isSpecialSpecialMaterialCategory(item.getMaterialDescription().getCategoryId())).collect(Collectors.toList()));
         }
+
+        // 设置线的供应商为必填项
+        for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
+            if (item.getMaterialId() == 729584784212238336L
+                    || item.getMaterialId() == 741996205273632769L
+                    || item.getMaterialId() == 731499486144483329L) {
+                for (Classification classification : item.getClassificationList()) {
+                    for (Characteristic characteristic : classification.getClassification().getCharacteristicList()) {
+                        if (characteristic.getCode().equals("LINE_BRAND")) {
+                            List<Validator> validatorList = characteristic.getCpnConfigurer().getValidatorList();
+                            Validator validator = new Required();
+                            validatorList.add(validator);
+                        }
+                    }
+                }
+            }
+        }
+
         return inventoryDocument;
     }
 

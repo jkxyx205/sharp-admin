@@ -149,7 +149,7 @@ public class ProduceOrderController {
 //            materialService.fillMaterialDescription(produceOrder.getItemList());
 
             // 展示按生产单号领取的物料
-            model.addAttribute("goodsReceiptItemList", goodsReceiptItemList.stream().filter(item -> SpecialMaterialConstant.isSpecialSpecialMaterialCategory(item.getMaterialDescription().getCategoryId())).collect(Collectors.toList()));
+            model.addAttribute("goodsReceiptItemList", goodsReceiptItemList.stream().filter(item -> item.getMaterialDescription().getCategoryId() != null && SpecialMaterialConstant.isSpecialSpecialMaterialCategory(item.getMaterialDescription().getCategoryId())).collect(Collectors.toList()));
 
             // 生产计划
             for (ProduceOrder.Item item : produceOrder.getItemList()) {
