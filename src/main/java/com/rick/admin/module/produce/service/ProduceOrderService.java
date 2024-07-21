@@ -179,7 +179,7 @@ public class ProduceOrderService {
         String sql = "select root_reference_item_id, ABS(sum(IF(movement_type = 'OUTBOUND', -1, 1) * quantity)) quantity from inv_document_item where `root_reference_code` = :rootReferenceCode AND plant_id = 719893335619162112 group by root_reference_item_id";
         Map<Long, BigDecimal> histroyGoodsReceiptQuantityMap = sharpService.queryForKeyValue(sql, Params.builder(1).pv("rootReferenceCode", rootReferenceCode).build());
 
-        String sql2 = "select produce_order_item.id, produce_order_item.quantity  from produce_order_item\n" +
+        String sql2 = "select produce_order_item.id, produce_order_item.quantity from produce_order_item\n" +
                 "inner join mm_material on mm_material.id = material_id where produce_order_item.`produce_order_code` = :rootReferenceCode AND mm_material.material_type = 'ROH'\n" +
                 "UNION ALL " +
                 "select produce_order_item_detail.`id`, produce_order_item_detail.quantity * produce_order_item.quantity from produce_order\n" +
@@ -491,6 +491,11 @@ public class ProduceOrderService {
 
         Boolean purchaseRequisition = produceOrderDAO.selectSingleValueById(produceOrderId, "is_purchase_requisition", Boolean.class).get();
         if (purchaseRequisition && oldParamsMap != null) {
+            for (ProduceOrder.Item item : soItem) {
+//                item.getMaterialId()
+//                        item.getBatchCode()
+            }
+
             // 只采购修改的参数的物料
             List<ProduceOrder.Item.Detail> newDetailList = soItem.stream().flatMap(item -> item.getItemList().stream()).collect(Collectors.toList());
             Set<String> changedDetail = Sets.newHashSet();
@@ -511,7 +516,7 @@ public class ProduceOrderService {
             }
 
             // 清除采购申请
-            purchaseRequisitionItemDAO.delete(Params.builder(2).pv("referenceDocumentId", produceOrderId).pv("detailIds", changedDetailIds).build(), "reference_document_id = :referenceDocumentId AND is_complete = 0 and reference_id is not null and reference_id IN (:detailIds)");
+//            purchaseRequisitionItemDAO.delete(Params.builder(2).pv("referenceDocumentId", produceOrderId).pv("detailIds", changedDetailIds).build(), "reference_document_id = :referenceDocumentId AND is_complete = 0 and reference_id is not null and reference_id IN (:detailIds)");
 
             itemList = itemList.stream().filter(item -> changedDetail.contains(item.getMaterialId() + (Objects.toString(item.getBatchId(), "")))).collect(Collectors.toList());
         }
@@ -520,8 +525,8 @@ public class ProduceOrderService {
             return;
         }
 
-        produceOrderDAO.update("is_purchase_requisition", new Object[]{1, produceOrderId}, "id = ?");
-        purchaseRequisitionItemService.insertOrUpdateByReferenceIds(itemList);
+//        produceOrderDAO.update("is_purchase_requisition", new Object[]{1, produceOrderId}, "id = ?");
+//        purchaseRequisitionItemService.insertOrUpdateByReferenceIds(itemList);
     }
 
     private List<PurchaseRequisition.Item> purchaseRequisitionForProduce(long produceOrderId, Set<String> materialIdBatchIdString) {
