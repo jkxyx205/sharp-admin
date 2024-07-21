@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 退料
+ * 退料 无
  * @author Rick.Xu
  * @date 2023/7/12 11:42
  */
@@ -39,6 +39,7 @@ public class ProduceOtherInboundHandler extends AbstractHandler {
             BeanUtils.copyProperties(item, newItem);
             newItem.setMovementType(InventoryDocument.MovementTypeEnum.OUTBOUND);
             newItem.setPlantId(726158903766683648L);
+            newItem.setAllowNegativeStock(true);
             outboundItemList.add(newItem);
         }
 
