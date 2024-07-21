@@ -361,7 +361,7 @@
 
                     // 针对线进行处理
                     $('table input[name=materialCode]').each(function() {
-                        if ($(this).val() === 'R00848') {
+                        if ($(this).val() === 'R00848' || $(this).val() === 'R00904' || $(this).val() === 'R00548') {
                             let $tr = $(this).parents('tr')
                             let value = $editableTable.editableTablePlus('_getValue', $tr)
                             if (!value.LINE_BRAND) {
