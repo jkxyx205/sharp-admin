@@ -133,14 +133,14 @@ public class ProduceOrderService {
 
         if (order.getStatus() == ProduceOrder.StatusEnum.PRODUCING) {
             // 管理员 和 程文斌 触发采购申请
-            if (UserContextHolder.get().getCode().equals("admin") || UserContextHolder.get().getCode().equals("cpk")) {
+//            if (UserContextHolder.get().getCode().equals("admin") || UserContextHolder.get().getCode().equals("cpk")) {
                 final User user = UserContextHolder.get();
                 executorService.submit(() -> {
                     UserContextHolder.set(user);
                     LocalDate deliveryDate =  order.getItemList().stream().flatMap(item -> item.getScheduleList().stream()).map(ProduceOrder.Item.Schedule::getStartDate).min(LocalDate::compareTo).orElseGet(() -> order.getItemList().stream().map(ProduceOrder.Item::getDeliveryDate).min(LocalDate::compareTo).get());
                     handlePurchaseRequisition(order.getItemList(), order.getId(), order.getCode(), order.getPartnerId(), oldParamsMap, oldItemParamsMap, deliveryDate);
                 });
-            }
+//            }
         }
 
         if (order.getStatus() == ProduceOrder.StatusEnum.PRODUCED || order.getStatus() == ProduceOrder.StatusEnum.DONE) {
