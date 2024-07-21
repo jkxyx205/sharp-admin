@@ -19,6 +19,7 @@ import com.rick.admin.module.produce.dao.ProduceOrderItemDetailDAO;
 import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.admin.module.produce.service.ProduceOrderService;
 import com.rick.admin.module.produce.service.ProduceScheduleService;
+import com.rick.admin.module.produce.service.SpecialMaterialConstant;
 import com.rick.admin.module.purchase.dao.PurchaseOrderDAO;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
 import com.rick.admin.module.purchase.service.PurchaseOrderService;
@@ -155,6 +156,8 @@ public class InventoryController {
 
         if (referenceType == InventoryDocument.ReferenceTypeEnum.SO) {
             fillOrderItemSpecification(inventoryDocument);
+        } else if (referenceType == InventoryDocument.ReferenceTypeEnum.PP) {
+            inventoryDocument.setItemList(inventoryDocument.getItemList().stream().filter(item -> SpecialMaterialConstant.isSpecialSpecialMaterialCategory(item.getMaterialDescription().getCategoryId())).collect(Collectors.toList()));
         }
         return inventoryDocument;
     }
@@ -272,7 +275,8 @@ public class InventoryController {
             item.setReferenceCode(referenceCode);
             item.setRootReferenceCode(referenceCode);
             item.setMovementType(movementType);
-            item.setQuantity(ObjectUtils.defaultIfNull(itemOpenQuantityMap.get(item.getRootReferenceItemId()), BigDecimal.ZERO));
+//            item.setQuantity(ObjectUtils.defaultIfNull(itemOpenQuantityMap.get(item.getRootReferenceItemId()), BigDecimal.ZERO));
+            item.setQuantity(BigDecimal.ZERO);
 //            item.setClassificationList(idDetailMap.get(item.getReferenceItemId()).getClassificationList());
 //            item.setClassificationList(ObjectUtils.defaultIfNull(materialIdClassificationMap.get(item.getMaterialId()), Collections.emptyList()));
 

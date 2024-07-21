@@ -354,9 +354,25 @@
                         $editableTable.editableTablePlus('readonly', true)
                     } else if (type.value === 'DELETE') {
                         $editableTable.editableTablePlus('readonly', true)
-                    } else if(type.value === 'RETURN' || type.value === 'INBOUND' || type.value === 'OUTBOUND' || type.value === 'MOVING_TO_PRODUCE'|| type.value === 'RETURN_FROM_PRODUCE') {
+                    } else if(type.value === 'RETURN' || type.value === 'INBOUND' || type.value === 'OUTBOUND') {
                         $editableTable.editableTablePlus('readonly', false)
                         $("#table-container table.table-tbody :input[name=materialCode]").prop("disabled", true).prop('readonly', true)
+                    } else if (type.value === 'MOVING_TO_PRODUCE'|| type.value === 'RETURN_FROM_PRODUCE') {
+                        $editableTable.editableTablePlus('readonly', false)
+                        $("#table-container table.table-tbody :input[name=materialCode]").prop("disabled", true).prop('readonly', true)
+
+                        // 针对线进行处理
+                        $('table input[name=materialCode]').each(function() {
+                            if ($(this).val() === 'R00848') {
+                                let $tr = $(this).parents('tr')
+                                let value = $editableTable.editableTablePlus('_getValue', $tr)
+                                if (!value.LINE_BRAND) {
+                                    // 可编辑模式
+                                    $tr.find('input[name=characteristic]').prop("disabled", false).prop('readonly', false)
+                                    $tr.find('select[name=LINE_BRAND]').prop("disabled", false).attr('readonly', false)
+                                }
+                            }
+                        })
                     }
                 }).fail(function(err) {
                     console.log(err.responseJSON)

@@ -15,6 +15,7 @@ import com.rick.admin.module.produce.entity.BomTemplate;
 import com.rick.admin.module.produce.entity.ProduceOrder;
 import com.rick.admin.module.produce.service.BomService;
 import com.rick.admin.module.produce.service.ProduceOrderService;
+import com.rick.admin.module.produce.service.SpecialMaterialConstant;
 import com.rick.admin.module.purchase.entity.PurchaseOrder;
 import com.rick.admin.module.purchase.entity.PurchaseRequisition;
 import com.rick.common.http.model.Result;
@@ -138,7 +139,7 @@ public class ProduceOrderController {
 
             // 领料记录
             List<GoodsReceiptItem> goodsReceiptItemList = getGoodsReceiptItemList(produceOrder.getCode());
-            model.addAttribute("goodsReceiptItemList", goodsReceiptItemList);
+//            model.addAttribute("goodsReceiptItemList", goodsReceiptItemList);
 
             // 采购订单
             List<RelatedPurchaseOrder> relatedPurchaseOrderList = getRelatedPurchaseOrders(id);
@@ -146,6 +147,9 @@ public class ProduceOrderController {
 
             materialService.fillMaterialDescription(Stream.concat(Stream.concat(produceOrder.getItemList().stream(), goodsReceiptItemList.stream()), relatedPurchaseOrderList.stream()).collect(Collectors.toList()));
 //            materialService.fillMaterialDescription(produceOrder.getItemList());
+
+            // 展示按生产单号领取的物料
+            model.addAttribute("goodsReceiptItemList", goodsReceiptItemList.stream().filter(item -> SpecialMaterialConstant.isSpecialSpecialMaterialCategory(item.getMaterialDescription().getCategoryId())).collect(Collectors.toList()));
 
             // 生产计划
             for (ProduceOrder.Item item : produceOrder.getItemList()) {
