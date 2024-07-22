@@ -1,7 +1,6 @@
 package com.rick.admin.module.produce.service;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.rick.admin.auth.common.UserContextHolder;
 import com.rick.admin.common.BigDecimalUtils;
 import com.rick.admin.common.exception.ResourceNotFoundException;
@@ -30,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -119,9 +119,9 @@ public class ProduceOrderService {
         Map<Long, ProduceOrder.Item.Detail> oldParamsMap;
         Map<Long, ProduceOrder.Item> oldItemParamsMap;
         if (order.getId() != null) {
-            oldParamsMap = sharpService.query("select id, material_id, material_code, batch_id, batch_code, remark from produce_order_item_detail where exists (select 1 from produce_order_item where produce_order_id = :produceOrderId and produce_order_item.id = produce_order_item_detail.produce_order_item_id)",
+            oldParamsMap = sharpService.query("select id, material_id, material_code, batch_id, batch_code, remark, quantity from produce_order_item_detail where exists (select 1 from produce_order_item where produce_order_id = :produceOrderId and produce_order_item.id = produce_order_item_detail.produce_order_item_id)",
                     Params.builder(1).pv("produceOrderId", order.getId()).build(), ProduceOrder.Item.Detail.class).stream().collect(Collectors.toMap(item -> item.getId(), Function.identity()));
-            oldItemParamsMap =  sharpService.query("select id, material_id, material_code, batch_id, batch_code, remark from produce_order_item where produce_order_id = :produceOrderId AND material_code not like 'F%'",
+            oldItemParamsMap =  sharpService.query("select id, material_id, material_code, batch_id, batch_code, remark, quantity from produce_order_item where produce_order_id = :produceOrderId AND material_code not like 'F%'",
                     Params.builder(1).pv("produceOrderId", order.getId()).build(), ProduceOrder.Item.class).stream().collect(Collectors.toMap(item -> item.getId(), Function.identity()));
         } else {
             oldParamsMap = null;
@@ -354,35 +354,16 @@ public class ProduceOrderService {
      */
     private void handlePurchaseRequisition(List<ProduceOrder.Item> soItem, long produceOrderId, String produceOrderCode, @NotNull Long partnerId, Map<Long, ProduceOrder.Item.Detail> oldParamsMap, Map<Long, ProduceOrder.Item> oldItemParamsMap, LocalDate deliveryDate) {
         log.info("发起采购申请");
-        List<String> purchasedIds = sharpService.query("select concat(ifnull(schedule_id, ''), reference_id, ifnull(batch_code, '')) from pur_purchase_requisition_item where reference_document_id = :produceOrderId AND is_complete = 1",
-                Params.builder(1).pv("produceOrderId", produceOrderId).build(), String.class);
+        Map<Long, ProduceOrder.Item> itemIdMap = soItem.stream().collect(Collectors.toMap(item -> item.getId(), Function.identity()));
 
-        Map<String, String> materialIdRemark = soItem.stream().collect(Collectors.toMap(item -> item.getMaterialId() + Objects.toString(item.getBatchCode(), ""), item -> item.getRemark(), (item1, item2) -> item1));
-
-        materialIdRemark.putAll(soItem.stream().flatMap(item -> item.getItemList().stream()).collect(Collectors.toMap(item -> item.getMaterialId() + Objects.toString(item.getBatchCode(), ""), item -> Objects.toString(item.getRemark(), ""), (item1, item2) -> item1)));
-
-
-        List<ProduceOrder.Item.Detail> purchaseDetailList = soItem.stream().flatMap(item -> item.getItemList().stream()).filter(item -> Objects.toString(item.getRemark(), "").contains("贴花") || Objects.toString(item.getRemark(), "").contains("发") || Arrays.asList(729584784212238336L, 741996205273632769L, 731499486144483329L).contains(item.getMaterialId()))
-                .collect(Collectors.toList());
-        Set<String> purchaseSendSet = purchaseDetailList.stream().map(item -> item.getMaterialId() + Objects.toString(item.getBatchId(), "")).collect(Collectors.toSet());
-        Set<Long> ignoreDetailSet = purchaseDetailList.stream().map(item -> item.getId()).collect(Collectors.toSet());
-
-
-        Map<Long, List<ProduceOrder.Item.Schedule>> itemIdScheduleMap = soItem.stream().collect(Collectors.toMap(ProduceOrder.Item::getId, ProduceOrder.Item::getScheduleList));
-
-        // 删除历史采购
-//        purchaseRequisitionItemDAO.delete(Params.builder(1).pv("referenceDocumentId", produceOrderId).build(), "reference_document_id = :referenceDocumentId AND is_complete = 0");
-
-        List<PurchaseRequisition.Item> itemList = Lists.newArrayList();
+        List<PurchaseRequisition.Item> requisitionItemList = Lists.newArrayList();
+        // item 线 + 采购直发
         for (ProduceOrder.Item item : soItem) {
             if (item.getItemCategory() == ProduceOrder.ItemCategoryEnum.PURCHASE_SEND
                     || item.getMaterialId() == 729584784212238336L
                     || item.getMaterialId() == 741996205273632769L
                     || item.getMaterialId() == 731499486144483329L) {
-                if (purchasedIds.contains(item.getId() + item.getBatchCode())) {
-                    continue;
-                }
-
+                // 线 + 采购直发 按照订单实际数量采购
                 PurchaseRequisition.Item prItem = new PurchaseRequisition.Item();
                 BeanUtils.copyProperties(item, prItem);
                 prItem.setReferenceType(ReferenceTypeEnum.SO);
@@ -394,74 +375,67 @@ public class ProduceOrderService {
                 prItem.setPurchaseSend(item.getItemCategory() == ProduceOrder.ItemCategoryEnum.PURCHASE_SEND);
                 prItem.setComplete(false);
                 BaseEntityUtils.resetAdditionalFields(prItem);
-                itemList.add(prItem);
+                requisitionItemList.add(prItem);
             }
         }
 
-        // 直接采购(线，贴花，直发)
-        for (ProduceOrder.Item.Detail detail : purchaseDetailList) {
-            List<ProduceOrder.Item.Schedule> scheduleDateList = itemIdScheduleMap.get(detail.getProduceOrderItemId());
-            for (ProduceOrder.Item.Schedule schedule : scheduleDateList) {
-                if (purchasedIds.contains(schedule.getId() + "" + detail.getId() + detail.getBatchCode())) {
-                    continue;
-                }
-                PurchaseRequisition.Item prItem = new PurchaseRequisition.Item();
-                BeanUtils.copyProperties(detail, prItem);
-                prItem.setDeliveryDate(schedule.getStartDate());
-                prItem.setReferenceType(ReferenceTypeEnum.SO);
-                prItem.setReferenceDocumentId(produceOrderId);
-                prItem.setReferenceDocumentCode(produceOrderCode);
-                prItem.setReferenceId(detail.getId());
-                prItem.setScheduleId(schedule.getId());
-                prItem.setPurchaseRequisitionId(1L);
-                prItem.setPurchaseRequisitionCode("STANDARD");
-                prItem.setPurchaseSend(prItem.getRemark().contains("发"));
-                prItem.setComplete(false);
-                prItem.setQuantity(prItem.getQuantity().multiply(schedule.getQuantity()));
-                BaseEntityUtils.resetAdditionalFields(prItem);
-                if (prItem.getMaterialCode().equals("R00548") || prItem.getMaterialCode().equals("R00848") || prItem.getMaterialCode().equals("R00904")) {
-                    // 控制线带上客户信息
-                    prItem.setRemark(dictService.getDictByTypeAndName("core_partner_customer", String.valueOf(partnerId)).get().getLabel() +  StringUtils.appendValue(prItem.getRemark()));
-                }
-                itemList.add(prItem);
+        // detail 线
+        List<ProduceOrder.Item.Detail> lineDetailList = soItem.stream().flatMap(item -> item.getItemList().stream()).filter(item -> Arrays.asList(729584784212238336L, 741996205273632769L, 731499486144483329L).contains(item.getMaterialId()))
+                .collect(Collectors.toList());
+        Set<String> purchaseIgnoreSet = lineDetailList.stream().map(item -> item.getMaterialId() + Objects.toString(item.getBatchId(), "")).collect(Collectors.toSet());
+        purchaseIgnoreSet.add("764459407009763328");
+
+        for (ProduceOrder.Item.Detail detail : lineDetailList) {
+            ProduceOrder.Item item = itemIdMap.get(detail.getProduceOrderItemId());
+            PurchaseRequisition.Item prItem = new PurchaseRequisition.Item();
+            BeanUtils.copyProperties(detail, prItem);
+            prItem.setDeliveryDate(LocalDate.now().plusDays(10)); //
+            prItem.setReferenceType(ReferenceTypeEnum.SO);
+            prItem.setReferenceDocumentId(produceOrderId);
+            prItem.setReferenceDocumentCode(produceOrderCode);
+            prItem.setReferenceId(detail.getId());
+            prItem.setPurchaseRequisitionId(1L);
+            prItem.setPurchaseRequisitionCode("STANDARD");
+            prItem.setPurchaseSend(prItem.getRemark().contains("发"));
+            prItem.setComplete(false);
+            prItem.setQuantity(prItem.getQuantity().multiply(item.getQuantity()));
+            BaseEntityUtils.resetAdditionalFields(prItem);
+            if (prItem.getMaterialCode().equals("R00548") || prItem.getMaterialCode().equals("R00848") || prItem.getMaterialCode().equals("R00904")) {
+                // 控制线带上客户信息
+                prItem.setRemark(dictService.getDictByTypeAndName("core_partner_customer", String.valueOf(partnerId)).get().getLabel() +  StringUtils.appendValue(prItem.getRemark()));
             }
+            requisitionItemList.add(prItem);
         }
 
-        purchaseSendSet.add("764459407009763328"); // 配件忽略采购申请
-        ignoreDetailSet.add(764459407009763328L); // 配件忽略采购申请
-
-        List<PurchaseRequisition.Item> produceitemList = purchaseRequisitionForProduce(produceOrderId, purchaseSendSet);
-        if (CollectionUtils.isNotEmpty(produceitemList)) {
-            materialService.fillMaterialDescription(produceitemList);
+        // 查询库存的采购（item + detail）
+        List<PurchaseRequisition.Item> stockRequisitionItemList = purchaseRequisitionForProduce(produceOrderId, purchaseIgnoreSet);
+        if (CollectionUtils.isNotEmpty(stockRequisitionItemList)) {
+            materialService.fillMaterialDescription(stockRequisitionItemList);
 
             Map<String, BigDecimal> orderQuantityMap = new HashMap<>();
             for (ProduceOrder.Item item : soItem) {
-                String key = item.getMaterialId() + Objects.toString(item.getBatchId(), "");
-                if (orderQuantityMap.get(key) == null) {
-                    orderQuantityMap.put(key, item.getQuantity());
+                String itemMaterialKey = item.getMaterialId() + Objects.toString(item.getBatchId(), "");
+                if (orderQuantityMap.get(itemMaterialKey) == null) {
+                    orderQuantityMap.put(itemMaterialKey, item.getQuantity());
                 } else {
-                    orderQuantityMap.put(key, item.getQuantity().add(orderQuantityMap.get(key)));
+                    orderQuantityMap.put(itemMaterialKey, item.getQuantity().add(orderQuantityMap.get(itemMaterialKey)));
                 }
 
                 for (ProduceOrder.Item.Detail detail : item.getItemList()) {
-                    if (ignoreDetailSet.contains(detail.getId())) {
+                    if (purchaseIgnoreSet.contains(detail.getId())) {
                         continue;
                     }
-                    String key2 = detail.getMaterialId() + Objects.toString(detail.getBatchId(), "");
-                    BigDecimal quantity = orderQuantityMap.get(key2);
+                    String detailMaterialKey = detail.getMaterialId() + Objects.toString(detail.getBatchId(), "");
+                    BigDecimal quantity = orderQuantityMap.get(detailMaterialKey);
                     if (Objects.isNull(quantity)) {
                         quantity = BigDecimal.ZERO;
 
                     }
-                    orderQuantityMap.put(key2, quantity.add(item.getQuantity().multiply(detail.getQuantity())));
+                    orderQuantityMap.put(detailMaterialKey, quantity.add(item.getQuantity().multiply(detail.getQuantity())));
                 }
             }
 
-            for (PurchaseRequisition.Item prItem : produceitemList) {
-                if (purchasedIds.contains(produceOrderId + "" +prItem.getMaterialId() + Objects.toString(prItem.getBatchCode(), ""))) {
-                    continue;
-                }
-
+            for (PurchaseRequisition.Item prItem : stockRequisitionItemList) {
                 prItem.setReferenceType(ReferenceTypeEnum.SO);
                 prItem.setScheduleId(produceOrderId);
                 prItem.setReferenceDocumentId(produceOrderId);
@@ -476,7 +450,8 @@ public class ProduceOrderService {
                 prItem.setUnit(prItem.getMaterialDescription().getUnit());
                 prItem.setComplete(false);
                 prItem.setDeliveryDate(deliveryDate);
-                prItem.setRemark(Objects.toString(materialIdRemark.get(prItem.getMaterialId() + Objects.toString(prItem.getBatchCode(), "")), ""));
+                // 物料合并采购， remark 不需要
+//                prItem.setRemark(Objects.toString(materialIdRemark.get(prItem.getMaterialId() + Objects.toString(prItem.getBatchCode(), "")), ""));
 
                 // 原单数量采购， 不依据计算的结果
                 prItem.setQuantity(orderQuantityMap.get(prItem.getMaterialId() + Objects.toString(prItem.getBatchId(), "")).setScale(0, RoundingMode.UP));
@@ -486,60 +461,128 @@ public class ProduceOrderService {
 //                BigDecimal quantity = prItem.getQuantity().intValue() % 10 == 0 ? prItem.getQuantity() : BigDecimal.valueOf((prItem.getQuantity().intValue() / 10 + 1) * 10);
 //                prItem.setQuantity(quantity);
 
-                itemList.add(prItem);
+                requisitionItemList.add(prItem);
             }
         }
 
-        if (CollectionUtils.isEmpty(itemList)) {
+        if (CollectionUtils.isEmpty(requisitionItemList)) {
             return;
         }
 
         Boolean purchaseRequisition = produceOrderDAO.selectSingleValueById(produceOrderId, "is_purchase_requisition", Boolean.class).get();
-        if (purchaseRequisition && (MapUtils.isNotEmpty(oldItemParamsMap) || MapUtils.isNotEmpty(oldParamsMap))) {
-            // 只采购修改的参数的物料
-            List<ProduceOrder.Item.Detail> newDetailList = soItem.stream().flatMap(item -> item.getItemList().stream()).collect(Collectors.toList());
-            Set<String> changedDetail = Sets.newHashSet();
-            Set<Long> changedDetailIds = Sets.newHashSet();
 
-            // 处理item
-            for (ProduceOrder.Item item : soItem) {
-                if (!item.getMaterialCode().startsWith("F")) {
-                    ProduceOrder.Item oldItem = oldItemParamsMap.get(item.getId());
+        if (purchaseRequisition) {
+            if (purchaseRequisition && (MapUtils.isNotEmpty(oldItemParamsMap) || MapUtils.isNotEmpty(oldParamsMap))) {
+                // 只采购修改的参数的物料
+                List<ProduceOrder.Item.Detail> newDetailList = soItem.stream().flatMap(item -> item.getItemList().stream()).collect(Collectors.toList());
+                boolean paramsChanged = false;
+                Set<Long> itemIds = new HashSet<>();
+                // 处理item
+                for (ProduceOrder.Item item : soItem) {
+                    if (!item.getMaterialCode().startsWith("F")) {
+                        if (item.getId() != null) {
+                            itemIds.add(item.getId());
+                        }
+                        ProduceOrder.Item oldItem = oldItemParamsMap.get(item.getId());
 
-                    if (oldItem == null || !(Objects.equals(item.getMaterialId(), oldItem.getMaterialId()) && Objects.equals(item.getBatchId(), oldItem.getBatchId())) ||
-                            !Objects.equals(Objects.toString(oldItem.getRemark(), ""), Objects.toString(item.getRemark(), ""))) {
-                        changedDetail.add(item.getMaterialId() + (Objects.toString(item.getBatchId(), "")));
-                        changedDetailIds.add(item.getId());
+                        if (oldItem == null || !(Objects.equals(item.getMaterialId(), oldItem.getMaterialId()) && Objects.equals(item.getBatchId(), oldItem.getBatchId())) ||
+                                !Objects.equals(Objects.toString(oldItem.getRemark(), ""), Objects.toString(item.getRemark(), "")) || !BigDecimalUtils.eq(item.getQuantity(), oldItem.getQuantity())) {
+                            paramsChanged = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!paramsChanged) {
+                    for (ProduceOrder.Item oldItem : oldItemParamsMap.values()) {
+                        if (!itemIds.contains(oldItem.getId())) {
+                            paramsChanged = true;
+                            break;
+                        }
+                    }
+                }
+
+                // 处理detail
+                for (ProduceOrder.Item.Detail detail : newDetailList) {
+                    ProduceOrder.Item.Detail oldDetail = oldParamsMap.get(detail.getId());
+                    if (oldDetail == null || !(Objects.equals(detail.getMaterialId(), oldDetail.getMaterialId()) && Objects.equals(detail.getBatchId(), oldDetail.getBatchId())) ||
+                            !Objects.equals(Objects.toString(oldDetail.getRemark(), ""), Objects.toString(detail.getRemark(), "")) ||
+                        !BigDecimalUtils.eq(detail.getQuantity(), oldDetail.getQuantity())) {
+                        paramsChanged = true;
+                        break;
+                    }
+                }
+
+                if (!paramsChanged) {
+                    return;
+                }
+            }
+
+            // 如果有过采购记录， 需要根据采购申请进行比对，获取差异
+            List<PurchaseRequisition.Item> comparedRequisitionItemList = Lists.newArrayList();
+
+            List<PurchaseRequisition.Item> purchaseRequisitionList = purchaseRequisitionItemDAO.selectByParams(Params.builder(1).pv("produceOrderId", produceOrderId).build(), "reference_document_id = :produceOrderId and is_deleted = 0");
+            List<PurchaseRequisition.Item> purchaseRequisitionListClone = purchaseRequisitionList.stream().map(SerializationUtils::clone).collect(Collectors.toList());
+
+            Map<String, PurchaseRequisition.Item> keyPurchaseRequisitionItemMap =
+                    purchaseRequisitionListClone.stream().collect(Collectors.toMap(item -> purchaseMaterialKey(item.getReferenceId(), item.getMaterialId(), item.getBatchId(), item.getRemark()), Function.identity(), (item1, item2) -> { item1.setQuantity(item1.getQuantity().add(item2.getQuantity())); return item1;}));
+            Map<String, PurchaseRequisition.Item> requisitionItemListMap = requisitionItemList.stream().collect(Collectors.toMap(item -> purchaseMaterialKey(item.getReferenceId(), item.getMaterialId(), item.getBatchId(), item.getRemark()), Function.identity()));
+            Set<Long> deletedPurchaseRequisitionItemIds = new HashSet<>();
+
+            for (PurchaseRequisition.Item item : requisitionItemList) {
+                PurchaseRequisition.Item oldPurchaseRequisitionItem = keyPurchaseRequisitionItemMap.get(purchaseMaterialKey(item.getReferenceId(), item.getMaterialId(), item.getBatchId(), item.getRemark()));
+                if (oldPurchaseRequisitionItem == null) {
+                    // 没有采购记录， 直接插入
+                    comparedRequisitionItemList.add(item);
+                } else if (BigDecimalUtils.gt(item.getQuantity(), oldPurchaseRequisitionItem.getQuantity())) {
+                    // 采购数量变大了
+                    boolean hasPurchased = false;
+                    BigDecimal hasPurchasedQuantity = BigDecimal.ZERO;
+
+                    for (PurchaseRequisition.Item item1 : purchaseRequisitionList) {
+                        // TODO 行项目物料 不应该考虑 itemId
+                        if (purchaseMaterialKey(item1.getReferenceId(), item1.getMaterialId(), item1.getBatchId(), item1.getRemark()).equals(purchaseMaterialKey(item.getReferenceId(), item.getMaterialId(), item.getBatchId(), item.getRemark()))) {
+                            if (item1.getComplete()) {
+                                hasPurchased = true;
+                                hasPurchasedQuantity = hasPurchasedQuantity.add(item1.getQuantity());
+                            } else {
+                                deletedPurchaseRequisitionItemIds.add(item1.getId());
+                            }
+                        }
+                    }
+
+                    if (hasPurchased) {
+                        // 已经采购过了
+                        item.setQuantity(item.getQuantity().subtract(hasPurchasedQuantity));
+                        comparedRequisitionItemList.add(item);
+                    } else {
+                        // 尚未采购
+                        comparedRequisitionItemList.add(item);
+                        deletedPurchaseRequisitionItemIds.add(oldPurchaseRequisitionItem.getId());
                     }
                 }
             }
 
-            // 处理detail
-            for (ProduceOrder.Item.Detail detail : newDetailList) {
-                ProduceOrder.Item.Detail oldDetail = oldParamsMap.get(detail.getId());
-                if (oldDetail == null || !(Objects.equals(detail.getMaterialId(), oldDetail.getMaterialId()) && Objects.equals(detail.getBatchId(), oldDetail.getBatchId())) ||
-                        !Objects.equals(Objects.toString(oldDetail.getRemark(), ""), Objects.toString(detail.getRemark(), ""))) {
-                    changedDetail.add(detail.getMaterialId() + (Objects.toString(detail.getBatchId(), "")));
-                    changedDetailIds.add(detail.getId());
+            // 删除不需要的采购申请
+            for (PurchaseRequisition.Item item : purchaseRequisitionList) {
+                if (!requisitionItemListMap.keySet().contains(purchaseMaterialKey(item.getReferenceId(), item.getMaterialId(), item.getBatchId(), item.getRemark()))) {
+                    deletedPurchaseRequisitionItemIds.add(item.getId());
                 }
             }
 
-            if (CollectionUtils.isEmpty(changedDetail)) {
-                return;
+            if (CollectionUtils.isNotEmpty(deletedPurchaseRequisitionItemIds)) {
+                purchaseRequisitionItemDAO.delete(Params.builder(1).pv("ids", deletedPurchaseRequisitionItemIds).build(), "id IN (:ids)");
             }
 
-            // 清除采购申请
-            purchaseRequisitionItemDAO.delete(Params.builder(2).pv("referenceDocumentId", produceOrderId).pv("detailIds", changedDetailIds).build(), "reference_document_id = :referenceDocumentId AND is_complete = 0 and reference_id is not null and reference_id IN (:detailIds)");
-
-            itemList = itemList.stream().filter(item -> changedDetail.contains(item.getMaterialId() + (Objects.toString(item.getBatchId(), "")))).collect(Collectors.toList());
+            requisitionItemList = comparedRequisitionItemList;
         }
 
-        if (CollectionUtils.isEmpty(itemList)) {
+        if (CollectionUtils.isEmpty(requisitionItemList)) {
             return;
         }
 
         produceOrderDAO.update("is_purchase_requisition", new Object[]{1, produceOrderId}, "id = ?");
-        purchaseRequisitionItemService.insertOrUpdateByReferenceIds(itemList);
+        purchaseRequisitionItemService.insertOrUpdateByReferenceIds(requisitionItemList);
     }
 
     private List<PurchaseRequisition.Item> purchaseRequisitionForProduce(long produceOrderId, Set<String> materialIdBatchIdString) {
@@ -580,7 +623,7 @@ public class ProduceOrderService {
                 "                                                              union all" +
                 "                                                              select material_id, batch_id, batch_code, inv_document_item.quantity from inv_document_item, produce_order_item_schedule, produce_order where type = 'MOVING_TO_PRODUCE' AND plant_id = 719893335619162112 and reference_type = 'PP' and inv_document_item.root_reference_code = produce_order_item_schedule.code and produce_order_item_schedule.`produce_order_id` = produce_order.id and produce_order.status = 'PRODUCING'" +
                 "                                                              union all\n" +
-                "                                                              select material_id, batch_id, batch_code, quantity from pur_purchase_requisition_item where is_complete = 0 and is_deleted = 0\n" +
+                "                                                              select material_id, batch_id, batch_code, quantity from pur_purchase_requisition_item where is_complete = 0 and is_deleted = 0 and reference_document_id <> :produceOrderId\n" +
                 "                                                              union all\n" +
                 "                                                              select produce_order_item_detail.material_id, produce_order_item_detail.batch_id, produce_order_item_detail.batch_code,  (-1 * schedule.quantity * (CASE\n" +
                 "WHEN produce_order_item_detail.component_detail_id = 725451860537794560 THEN 3 * produce_order_item_detail.quantity\n" +
@@ -605,5 +648,16 @@ public class ProduceOrderService {
         return sharpService.query(sql, Params.builder(2).pv("produceOrderId", produceOrderId).pv("materialIdBatchIdString", materialIdBatchIdString).build(), PurchaseRequisition.Item.class);
     }
 
+    /**
+     *
+     * @param id itemId detailId null
+     * @param materialId
+     * @param batchId
+     * @param remark
+     * @return
+     */
+    private String purchaseMaterialKey(Long id, Long materialId, Long batchId, String remark) {
+        return Objects.toString(id, "") + materialId + Objects.toString(batchId, "") + Objects.toString(remark, "");
+    }
 }
 
