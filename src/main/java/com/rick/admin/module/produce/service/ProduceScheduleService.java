@@ -28,10 +28,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -228,6 +225,49 @@ public class ProduceScheduleService {
                 .documentDate(LocalDate.now())
                 .itemList(itemList)
                 .build();
+
+        // 处理线的供应商
+        for (InventoryDocument.Item item : inventoryDocument.getItemList()) {
+            if (item.getMaterialId() == 729584784212238336L
+                    || item.getMaterialId() == 741996205273632769L
+                    || item.getMaterialId() == 731499486144483329L) {
+                String scheduleCode = inventoryDocument.getReferenceCode();
+
+                String batchIdSql = "select batch_id from inv_document_item where type = 'MOVING_TO_PRODUCE'\n" +
+                        "and reference_type = 'PP' and movement_type = 'OUTBOUND' and reference_code = :reference_code and material_code = :material_code and reference_item_id = :reference_item_id LIMIT 1";
+                Optional<Map<String, Object>> optional = sharpService.queryForObject(batchIdSql, Params.builder(3)
+                        .pv("reference_code", scheduleCode)
+                        .pv("material_code", item.getMaterialCode())
+                        .pv("reference_item_id", item.getReferenceItemId())
+                        .build());
+                if (optional.isPresent()) {
+                    String lineBrandSql = "select mm_characteristic_value.value from inv_document_item, mm_profile, mm_characteristic_value where mm_profile.id = mm_characteristic_value.reference_id and mm_profile.batch_id = :batch_id and characteristic_code = 'LINE_BRAND' LIMIT 1";
+
+                    List<Map<String, Object>> list = sharpService.query(lineBrandSql, Params.builder(1)
+                        .pv("batch_id", optional.get().get("batch_id")).build());
+
+                    if (CollectionUtils.isNotEmpty(list)) {
+//                    item.setBatchId((Long) list.get(0).get("batch_id"));
+//                    item.setBatchCode((String) list.get(0).get("batch_code"));
+                        for (Classification classification : item.getClassificationList()) {
+                            for (CharacteristicValue characteristicValue : classification.getCharacteristicValueList()) {
+                                if (characteristicValue.getCharacteristicCode().equals("LINE_BRAND")) {
+                                    characteristicValue.setVal(list.get(0).get("value"));
+                                }
+                            }
+                        }
+                    }
+                }
+// 一条SQL语句获取供应商信息（性能有问题）
+//                String lineBrandSql = "select inv_document_item.batch_id batchId, inv_document_item.batch_code batchCode, mm_characteristic_value.value from inv_document_item, mm_profile, mm_characteristic_value where inv_document_item.batch_id = mm_profile.batch_id and mm_profile.id = mm_characteristic_value.reference_id and type = 'MOVING_TO_PRODUCE'\n" +
+//                        "and reference_type = 'PP' and movement_type = 'OUTBOUND' and reference_code = :reference_code and inv_document_item.material_code = :material_code and reference_item_id = :reference_item_id and characteristic_code = 'LINE_BRAND' LIMIT 1";
+
+//                List<Map<String, Object>> list = sharpService.query(lineBrandSql, Params.builder(3)
+//                        .pv("reference_code", scheduleCode)
+//                        .pv("material_code", item.getMaterialCode())
+//                        .pv("reference_item_id", item.getReferenceItemId()).build());
+            }
+        }
 
         return inventoryDocument;
     }
