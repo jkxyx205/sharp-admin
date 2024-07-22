@@ -297,8 +297,8 @@ public class InventoryController {
             item.setReferenceCode(referenceCode);
             item.setRootReferenceCode(referenceCode);
             item.setMovementType(movementType);
-//            item.setQuantity(ObjectUtils.defaultIfNull(itemOpenQuantityMap.get(item.getRootReferenceItemId()), BigDecimal.ZERO));
-            item.setQuantity(BigDecimal.ZERO);
+            item.setQuantity(ObjectUtils.defaultIfNull(itemOpenQuantityMap.get(item.getRootReferenceItemId()), BigDecimal.ZERO));
+//            item.setQuantity(BigDecimal.ZERO);
 //            item.setClassificationList(idDetailMap.get(item.getReferenceItemId()).getClassificationList());
 //            item.setClassificationList(ObjectUtils.defaultIfNull(materialIdClassificationMap.get(item.getMaterialId()), Collections.emptyList()));
 
