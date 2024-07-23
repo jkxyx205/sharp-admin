@@ -181,7 +181,7 @@
                         <div v-show="form.id" v-cloak>
                             <div class="card-body-scroll-panel">
                                 <label sec:authorize="hasAuthority('produce_order_edit')"><a href="javascript:;" @click="copyBOM">复制 BOM</a></label>
-                                <label sec:authorize="hasAuthority('produce_order_edit')" class="ml-5"><a href="javascript:;" @click="copyBOM2">从本单复制 BOM</a></label>
+                                <label sec:authorize="hasAuthority('produce_order_edit')" class="ml-2"><a href="javascript:;" @click="copyBOM2">从本单复制 BOM</a></label>
                                 <div v-for="c in form.componentList">
                                     <!--                                        <div class="component-name" v-text="c.description + '（' + c.quantity + c.unitText + '）'"></div>-->
                                     <form class="form-item">
