@@ -181,6 +181,7 @@ public class ProduceOrderController {
 
         model.addAttribute("createName", dictService.getDictByTypeAndName("sys_user", produceOrder.getCreateBy().toString()).get().getLabel());
         model.addAttribute("createTime", Time2StringUtils.format(produceOrder.getCreateTime()));
+        model.addAttribute("customerContactInfoMap", customerContactInfoMapping());
         return "modules/produce/produce_order";
     }
 

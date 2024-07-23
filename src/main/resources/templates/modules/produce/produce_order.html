@@ -97,7 +97,7 @@
                     <!--                    </div>-->
                     <div class="form-group" sec:authorize="hasAuthority('produce_order_add')">
                         <label class="col-form-label mr-2 required" for="partnerId">客户</label>
-                        <sp:select id="partnerId" name="partnerId" key="core_partner_customer" th:value="${po.partnerId}" class="form-control" required th:attr="disabled=${po.id != null}" emptyItemText="&nbsp;"/>
+                        <sp:select id="partnerId" name="partnerId" key="core_partner_customer" th:value="${po.partnerId}" class="form-control" required emptyItemText="&nbsp;"/>
                     </div>
                     <div class="form-group" sec:authorize="hasAuthority('produce_order_add')">
                         <label class="col-form-label mr-2 required" for="contactPerson">联系人</label>
@@ -544,7 +544,7 @@
             format: 'yyyy-mm-dd'
         })
 
-        if (isAdd) {
+        // if (isAdd) {
             let customerContactInfoMap = /*[[${customerContactInfoMap}]]*/
                 $('#partnerId option').each(function () {
                     if (this.value) {
@@ -553,7 +553,7 @@
                         $(this).data('contactMail', customerContactInfoMap[this.value]['contactMail'])
                     }
                 })
-        }
+        // }
 
         $('#partnerId').multipleSelect({
             filter: true,
