@@ -16,6 +16,7 @@ public final class SpecialMaterialConstant {
         categoryIds.add(719895241229881344L); // 一体轮-轮毂
         categoryIds.add(719895198196322304L); // 辐条轮-轮毂
         categoryIds.add(725412890470801408L); // 线
+        categoryIds.add(719897156139372544L); // 线包组件
         categoryIds.add(720625649131212800L); // 电机轴
         categoryIds.add(719895400634404864L); // 端盖
         categoryIds.add(725412754457911296L); // 霍尔线路板
