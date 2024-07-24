@@ -227,10 +227,26 @@ public class ProduceOrderController {
             for (GoodsReceiptItem item : goodsReceiptItemList) {
                 item.setOpenQuantity(BigDecimalUtils.lt(item.getOpenQuantity(), BigDecimal.ZERO) ? BigDecimal.ZERO : item.getOpenQuantity());
 //                item.setCharacteristic(characteristicTextMap.get(MaterialProfileSupport.materialIdBatchIdString(item.getMaterialId(), item.getBatchId())));
+
+                // 线的供应商从采购信息处获得
+                if (item.getMaterialId() == 729584784212238336L || item.getMaterialId() == 731499486144483329L || item.getMaterialId() == 741996205273632769L) {
+                    // 使用采购线的特征代替BOM
+                    handleLineByPO(item);
+                }
             }
         }
 
         return goodsReceiptItemList;
+    }
+
+    private void handleLineByPO(GoodsReceiptItem item) {
+        Optional<Map<String, Object>> optionalMap = sharpService.queryForObject("select id, batch_id, batch_code from `pur_purchase_order_item` where `reference_type2` = 'SO' and `reference_id2` = :detailId LIMIT 1",
+                Params.builder(1).pv("detailId", item.getRootReferenceItemId()).build());
+        if (optionalMap.isPresent()) {
+            Map<String, Object> data = optionalMap.get();
+            item.setBatchId((Long) data.get("batch_id"));
+            item.setBatchCode((String) data.get("batch_code"));
+        }
     }
 
     /**
@@ -367,6 +383,8 @@ public class ProduceOrderController {
         private MaterialDescription materialDescription;
 
         private Long batchId;
+
+        private String batchCode;
 
         public Boolean getComplete() {
             return BigDecimalUtils.eq(openQuantity, BigDecimal.ZERO);
