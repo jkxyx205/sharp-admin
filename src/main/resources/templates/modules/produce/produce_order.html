@@ -678,7 +678,8 @@
                 {
                     type: "label",
                     name: "materialName",
-                    title: "名称"
+                    title: "名称",
+                    width: 120
                 },
                 {
                     type: "text",
@@ -691,7 +692,7 @@
                     // width: 80,
                     title: "特征值",
                     required: true,
-                    disabled: readonly
+                    // disabled: readonly
                 },
                 {
                     type: "decimal",
@@ -1184,9 +1185,9 @@
                 $receiveContactInfo.autofill(firstContactInfo)
             }
 
-            if (readonly) {
-                $editableTable.editableTablePlus('readonly', readonly)
-            }
+            // if (readonly) {
+                // $editableTable.editableTablePlus('readonly', readonly)
+            // }
         }
 
         function calcAmount($tr) {
