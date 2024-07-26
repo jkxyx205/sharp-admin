@@ -229,7 +229,7 @@ public class ProduceOrderController {
 //                item.setCharacteristic(characteristicTextMap.get(MaterialProfileSupport.materialIdBatchIdString(item.getMaterialId(), item.getBatchId())));
 
                 // 线的供应商从采购信息处获得
-                if (item.getMaterialId() == 729584784212238336L || item.getMaterialId() == 731499486144483329L || item.getMaterialId() == 741996205273632769L) {
+                if (item.getMaterialId() != null && (item.getMaterialId() == 729584784212238336L || item.getMaterialId() == 731499486144483329L || item.getMaterialId() == 741996205273632769L)) {
                     // 使用采购线的特征代替BOM
                     handleLineByPO(item);
                 }
