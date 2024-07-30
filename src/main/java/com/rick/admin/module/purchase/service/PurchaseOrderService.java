@@ -385,7 +385,7 @@ public class PurchaseOrderService {
         // 文字色
         XSSFFont font = excelWriter.getBook().createFont();
         font.setColor(redColor);
-        font.setBold(true);
+//        font.setBold(true);
 
         excelWriter.insertAndWriteRow(1, 12, data, row.getHeightInPoints(), cellStyles, (ecell, cell) -> {
             if (ecell.getX() == 9 && !String.valueOf(ecell.getValue()).matches("\\d{4}-\\d{2}-\\d{2}")) {
