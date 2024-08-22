@@ -29,7 +29,7 @@ public class ProduceOrderTest {
                 .tplName("tpl/list")
                 .name("销售订单")
                 .reportAdviceName("produceOrderReportAdvice")
-                // 必须通过指定 endpoint 完成 表单的CUD操作
+                // 必须通过指定 endpoint 完成 表单的CRUD操作
                 .additionalInfo(Params.builder(1).pv("endpoint", "produce_orders").build())
                 .querySql("select id, code, partner_id, status, remark, create_by, create_time from produce_order where code LIKE :code and create_by = :create_by and create_time >= :create_time0 and create_time <= :create_time1 AND status = :status AND partner_id = :partner_id")
                 .queryFieldList(Arrays.asList(
