@@ -809,7 +809,7 @@
                     width: 120,
                     title: "生产日期",
                     align: 'center',
-                    required: true,
+                    // required: true,
                 },
                 {
                     type: "decimal",
@@ -994,7 +994,8 @@
                 // 检查数量
                 if (item['scheduleList'] && item['scheduleList'].length > 0) {
                     for (let schedule of item['scheduleList']) {
-                        if (!schedule.startDate || !schedule.quantity) {
+                        // if (!schedule.startDate || !schedule.quantity) {
+                        if (!schedule.quantity) {
                             toastr.error('第 '+(parseInt(index) + 1)+' 个物料生产计划填写不完整！')
                             return;
                         }

@@ -137,7 +137,8 @@ public class ProduceOrderService {
                 final User user = UserContextHolder.get();
                 executorService.submit(() -> {
                     UserContextHolder.set(user);
-                    LocalDate deliveryDate =  order.getItemList().stream().flatMap(item -> item.getScheduleList().stream()).map(ProduceOrder.Item.Schedule::getStartDate).min(LocalDate::compareTo).orElseGet(() -> order.getItemList().stream().map(ProduceOrder.Item::getDeliveryDate).min(LocalDate::compareTo).get());
+//                    LocalDate deliveryDate =  order.getItemList().stream().flatMap(item -> item.getScheduleList().stream()).map(ProduceOrder.Item.Schedule::getStartDate).filter(startDate -> startDate != null ).min(LocalDate::compareTo).orElseGet(() -> order.getItemList().stream().map(ProduceOrder.Item::getDeliveryDate).min(LocalDate::compareTo).get());
+                    LocalDate deliveryDate =  order.getItemList().stream().flatMap(item -> item.getScheduleList().stream()).map(ProduceOrder.Item.Schedule::getStartDate).filter(startDate -> startDate != null ).min(LocalDate::compareTo).orElseGet(() -> order.getItemList().stream().map(item -> LocalDate.now().plusDays(10)).min(LocalDate::compareTo).get());
                     handlePurchaseRequisition(order.getItemList(), order.getId(), order.getCode(), order.getPartnerId(), oldParamsMap, oldItemParamsMap, deliveryDate);
                 });
 //            }
