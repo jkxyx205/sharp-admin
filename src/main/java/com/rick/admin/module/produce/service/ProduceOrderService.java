@@ -579,7 +579,7 @@ public class ProduceOrderService {
 
         materialService.fillMaterialDescription(requisitionItemList);
         // 对特定物料发起采购申请
-        requisitionItemList = requisitionItemList.stream().filter(item -> SpecialMaterialConstant.isSpecialSpecialMaterialCategory(item.getMaterialDescription().getCategoryId())).collect(Collectors.toList());
+//        requisitionItemList = requisitionItemList.stream().filter(item -> SpecialMaterialConstant.isSpecialSpecialMaterialCategory(item.getMaterialDescription().getCategoryId())).collect(Collectors.toList());
 
         if (CollectionUtils.isEmpty(requisitionItemList)) {
             return;
