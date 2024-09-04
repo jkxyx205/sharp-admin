@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
  * @date 2023/6/2 17:21
  */
 @Component
-public class CharacteristicConverter implements ValueConverter<String> {
+public class CharacteristicConverter implements ValueConverter<Object, String> {
 
     @Override
     public String convert(Object context, String value) {

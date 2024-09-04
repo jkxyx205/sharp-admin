@@ -118,13 +118,15 @@ public class MaterialReportAdvice implements ReportAdvice {
                 "    报表导出\n" +
                 "  </button>\n" +
                 "  <div class=\"dropdown-menu\" aria-labelledby=\"dropdownMenuButton\">\n" +
-                "    <a class=\"dropdown-item\" href=\"/reports/stock\">材料库</a>\n" +
-                "    <a class=\"dropdown-item\" href=\"/reports/stock/produce\">产前库</a>\n" +
+                "    <a class=\"dropdown-item\" href=\"javascript:;\" onclick=\"$.LoadingOverlay('show');window.download('/reports/stock', function() {$.LoadingOverlay('hide')},function(msg) {toastr.error(msg)})\">材料库</a>\n" +
+                "    <a class=\"dropdown-item\" href=\"javascript:;\" onclick=\"$.LoadingOverlay('show');window.download('/reports/stock/produce', function() {$.LoadingOverlay('hide')}, function(msg) {toastr.error(msg)})\">产前库</a>\n" +
+//                "    <a class=\"dropdown-item\" href=\"/reports/stock/produce\">产前库</a>\n" +
                 "    <a class=\"dropdown-item\" href=\"/reports/stock/machine\">机芯库</a>\n" +
                 "    <a class=\"dropdown-item\" href=\"/reports/stock/product\">成品库</a>\n" +
                 "    <a class=\"dropdown-item\" href=\"/reports/stock/defective\">次品库</a>\n" +
                 "  </div>\n" +
-                "</div>`); $('#exportBtn').hide();" +
+                "</div>`);\n" +
+                "$('#exportBtn').hide();\n" +
                 "function refresh() {$('.report-list-table tr').each(function() {\n" +
                 "  let $td = $(this).find('td[name=stock_quantity]');\n" +
                 "  let text = $td.text().trim();\n" +

@@ -33,6 +33,8 @@ public class StockItem implements MaterialDescriptionHandler, BatchHandler {
 
     private BigDecimal quantity;
 
+    private BigDecimal price;
+
 
     @Override
     public String getMaterialCode() {

@@ -120,7 +120,8 @@ public class MaterialTest {
                 .repositoryName("materialDAO")
                 .storageStrategy(Form.StorageStrategyEnum.CREATE_TABLE)
                 .additionalInfo(Params.builder(1)
-                        .pv("label-col", 3)
+                        .pv("label-col", 3) // 设置 label 的宽度
+                        // 配置tab
 //                        .pv("pane-list", Arrays.asList("一般数据", "量纲", "规格", "附件", "其他"))
                         .pv("pane-list", Arrays.asList("一般数据", "量纲", "规格","需求计划", "附件",
                                 Params.builder(2).pv("label", "其他").pv("hideIfAdd", true).build()))

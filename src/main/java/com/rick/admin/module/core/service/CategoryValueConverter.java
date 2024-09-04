@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
  */
 @Component("categoryValueConverter")
 @RequiredArgsConstructor
-public class CategoryValueConverter implements ValueConverter<Long> {
+public class CategoryValueConverter implements ValueConverter<Object, Long> {
 
     private final CategoryService categoryService;
 

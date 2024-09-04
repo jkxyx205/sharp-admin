@@ -83,7 +83,7 @@ public class LatestPriceService {
     }
 
     /**
-     * 获取物料的最新价格
+     * 获取供应商物料的最新价格
      * @param materialId
      * @param batchCode
      * @param partnerId
@@ -103,4 +103,15 @@ public class LatestPriceService {
 
         return latestPriceOptional.isPresent() ? Optional.of(latestPriceOptional.get().getPrice()) : Optional.empty();
     }
+
+    /**
+     * 获取物料的最新价格
+     * @return
+     */
+    public Map<String, BigDecimal> getMaterialPriceMap() {
+        return latestPriceDAO.getSharpService()
+                .queryForKeyValue("select distinct concat(material_id, ifnull(batch_code, '')), price from pur_latest_price order by update_time", null);
+
+    }
+
 }
