@@ -133,9 +133,9 @@ public class MaterialService {
      * @param specificationList 物料规格
      * @return
      */
-    public boolean checkMaterialIfExists(String materialName, List<List<String>> specificationList) {
-        List<String> specificationValueList = materialDAO.selectByParams(Params.builder(1).pv("materialName", materialName).build(),
-                "specification", "name = :materialName", String.class);
+    public boolean checkMaterialIfExists(Long materialId, String materialName, List<List<String>> specificationList) {
+        List<String> specificationValueList = materialDAO.selectByParams(Params.builder(2).pv("materialId", materialId).pv("materialName", materialName).build(),
+                "specification", "name = :materialName and id <> :materialId", String.class);
 
         if (CollectionUtils.isEmpty(specificationValueList)) {
             return false;

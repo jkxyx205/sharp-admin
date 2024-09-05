@@ -127,14 +127,14 @@ public class MaterialFormAdvice implements FormAdvice {
     @Override
     public boolean insertOrUpdate(Map<String, Object> values) {
         Material material = materialDAO.mapToEntity(values);
-        if (Objects.isNull(material.getId())) {
-            // 检查是否已经存在物料的描述
-            boolean isExists = materialService.checkMaterialIfExists(material.getName(), material.getSpecificationList());
 
-            if (isExists) {
-                throw new BizException(50012, "物料已经存在！请查询确认一下！");
-            }
+        // 检查是否已经存在物料的描述
+        boolean isExists = materialService.checkMaterialIfExists(material.getId(), material.getName(), material.getSpecificationList());
+
+        if (isExists) {
+            throw new BizException(50012, "物料已经存在！请查询确认一下！");
         }
+
 
 //        if (Objects.equals(material.getBatchManagement(), Boolean.TRUE)) {
 //            // 批次物料加上颜色特征
