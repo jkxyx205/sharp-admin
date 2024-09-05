@@ -15,8 +15,9 @@ select * from produce_order_item_detail where material_code = 'R00891';
 select * from produce_order_item where material_code = 'R00891';
 
 -- 物料重复, 删除重复物料
--- 729584761781100544 R00509 => 747825390705561600 R00935
+-- 747825390705561600 R00935 => 729584761781100544 R00509
 -- 删除 R00935
+update mm_material set is_deleted = 1 where code = 'R00935';
 update pur_purchase_order_item set material_id = 729584761781100544, material_code = 'R00509' where material_id = 747825390705561600;
 update produce_order_item_detail set material_id = 729584761781100544, material_code = 'R00509' where material_id = 747825390705561600;
 update produce_order_item set material_id = 729584761781100544, material_code = 'R00509' where material_id = 747825390705561600;
