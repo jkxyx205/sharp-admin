@@ -24,6 +24,7 @@ import com.rick.excel.core.model.ExcelRow;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -162,6 +163,11 @@ public class StockController {
         String sql = "select mm_material.category_id, material_id, batch_id, batch_code, quantity from inv_stock inner join mm_material where " +
                 "mm_material.id = inv_stock.material_id AND mm_material.is_deleted = 0 AND inv_stock.plant_id IN (:plantIds)";
         List<StockItem> stockItemList = sharpService.query(sql, Params.builder(1).pv("plantIds", plantIds).build(), StockItem.class);
+        if (CollectionUtils.isEmpty(stockItemList)) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, BigDecimal> standardPriceMap = sharpService.queryForKeyValue("select id, standard_price from mm_material where is_deleted = 0 and standard_price is not null", null);
 
         materialService.fillMaterialDescription(stockItemList);
         batchService.fillCharacteristicValue(stockItemList);
@@ -205,6 +211,9 @@ public class StockController {
                 stockItem.setClassificationList(classificationList);
 
                 stockItem.setPrice(materialPriceMap.get(stockItem.getMaterialId() + (stockItem.getBatchCode() == null ? "" : latestPriceService.priceBatchCode(stockItem.getMaterialId(), stockItem.getBatchCode(), stockItem.getClassificationList()))));
+                if (stockItem.getPrice() == null) {
+                    stockItem.setPrice(standardPriceMap.get(stockItem.getMaterialId()));
+                }
             }
 
             stockItem.setCategoryName(
