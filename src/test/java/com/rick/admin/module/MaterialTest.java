@@ -203,13 +203,13 @@ public class MaterialTest {
 // INSERT INTO `sys_form_cpn_configurer` (`id`, `form_id`, `config_id`, `order_num`, `additional_info`, `create_by`, `create_time`, `update_by`, `update_time`, `is_deleted`)
 //VALUES
 //	(728895442942693377, 695978675677433856, 728895436496048133, 5, NULL, 1, '2023-09-01 07:03:14', 1, '2023-09-01 07:03:14', 0);
-//        CpnConfigurer standardPriceCpn = CpnConfigurer.builder()
-//                .cpnType(CpnTypeEnum.NUMBER_TEXT)
-//                .name("standardPrice")
-//                .label("含税单价(元)")
-//                .placeholder("")
-//                .additionalInfo(Params.builder(1).pv("pane-index", "1").build())
-//                .build();
+        CpnConfigurer standardPriceCpn = CpnConfigurer.builder()
+                .cpnType(CpnTypeEnum.NUMBER_TEXT)
+                .name("standardPrice")
+                .label("含税单价(元)")
+                .placeholder("")
+                .additionalInfo(Params.builder(1).pv("pane-index", "1").build())
+                .build();
 
         CpnConfigurer batchManagementCpn = CpnConfigurer.builder()
                 .cpnType(CpnTypeEnum.CHECKBOX)
@@ -348,7 +348,7 @@ public class MaterialTest {
         CpnConfigurer stockQuantityCpn = CpnConfigurer.builder()
                 .cpnType(CpnTypeEnum.LABEL)
                 .name("stockQuantity")
-                .label("库存")
+                .label("材料库库存")
                 .additionalInfo(Params.builder(1).pv("pane-index", "6").build())
                 .build();
 
@@ -392,7 +392,7 @@ public class MaterialTest {
                 .build();
 
 
-        List<CpnConfigurer> cpnConfigurerList = Lists.newArrayList(codeCpn, materialTypeCpn, nameCpn, categoryCpn, baseUnitCpn/*, standardPriceCpn*/, batchManagementCpn, classificationListCpn, bomTemplateCpn,
+        List<CpnConfigurer> cpnConfigurerList = Lists.newArrayList(codeCpn, materialTypeCpn, nameCpn, categoryCpn, baseUnitCpn, standardPriceCpn, batchManagementCpn, classificationListCpn, bomTemplateCpn,
                 remarkCpn, grossWeightCpn, netWeightCpn, weightUnitCpn, volumeCpn, volumeUnitCpn, sizeCpn, characteristicCpn, safetyStockQuantityCpn, maximumStockQuantityCpn, attachmentCpn,
                 stockQuantityCpn, stockQuantityPriceCpn, createNameCpn, createTimeCpn, updateNameCpn, updateTimeCpn);
         return cpnConfigurerList;

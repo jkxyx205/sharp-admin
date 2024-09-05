@@ -35,7 +35,6 @@ public class Material extends BaseCodeEntity {
 
     String baseUnit;
 
-    @Column(updatable = false)
     BigDecimal standardPrice;
 
     Long categoryId;
