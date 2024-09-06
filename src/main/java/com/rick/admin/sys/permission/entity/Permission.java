@@ -18,7 +18,7 @@ import lombok.experimental.SuperBuilder;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "sys_permission", comment = "权限表")
-public class Permission extends BaseCodeEntity {
+public class Permission extends BaseCodeEntity<Long> {
 
     @Column(comment = "权限名称")
     private String name;

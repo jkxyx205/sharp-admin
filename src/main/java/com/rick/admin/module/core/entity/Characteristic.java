@@ -24,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "core_characteristic", comment = "特征")
-public class Characteristic extends BaseCodeEntity {
+public class Characteristic extends BaseCodeEntity<Long> {
 
     @Column(comment = "描述")
     private String description;

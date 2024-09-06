@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "sys_user", comment = "用户信息")
-public class User extends BaseCodeEntity {
+public class User extends BaseCodeEntity<Long> {
 
     @Column(comment = "姓名")
     String name;

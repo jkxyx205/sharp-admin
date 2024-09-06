@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "pur_latest_price", comment = "物料最新价格")
-public class LatestPrice extends BaseEntity {
+public class LatestPrice extends BaseEntity<Long> {
 
     Long materialId;
 

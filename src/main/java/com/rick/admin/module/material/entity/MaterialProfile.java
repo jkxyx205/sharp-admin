@@ -30,7 +30,7 @@ import java.util.List;
 @AllArgsConstructor
 @SuperBuilder
 @Table(value = "mm_profile", comment = "物料多级profile")
-public class MaterialProfile extends BaseEntity {
+public class MaterialProfile extends BaseEntity<Long> {
 
     private MaterialProfile.CategoryEnum category;
     

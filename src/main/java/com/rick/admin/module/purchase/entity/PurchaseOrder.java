@@ -34,7 +34,7 @@ import java.util.Objects;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "pur_purchase_order", comment = "采购订单")
-public class PurchaseOrder extends BaseCodeEntity {
+public class PurchaseOrder extends BaseCodeEntity<Long> {
 
     @NotNull
     @Column(comment = "供应商")
@@ -84,7 +84,7 @@ public class PurchaseOrder extends BaseCodeEntity {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @SuperBuilder
     @Table(value = "pur_purchase_order_item", comment = "采购订单行项目")
-    public static class Item extends BaseEntity implements MaterialDescriptionHandler, BatchHandler {
+    public static class Item extends BaseEntity<Long> implements MaterialDescriptionHandler, BatchHandler {
 
         @NotNull
         @Column(comment = "物料")

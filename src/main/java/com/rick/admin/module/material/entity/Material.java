@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "mm_material", comment = "物料")
-public class Material extends BaseCodeEntity {
+public class Material extends BaseCodeEntity<Long> {
 
     String materialType;
 

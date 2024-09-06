@@ -17,7 +17,7 @@ import lombok.experimental.SuperBuilder;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "core_code_sequence", comment = "序列表")
-public class CodeSequence extends SimpleEntity {
+public class CodeSequence extends SimpleEntity<Long> {
 
     String prefix;
 

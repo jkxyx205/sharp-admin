@@ -18,7 +18,7 @@ import lombok.experimental.SuperBuilder;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "core_contact", comment = "联系表")
-public class ContactInfo extends BaseEntity {
+public class ContactInfo extends BaseEntity<Long> {
 
     @Column(comment = "联系主体")
     String contactSubject;

@@ -24,7 +24,7 @@ import java.util.List;
 @AllArgsConstructor
 @SuperBuilder
 @Table(value = "mm_classification", comment = "物料分类")
-public class Classification extends BaseEntity {
+public class Classification extends BaseEntity<Long> {
 
     @NotNull(message = "物料id不能为空")
     private Long materialId;

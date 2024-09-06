@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "pur_source_list", comment = "货源清单")
-public class MaterialSource extends BaseEntity implements MaterialDescriptionHandler {
+public class MaterialSource extends BaseEntity<Long> implements MaterialDescriptionHandler {
 
     @NotNull
     Long partnerId;

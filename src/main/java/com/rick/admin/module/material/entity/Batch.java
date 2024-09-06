@@ -24,7 +24,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "mm_batch", comment = "物料批次")
-public class Batch extends BaseEntity {
+public class Batch extends BaseEntity<Long> {
 
     @Length(max = 512, message = "编号不能超过512个字符")
     @NotNull

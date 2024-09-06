@@ -21,7 +21,7 @@ import javax.validation.constraints.NotBlank;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "core_plant", comment = "库房")
-public class Plant extends BaseCodeEntity {
+public class Plant extends BaseCodeEntity<Long> {
 
     @NotBlank(message = "库房名称不能为空")
     @Length(max = 32, message = "库房名称不能超过16个字符")

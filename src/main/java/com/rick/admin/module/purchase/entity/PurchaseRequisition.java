@@ -29,7 +29,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "pur_purchase_requisition", comment = "采购申请")
-public class PurchaseRequisition extends BaseCodeEntity {
+public class PurchaseRequisition extends BaseCodeEntity<Long> {
 
     @NotEmpty
     @OneToMany(subTable = "pur_purchase_requisition_item", reversePropertyName = "purchaseRequisitionId", cascadeInsertOrUpdate = true, joinValue = "purchase_requisition_id")
@@ -42,7 +42,7 @@ public class PurchaseRequisition extends BaseCodeEntity {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @SuperBuilder
     @Table(value = "pur_purchase_requisition_item", comment = "采购申请行项目")
-    public static class Item extends BaseEntity implements MaterialDescriptionHandler, BatchHandler {
+    public static class Item extends BaseEntity<Long> implements MaterialDescriptionHandler, BatchHandler {
 
         @NotNull
         @Column(comment = "物料")

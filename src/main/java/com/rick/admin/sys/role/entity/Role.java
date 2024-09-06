@@ -22,7 +22,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "sys_role", comment = "角色")
-public class Role extends BaseCodeEntity {
+public class Role extends BaseCodeEntity<Long> {
 
     String name;
 

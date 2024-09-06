@@ -23,7 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 @AllArgsConstructor
 @SuperBuilder
 @Table(value = "mm_characteristic_value", comment = "特征值的value")
-public class CharacteristicValue extends BaseEntity {
+public class CharacteristicValue extends BaseEntity<Long> {
 
     @Column(comment = "PROFILE：库存实例PROFILE表id")
     private Long referenceId;

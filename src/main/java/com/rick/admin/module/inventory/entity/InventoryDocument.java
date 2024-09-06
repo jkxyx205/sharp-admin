@@ -34,7 +34,7 @@ import java.util.Map;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "inv_document", comment = "物料凭证")
-public class InventoryDocument extends BaseCodeEntity {
+public class InventoryDocument extends BaseCodeEntity<Long> {
 
     @NotNull
     @Column(comment = "场景")
@@ -89,7 +89,7 @@ public class InventoryDocument extends BaseCodeEntity {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @SuperBuilder
     @Table(value = "inv_document_item", comment = "物料凭证行项目")
-    public static class Item extends BaseEntity implements MaterialDescriptionHandler, BatchHandler {
+    public static class Item extends BaseEntity<Long> implements MaterialDescriptionHandler, BatchHandler {
 
         @Column(comment = "场景")
         TypeEnum type;

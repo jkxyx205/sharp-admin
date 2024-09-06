@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "core_classification", comment = "分类")
-public class Classification extends BaseCodeEntity {
+public class Classification extends BaseCodeEntity<Long> {
 
     String description;
 

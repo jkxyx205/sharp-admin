@@ -26,7 +26,7 @@ import java.util.Objects;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "produce_bom_template", comment = "BOM 模版")
-public class BomTemplate extends BaseCodeEntity {
+public class BomTemplate extends BaseCodeEntity<Long> {
 
     String description;
 
@@ -40,7 +40,7 @@ public class BomTemplate extends BaseCodeEntity {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @SuperBuilder
     @Table(value = "produce_bom_template_component", comment = "BOM 模版组件")
-    public static class Component extends BaseEntity {
+    public static class Component extends BaseEntity<Long> {
 
         String description;
 
@@ -64,7 +64,7 @@ public class BomTemplate extends BaseCodeEntity {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @SuperBuilder
     @Table(value = "produce_bom_template_component_detail", comment = "BOM 模版组件详情")
-    public static class ComponentDetail extends BaseEntity implements MaterialDescriptionHandler {
+    public static class ComponentDetail extends BaseEntity<Long> implements MaterialDescriptionHandler {
 
         TypeEnum type;
 

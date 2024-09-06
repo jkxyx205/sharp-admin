@@ -19,7 +19,7 @@ import javax.validation.constraints.NotEmpty;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "core_material_category", comment = "物料分类")
-public class Category extends BaseEntity {
+public class Category extends BaseEntity<Long> {
 
     private Long parentId;
 

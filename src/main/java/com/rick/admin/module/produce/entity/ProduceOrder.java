@@ -34,7 +34,7 @@ import java.util.Objects;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "produce_order", comment = "生产单")
-public class ProduceOrder extends BaseCodeEntity {
+public class ProduceOrder extends BaseCodeEntity<Long> {
 
     @NotNull
     @Column(comment = "客户")
@@ -86,7 +86,7 @@ public class ProduceOrder extends BaseCodeEntity {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @SuperBuilder
     @Table(value = "produce_order_item", comment = "生产单行项目")
-    public static class Item extends BaseEntity implements MaterialDescriptionHandler, BatchHandler {
+    public static class Item extends BaseEntity<Long> implements MaterialDescriptionHandler, BatchHandler {
 
         @NotNull
         @Column(comment = "物料")
@@ -194,7 +194,7 @@ public class ProduceOrder extends BaseCodeEntity {
         @FieldDefaults(level = AccessLevel.PRIVATE)
         @SuperBuilder
         @Table(value = "produce_order_item_detail", comment = "物料BOM实例详情")
-        public static class Detail extends BaseEntity implements MaterialDescriptionHandler, BatchHandler {
+        public static class Detail extends BaseEntity<Long> implements MaterialDescriptionHandler, BatchHandler {
 
 //            @NotNull
             @Column(comment = "物料")
@@ -236,7 +236,7 @@ public class ProduceOrder extends BaseCodeEntity {
         @Setter
         @FieldDefaults(level = AccessLevel.PRIVATE)
         @Table(value = "produce_order_item_schedule", comment = "物料生产计划")
-        public static class Schedule extends BaseCodeEntity {
+        public static class Schedule extends BaseCodeEntity<Long> {
 
             @Column(comment = "开始日期")
             LocalDate startDate;

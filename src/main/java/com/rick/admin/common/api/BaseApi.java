@@ -24,7 +24,7 @@ import java.util.Optional;
  * @date 2023/6/14 00:12
  */
 @RequiredArgsConstructor
-public class BaseApi<T extends BaseEntity, ID> {
+public class BaseApi<T extends BaseEntity<Long>, ID> {
 
     protected final EntityDAOImpl<T, ID> entityDAO;
 

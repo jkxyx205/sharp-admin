@@ -23,7 +23,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "core_partner", comment = "合作伙伴")
-public class Partner extends BaseCodeEntity {
+public class Partner extends BaseCodeEntity<Long> {
 
     PartnerTypeEnum partnerType;
 

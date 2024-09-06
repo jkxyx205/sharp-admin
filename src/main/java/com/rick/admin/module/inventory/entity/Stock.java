@@ -27,7 +27,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(value = "inv_stock", comment = "库存")
-public class Stock extends BaseEntity implements BatchHandler, MaterialDescriptionHandler {
+public class Stock extends BaseEntity<Long> implements BatchHandler, MaterialDescriptionHandler {
 
     @NotNull
     private Long plantId;
