@@ -1,5 +1,6 @@
 package com.rick.admin.module.material.service;
 
+import com.rick.admin.auth.common.UserContextHolder;
 import com.rick.admin.module.inventory.dao.StockDAO;
 import com.rick.admin.module.material.dao.MaterialDAO;
 import com.rick.admin.module.material.entity.Classification;
@@ -7,7 +8,9 @@ import com.rick.admin.module.material.entity.Material;
 import com.rick.common.http.exception.BizException;
 import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
+import com.rick.formflow.form.cpn.core.Form;
 import com.rick.formflow.form.service.FormAdvice;
+import com.rick.formflow.form.service.FormConstants;
 import com.rick.formflow.form.service.bo.FormBO;
 import com.rick.meta.dict.service.DictService;
 import lombok.RequiredArgsConstructor;
@@ -121,6 +124,15 @@ public class MaterialFormAdvice implements FormAdvice {
         List<Classification> classificationList = (List<Classification>) valueMap.get("classificationList");
         if (CollectionUtils.isNotEmpty(classificationList)) {
             valueMap.put("classification", classificationList.get(0).getClassificationCode());
+        }
+
+    }
+
+    @Override
+    public void afterGetInstance(Form form, Long instanceId, List<FormBO.Property> propertyList, Map<String, Object> valueMap) {
+        // 没有查看金额的权限的的隐藏金额信息
+        if (!UserContextHolder.get().getAuthorityList().contains("pur_purchase_order_add")) {
+            form.getAdditionalInfo().put(FormConstants.ADDITIONAL_CSS, ".standardPrice, .stockQuantityPrice {display:none;}");
         }
     }
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <style>
+    <style th:inline="css">
         .form-check {
             display: inline-block!important;
         }
@@ -17,6 +17,7 @@
             top: 6px;
         }
 
+        /*[(${formBO.form.getAdditionalInfo['css'] == null ? '' : formBO.form.getAdditionalInfo['css']})]*/
     </style>
 </head>
 <body>
@@ -28,10 +29,10 @@
             </ul>
             <div class="tab-content">
                 <div class="tab-pane" th:classappend="${i == 1 ? 'active': ''}" th:id="${'pane-' + i}" role="tabpanel" th:each="i: ${#numbers.sequence(1, formBO.form.getAdditionalInfo().get('pane-list').size())}">
-                    <div class="form-group row" th:if="${#strings.equals(p.configurer.getAdditionalInfo().get('pane-index'), #strings.toString(i))}" th:each="p : ${formBO.propertyList}" th:with="isRequired = ${p.configurer.validatorProperties.get('Required.required') eq null ? false : p.configurer.validatorProperties.get('Required.required')}">
+                    <div class="form-group row" th:classappend="${p.name}" th:if="${#strings.equals(p.configurer.getAdditionalInfo().get('pane-index'), #strings.toString(i))}" th:each="p : ${formBO.propertyList}" th:with="isRequired = ${p.configurer.validatorProperties.get('Required.required') eq null ? false : p.configurer.validatorProperties.get('Required.required')}">
                         <label th:if="${!(p.name eq 'specificationList' || p.name eq 'attachmentList')}" th:for="${p.name}" th:class="${'col-form-label col-sm-' + col}" th:classappend="${isRequired ? 'required' : ''}" th:text="${p.configurer.label}"></label>
                         <div th:class="${'col-sm-' + (12 - col)}" th:classappend="${(p.name eq 'specificationList' || p.name eq 'attachmentList') ? 'col-sm-12' : ''}">
-                            <label class="col-form-label"  th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).LABEL}" th:text="${( p.configurer.options.size() eq 0 || p.value == null) ? p.value : p.configurer.optionMap[p.value]}"></label>
+                            <label class="col-form-label"  th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).LABEL}" th:id="${p.name}" th:name="${p.name}" th:text="${( p.configurer.options.size() eq 0 || p.value == null) ? p.value : p.configurer.optionMap[p.value]}"></label>
 
                             <input th:disabled="${p.configurer.disabled == true || (p.name eq 'code' && formBO.instanceId != null)}" th:attr="pattern=${p.configurer.validatorProperties.get('CustomizeRegex.regex')}" th:if="${p.configurer.cpnType == T(com.rick.formflow.form.cpn.core.CpnTypeEnum).TEXT}" type="text" class="form-control" th:id="${p.name}" th:name="${p.name}" th:maxlength="${p.configurer.validatorProperties.get('Length.max')}"
                                    th:placeholder="${p.configurer.placeholder}" th:value="${p.value}" th:required="${isRequired}" th:classappend="${errors eq null ? '' : (#maps.containsKey(errors, p.name) ? 'is-invalid' : 'is-valid')}">
@@ -285,6 +286,6 @@
 
         $(obj).parent().remove()
     }
-
+    /*[(${formBO.form.getAdditionalInfo['js'] == null ? '' : formBO.form.getAdditionalInfo['js']})]*/
 </script>
 </html>
