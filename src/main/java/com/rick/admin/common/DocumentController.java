@@ -6,7 +6,9 @@ import com.rick.fileupload.client.support.DocumentService;
 import com.rick.fileupload.core.support.FileMetaUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
@@ -18,8 +20,8 @@ import java.util.List;
  * @author Rick.Xu
  * @date 2023/6/2 16:11
  */
-@RestController
-@RequestMapping("/documents")
+//@RestController
+//@RequestMapping("/documents")
 @RequiredArgsConstructor
 public class DocumentController {
 
