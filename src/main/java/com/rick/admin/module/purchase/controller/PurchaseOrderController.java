@@ -23,6 +23,7 @@ import com.rick.common.http.model.Result;
 import com.rick.common.http.model.ResultUtils;
 import com.rick.common.util.Time2StringUtils;
 import com.rick.db.plugin.dao.support.BaseEntityUtils;
+import com.rick.db.service.SharpService;
 import com.rick.db.service.support.Params;
 import com.rick.meta.dict.entity.Dict;
 import com.rick.meta.dict.service.DictService;
@@ -74,6 +75,8 @@ public class PurchaseOrderController {
     final LatestPriceService latestPriceService;
 
     final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    final SharpService sharpService;
 
     @PostMapping
     @ResponseBody
@@ -250,7 +253,7 @@ public class PurchaseOrderController {
 
         model.addAttribute("createName", dictService.getDictByTypeAndName("sys_user", purchaseOrder.getCreateBy().toString()).get().getLabel());
         model.addAttribute("createTime", Time2StringUtils.format(purchaseOrder.getCreateTime()));
-
+        model.addAttribute("customerContactInfoMap", customerContactInfoMapping());
         return "modules/purchase/purchase_order";
     }
 
@@ -303,5 +306,11 @@ public class PurchaseOrderController {
             return BigDecimalUtils.lt(value, BigDecimal.ZERO) ? BigDecimal.ZERO : value;
         }
 
+    }
+
+    private Map<String, Map<String, Object>> customerContactInfoMapping() {
+        String querySql = "select id, contact_person contactPerson, contact_number contactNumber, contact_mail contactMail from core_partner where partner_type = 'VENDOR'";
+        List<Map<String, Object>> list = sharpService.query(querySql, null);
+        return list.stream().collect(Collectors.toMap(row -> Objects.toString(row.get("id"), ""), row -> row));
     }
 }

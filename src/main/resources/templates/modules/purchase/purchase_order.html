@@ -268,8 +268,22 @@
         let $receiveContactInfo = $('#receiveContactInfo')
         let $soInfo = $('#soInfo')
 
+        let customerContactInfoMap = /*[[${customerContactInfoMap}]]*/
+        $('#partnerId option').each(function () {
+            if (this.value) {
+                $(this).data('contactPerson', customerContactInfoMap[this.value]['contactPerson'])
+                $(this).data('contactNumber', customerContactInfoMap[this.value]['contactNumber'])
+            }
+        })
+
         $('#partnerId').multipleSelect({
-            filter: true
+            filter: true,
+            onClick: function (view) {
+                if (view.data) {
+                    $('#contactPerson').val(view.data.contactPerson)
+                    $('#contactNumber').val(view.data.contactNumber)
+                }
+            }
         })
 
         let value = [
