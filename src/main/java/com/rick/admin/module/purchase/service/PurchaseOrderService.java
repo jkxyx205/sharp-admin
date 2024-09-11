@@ -366,7 +366,7 @@ public class PurchaseOrderService {
                     materialDescription.getSpecification() + " " + materialDescription.getCharacteristic(),
                     item.getQuantity(), materialDescription.getUnitText(), item.getUnitPrice(), item.getAmount(),
                     Time2StringUtils.format(item.getDeliveryDate()),
-                    (item.getPurchaseSend() ? "\n直发：" + (Objects.isNull(item.getContactInfo().getContactSubject()) ? "" : item.getContactInfo().getContactSubject()) : "发普源") + com.rick.common.util.StringUtils.appendValue(item.getRemark())
+                    (item.getPurchaseSend() ? "直发：" + (Objects.isNull(item.getContactInfo().getContactSubject()) ? "" : item.getContactInfo().getContactSubject()) : "发普源") + com.rick.common.util.StringUtils.appendValue(item.getRemark())
             });
         }
 
