@@ -355,7 +355,7 @@ public class PurchaseOrderService {
                 String shortName = Objects.toString(soInfo.get("short_name"), "");
                 String sourceOrderNum = Objects.toString(soInfo.get("sourceOrderNum"), "");
                 String materialCode = item.getPurchaseSend() ?
-                        Objects.toString(soInfo.get("customerMaterialCode"), "") : materialDescription.getCode();
+                        ((soInfo.get("customerMaterialCode") == null ? "" : ((soInfo.get("customerMaterialCode") + "\n"))) + materialDescription.getCode()) : materialDescription.getCode();
 
                 firstColumnValue =  (StringUtils.isBlank(shortName) ? "" : (shortName + "\n")) +
                         (StringUtils.isBlank(sourceOrderNum) ? "" : (sourceOrderNum + "\n")) +
