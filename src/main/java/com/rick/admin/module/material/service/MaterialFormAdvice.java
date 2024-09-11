@@ -109,7 +109,7 @@ public class MaterialFormAdvice implements FormAdvice {
     }
 
     @Override
-    public void beforeGetInstance(Long instanceId, Map<String, Object> valueMap) {
+    public void beforeGetInstance(Form form, Long instanceId, Map<String, Object> valueMap) {
         Numbers numbers = new Numbers(Locale.CHINA);
 
         BigDecimal stockQuantity = stockDAO.getStockQuantityByMaterialId((Long)valueMap.get("id"), 719893335619162112L);
