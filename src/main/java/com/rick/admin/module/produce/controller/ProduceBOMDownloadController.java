@@ -24,6 +24,7 @@ import com.rick.meta.dict.service.DictService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -33,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -119,7 +121,7 @@ public class ProduceBOMDownloadController {
         ProduceOrder produceOrder = OptionalUtils.expectedAsOptional(produceOrderDAO.selectByParamsWithoutCascade(Params.builder(1).pv("id", item.getProduceOrderId()).build(), "source_order_num, remark", "id = :id")).get();
 
         BomTemplate bomTemplate = resolveItemAndReturnBomTemplate(item);
-        String startDate = Time2StringUtils.format(schedule.getStartDate());
+        String startDate = ObjectUtils.defaultIfNull(Time2StringUtils.format(schedule.getStartDate()), Time2StringUtils.format(LocalDate.now()));
         float heightInPoints = 20f;
 
         ExcelWriter excelWriter = new ExcelWriter();
@@ -150,7 +152,7 @@ public class ProduceBOMDownloadController {
         AtomicInteger integer = new AtomicInteger(10);
 
         writeBomList(schedule.getQuantity(), bomTemplate, excelWriter, integer);
-        excelWriter.toFile(HttpServletResponseUtils.getOutputStreamAsAttachment(request, response, schedule.getCode() + "_" + item.getMaterialName() + "_" + Time2StringUtils.format(schedule.getStartDate()) + ".xlsx"));
+        excelWriter.toFile(HttpServletResponseUtils.getOutputStreamAsAttachment(request, response, schedule.getCode() + "_" + item.getMaterialName() + "_" + startDate + ".xlsx"));
     }
 
     @GetMapping("{itemId}/download")
