@@ -112,7 +112,7 @@ public class PartnerTest {
                 .name("shortName")
                 .label("公司简称")
                 .placeholder("请输入公司简称")
-                .validatorList(textValidatorList)
+                .validatorList(textRequiredValidatorList)
                 .build();
 
         CpnConfigurer remarkCpn = CpnConfigurer.builder()
