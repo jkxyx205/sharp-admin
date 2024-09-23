@@ -77,10 +77,4 @@ public class ListDetailReportAdvice implements ReportAdvice {
                 "$('table tr span[name=openQuantity]').parent().css('background-color', 'rgb(248, 108, 107)');");
     }
 
-    public static void main(String[] args) {
-        String[] selectS = StringUtils.substringBetween("SELECT produce_order_item.id, produce_order.partner_id, produce_order.id order_id, produce_order.code, produce_order_item.material_id, produce_order_item.material_code, produce_order_item.batch_id, produce_order_item.batch_code, produce_order_item.quantity, produce_order_item.unit, ifnull(produce_order_item.unit_price, 0) unit_price, (produce_order_item.quantity * ifnull(produce_order_item.unit_price, 0)) total_price, produce_order.create_time, produce_order_item.delivery_date, (produce_order_item.is_complete + 0) is_complete FROM produce_order_item, produce_order where produce_order_item.produce_order_code = produce_order.code", "SELECT ", " FROM").split("\\s*,\\s*");
-
-        System.out.println(selectS);
-
-    }
 }

@@ -72,12 +72,12 @@
                         <tr>
                             <th style="width: 40px">序号</th>
                             <th data-name="code" class="text-left" style="width: 130px">订单号</th>
-                            <th data-name="partner_id" class="text-left">供应商</th>
+                            <th data-name="partner_id" class="text-left">客户</th>
                             <th data-name="material_code" class="text-left">物料编号</th>
                             <th data-name="materialName" class="text-left">物料名称</th>
                             <th data-name="specificationAndCharacteristic" class="text-left">规格 &amp; 特征值</th>
                             <th data-name="quantity" class="text-left">数量</th>
-                            <th data-name="unit" class="text-left">单位</th>
+                            <th data-name="unit" class="text-center">单位</th>
                             <th data-name="unit_price" class="text-left" sec:authorize="${hasAuthority('produce_order_add') or hasAuthority('produce_order_edit')}">含税单价(元)</th>
                             <th data-name="total_price" class="text-left" sec:authorize="${hasAuthority('produce_order_add') or hasAuthority('produce_order_edit')}">含税总计(元)</th>
                             <th data-name="delivery_date" class="text-center" style="width: 120px">交货日期</th>
@@ -275,7 +275,7 @@
         let endpoint = /*[[${report.additionalInfo != null && report.additionalInfo['endpoint'] != null ? report.additionalInfo['endpoint'] : '' } + '']]*/
 
         function showProduceDocument(title, id) {
-            openOnNewTab(id, '/produce_orders'  + (!id ? '/new' : '/' + id) + '?readonly=' + (title === '查看'),  report.name);
+            openOnNewTab(id, '/produce_orders'  + (!id ? '/new' : '/' + id) + '?readonly=' + (title === '查看'), '销售订单');
         }
 
         function showDialog(title, id) {
