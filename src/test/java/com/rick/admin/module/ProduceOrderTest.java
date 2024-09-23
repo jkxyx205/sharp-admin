@@ -139,4 +139,42 @@ public class ProduceOrderTest {
                 .sord(SordEnum.ASC)
                 .build());
     }
+
+    @Test
+    public void testProduceSendDetail() {
+        reportService.saveOrUpdate(Report.builder()
+                .id(869604622841446400L)
+                .code("produce_order_detail")
+                .tplName("modules/produce/list-send-detail")
+                .name("销售出货明细")
+                .reportAdviceName("listSendDetailReportAdvice")
+                .additionalInfo(new HashMap<>())
+                .summaryColumnNames("total_price")
+                .querySql("select id, partner_id, order_id, code, material_id, material_code, batch_id, batch_code, quantity, unit, unit_price, total_price, document_date FROM (select produce_order_item.id, produce_order.partner_id, produce_order.id order_id, produce_order.code, produce_order_item.material_id, produce_order_item.material_code, produce_order_item.batch_id, produce_order_item.batch_code, inv_document_item.quantity, produce_order_item.unit, ifnull(produce_order_item.unit_price, 0) unit_price, (inv_document_item.quantity * ifnull(produce_order_item.unit_price, 0)) total_price, inv_document.document_date from produce_order_item, produce_order, inv_document_item, inv_document where produce_order_item.produce_order_id = produce_order.id and inv_document_item.root_reference_item_id = produce_order_item.id and inv_document.id = inv_document_item.`inventory_document_id` and inv_document_item.reference_type = 'SO' and \n" +
+                        "inv_document_item.reference_code= :code and partner_id = :partner_id and material_id = :material_id and inv_document_item.material_code = :material_code and batch_id = :batch_id and inv_document.document_date >= :create_time0 and inv_document.document_date <= :create_time1) t")
+                .queryFieldList(Arrays.asList(
+                        new QueryField("code", "订单号", QueryField.Type.TEXT),
+                        new QueryField("partner_id", "客户", QueryField.Type.SELECT, "core_partner_customer"),
+                        new QueryField("document_date", "出货日期", QueryField.Type.DATE_RANGE)
+                ))
+                .reportColumnList(Arrays.asList(
+                        new HiddenReportColumn("id"),
+                        new HiddenReportColumn("order_id"),
+                        new HiddenReportColumn("material_id"),
+                        new ReportColumn("code", "订单号").setColumnWidth(130),
+                        new ReportColumn("partner_id", "客户", false, "core_partner", Arrays.asList("dictConverter")),
+                        new ReportColumn("material_code", "物料编号"),
+                        new ReportColumn("materialName", "物料名称"),
+                        new ReportColumn("specificationAndCharacteristic", "规格 & 特征值"),
+                        new ReportColumn("quantity", "数量").setType(ReportColumn.TypeEnum.NUMERIC),
+                        new ReportColumn("unit", "单位", false, "unit", Arrays.asList("dictConverter")),
+                        new ReportColumn("unit_price", "含税单价(元)").setType(ReportColumn.TypeEnum.DECIMAL),
+                        new ReportColumn("total_price", "含税总计(元)").setType(ReportColumn.TypeEnum.DECIMAL),
+                        new ReportColumn("document_date", "出货日期", false,null, Arrays.asList("sqlDateConverter")).setColumnWidth(120)
+                ))
+                .pageable(true)
+                .sidx("id")
+                .sord(SordEnum.ASC)
+                .build());
+    }
 }
