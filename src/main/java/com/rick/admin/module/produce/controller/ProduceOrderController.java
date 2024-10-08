@@ -160,7 +160,7 @@ public class ProduceOrderController {
                 }
             }
 
-            // 发货记录
+            // 出货记录
             List<ProduceOrderController.GoodsIssueItem> goodsIssueItemList = Lists.newArrayListWithExpectedSize(produceOrder.getItemList().size());
 
             Map<Long, BigDecimal> historyGoodsIssueQuantityMap = produceOrderService.salesHistoryGoodsIssueQuantity(produceOrder.getCode(), produceOrder.getItemList().stream().map(ProduceOrder.Item::getId).collect(Collectors.toSet()));
